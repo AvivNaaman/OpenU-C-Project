@@ -3,7 +3,7 @@
 #include "input_helpers.h"
 
 /* Returns whether a string contains a symbol from a certain index. */
-int has_symbol(char *line, int);
+int parse_symbol(char *line, int, char*);
 
 /* TODO: DOC */
 int process_string_instruction(char *line, int index, char *, int);
@@ -20,13 +20,16 @@ int process_string_instruction(char *line, int index, char *, int);
 int firstpass_analyze_line(char *line, table datas, table codes, table externals, int *IC, int *DC, char *code_img, char *data_img) {
 	int i;
 	int is_symbol, is_instruction;
+	char temp[80];
 	/* TODO: implement */
 
 	MOVE_TO_NOT_WHITE(line, i); /* Move to next not-white char */
 	if (line[i] == '\n') return FALSE; /* Empty line */
 
 	/* Check if symbol (*:), stages 1.3-1.5 */
-	is_symbol = has_symbol(line, i);
+	is_symbol = parse_symbol(line, i, temp);
+
+
 
 	MOVE_TO_NOT_WHITE(line, i); /* Move to next not-white char */
 
@@ -39,29 +42,41 @@ int firstpass_analyze_line(char *line, table datas, table codes, table externals
 		if (instruction == DATA || instruction == STRING) {
 			if (is_symbol) {
 				/* is data or string, add DC with the symbol to the table */
-				add_item(datas, *DC);
+				add_item(datas, temp, *DC);
 			}
 			/* If instruction is string, encode it */
 			if (instruction == STRING) {
 				(*DC) += process_string_instruction(line, i, data_img, DC);
 			}
+			/* Handle number(s) */
+			else {
+				/* TODO: Implement. add to dc size of 24-bit words added to data_img. */
+			}
 		}
-	} // end if (instruction != NONE)
+		else if (instruction == EXTERN) {
+			add_item(externals, temp, *DC);
+		}
+	} /* end if (instruction != NONE) */
+	else { /* It's command 1.11 -1.17*/
 
+	}
 	return FALSE;
 }
 
-/* Returns whether a string contains a symbol from a certain index. */
-int has_symbol(char *line, int i) {
-
-	for (i = 0; line[i] && line[i] != ':' && (line[i] != '\t' && line != ' ') ; i++) ; /* Go on until empty char OR symbol */
+/* Returns whether a string contains a symbol from a certain index. copies the symbol (if exists) to the string argument */
+int parse_symbol(char *line, int i, char *parsed_symbol) {
+	int j;
+	for (j=0; line[i] && line[i] != ':' && (line[i] != '\t' && line[i] != ' ') ; i++)
+		parsed_symbol[j] = line[i]; /* Go on until empty char OR symbol */
 
 	/* if IS symbol: (if the last char of the first word in line is ':' */
 	if (line[i] == ':')
 		return TRUE;
 
+	parsed_symbol[0] = '\0';
 	return FALSE;
 }
+
 /*
  * Processes a line data instruction. puts 2 empty bytes in the data_img array and then 2bytes of the char, for each char.
  * Returns the count of processed chars.

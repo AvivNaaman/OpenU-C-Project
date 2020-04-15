@@ -4,7 +4,7 @@
 #include "table.h"
 
 /* Adds a new entry to the table. keep it sorted by value. creates new table if the sent table is null. */
-table_entry *add_item(table_entry *table, char key[3], int value) {
+table_entry *add_item(table_entry *table, char key[], int value) {
 	table_entry *curr_temp, *prev_temp, *new_entry;
 
 	/* create a new struct entry with the value and key */

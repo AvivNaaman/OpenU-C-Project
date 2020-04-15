@@ -5,15 +5,15 @@ typedef struct entry {
 	/* Next table entry */
 	table *next;
 	/* key (string) and value (int) pair */
-	char *key;
+	char key[3];
 	int value;
 } table_entry;
 
 /* Adds a new entry to the table. */
-table_entry *add_item(table_entry *table, char *key, int value);
+table_entry *add_item(table_entry *table, char key[3], int value);
 
 /* Returns a pointer to the entry where the key is the same as the argument. if no such one, returns null */
-table_entry *find_by_key(table_entry *table, char *key);
+table_entry *find_by_key(table_entry *table, char key[3]);
 
 /* Returns a pointer to the entry where the value is the same as the argument. if no such one, returns null */
 table_entry *find_by_value(table_entry * table, int value);

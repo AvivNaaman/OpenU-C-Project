@@ -5,14 +5,19 @@
 /* Returns whether a string contains a symbol from a certain index. */
 int has_symbol(char *line, int);
 
+/* TODO: DOC */
+int process_string_instruction(char *line, int index, char *, int);
+
 /*
  * processes a single instruction line. returns whether an error occured.
  * line - the text line from .asm file.
  * datas, code, externals - symbol tables for .data, .code and .external instruction.
  * IC - a pointer to the instruction counter.
  * DC - a pointer to the data counter.
+ * code_img - the code image array.
+ * data_img - the data image array.
  */
-int firstpass_analyze_line(char *line, table datas, table codes, table externals, int *IC, int *DC) {
+int firstpass_analyze_line(char *line, table datas, table codes, table externals, int *IC, int *DC, char *code_img, char *data_img) {
 	int i;
 	int is_symbol, is_instruction;
 	/* TODO: implement */
@@ -27,7 +32,21 @@ int firstpass_analyze_line(char *line, table datas, table codes, table externals
 
 	/* Check if it's an instruction (starting with '.') */
 	instruction_type instruction = find_instruction_from_index(line, i);
-	if (instruction == NONE)
+
+	MOVE_TO_NOT_WHITE(line, i);
+
+	if (instruction != NONE) {
+		if (instruction == DATA || instruction == STRING) {
+			if (is_symbol) {
+				/* is data or string, add DC with the symbol to the table */
+				add_item(datas, *DC);
+			}
+			/* If instruction is string, encode it */
+			if (instruction == STRING) {
+				(*DC) += process_string_instruction(line, i, data_img, DC);
+			}
+		}
+	} // end if (instruction != NONE)
 
 	return FALSE;
 }
@@ -35,11 +54,32 @@ int firstpass_analyze_line(char *line, table datas, table codes, table externals
 /* Returns whether a string contains a symbol from a certain index. */
 int has_symbol(char *line, int i) {
 
-	for (i = 0; line[i] && line[i] != ':' && !is_white_char(line[i]) ; i++) ; /* Go on until empty char OR symbol */
+	for (i = 0; line[i] && line[i] != ':' && (line[i] != '\t' && line != ' ') ; i++) ; /* Go on until empty char OR symbol */
 
 	/* if IS symbol: (if the last char of the first word in line is ':' */
 	if (line[i] == ':')
 		return TRUE;
 
 	return FALSE;
+}
+/*
+ * Processes a line data instruction. puts 2 empty bytes in the data_img array and then 2bytes of the char, for each char.
+ * Returns the count of processed chars.
+ * */
+int process_string_instruction(char *line, int index, char* data_img, int data_img_indx) {
+	int cntr; /* counts processed chars amount */
+	data_img_indx *= 3; /* We need to find location in char array. each word is 3-byte, char in ansi-c is 1-byte */
+	MOVE_TO_NOT_WHITE(line, index)
+	if (line[index] == '"') {
+		index++;
+		/* Foreach char between the two " */
+		for (cntr = 0;line[index] != '"';index++) {
+			/* ASCII char is 1byte but one word is 3byte. we need to insert 2 zero-bytes, and then the actual data */
+			data_img[data_img_indx++] = '\0';
+			data_img[data_img_indx++] = '\0';
+			data_img[data_img_indx++] = line[index];
+		}
+	}
+	/* Return processed chars count */
+	return cntr;
 }

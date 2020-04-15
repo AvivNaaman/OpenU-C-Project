@@ -2,6 +2,7 @@ typedef enum instruction {
 	DATA,
 	EXTERN,
 	ENTRY,
+	STRING,
 	NONE /* no instruction found */
 } instruction_type;
 

@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "processfile.h"
 #include "globals.h" /* constants */
-#include "first_pass_line.h"""
+#include "first_pass_line.h"
 
 /* Fully processes the assembly file, and writing all the associated files. Returns whether succeeded. */
 int process_file(char *filename) {

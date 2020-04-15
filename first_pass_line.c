@@ -1,9 +1,13 @@
 #include "first_pass_line.h"
-
+#include "globals.h"
 /*
- * Analyzes a line in first pass: adds to symbol table if needed,
- * returns the 24-bit word count that the line requires in final assembled code
+ * processes a single instruction line. returns whether an error occured.
+ * line - the text line from .asm file.
+ * datas, code, externals - symbol tables for .data, .code and .external instruction.
+ * IC - a pointer to the instruction counter.
+ * DC - a pointer to the data counter.
  */
-int firstpass_analyze_line(char *line, table_entry *externals, table_entry *entries) {
+int firstpass_analyze_line(char *line, table datas, table codes, table externals, int *IC, int *DC) {
 	/* TODO: implement */
+	return FALSE;
 }

@@ -1,7 +1,9 @@
+/* pointer to table  */
+typedef struct entry* table;
 /* Single table entry */
 typedef struct entry {
 	/* Next table entry */
-	struct entry *next;
+	table *next;
 	/* key (string) and value (int) pair */
 	char *key;
 	int value;
@@ -10,7 +12,8 @@ typedef struct entry {
 /* Adds a new entry to the table. */
 table_entry *add_item(table_entry *table, char *key, int value);
 
-/* TODO: Document functions down here */
+/* Returns a pointer to the entry where the key is the same as the argument. if no such one, returns null */
 table_entry *find_by_key(table_entry *table, char *key);
 
+/* Returns a pointer to the entry where the value is the same as the argument. if no such one, returns null */
 table_entry *find_by_value(table_entry * table, int value);

@@ -3,7 +3,7 @@ set(CMAKE_C_STANDARD 90)
 
 # Default CLion generated
 project(mmn14 C)
-add_executable(mmn14 assembler.c processfile.c processfile.h table.c table.h first_pass_line.c first_pass_line.h globals.h)
+add_executable(mmn14 assembler.c processfile.c processfile.h table.c table.h first_pass_line.c first_pass_line.h globals.h input_helpers.c input_helpers.h)
 ## math library, gcc option -lm
 target_link_libraries(mmn14 m)
 

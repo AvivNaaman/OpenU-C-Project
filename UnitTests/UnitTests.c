@@ -17,6 +17,6 @@ int main() {
 
 	/* END TESTS */
 
-	printf("Passed %d/%d.\n", total-failed, total);
+	printf("\nPassed %d/%d.\n", total-failed, total);
 	puts("Done. See the above output for more details.");
 }

@@ -36,7 +36,7 @@ int assert_double(double expected, double actual, const char *description, int *
 int assert_char(char expected, char actual, const char *description, int *total, int *failed){
 	(*total)++;
 	if (expected != actual) {
-		printf("Test FAILED on %s. Expected %c but got %c.", description, expected, actual);
+		printf("Test FAILED on %s. Expected %c(%d) but got %c(%d).", description, expected,expected, actual, actual);
 		(*failed)++;
 	}
 }

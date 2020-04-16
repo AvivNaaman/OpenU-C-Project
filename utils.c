@@ -54,7 +54,7 @@ int is_int(char *string) {
 			return FALSE;
 		}
 	}
-	return TRUE;
+	return i > 0; /* if i==0 then it was an empty string! */
 }
 
 char *int_to_word(int num) {

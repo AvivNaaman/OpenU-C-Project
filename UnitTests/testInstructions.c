@@ -60,11 +60,13 @@ char *build_string_from_memory(char data_img[], int dc, int length) {
 	str[j] = '\0'; /* EOS */
 	return str;
 }
-
+/* TODO: Check why doesn't work */
 int build_int_from_memory(char data_img[], int dc) {
+	unsigned char *_data_img;
 	int to_return = 0;
+	_data_img = data_img;
 	dc *= 3;
-	to_return |= (data_img[dc] << 16);
-	to_return |= (data_img[dc+1] << 8);
-	to_return |= (data_img[dc+2]);
+	to_return |= (_data_img[dc] << 16);
+	to_return |= (_data_img[dc+1] << 8);
+	to_return |= (_data_img[dc+2]);
 }

@@ -15,6 +15,7 @@ instruction_type find_instruction_from_index(char *string, int index){
 	for (j = 0;string[index] && string[index] != '\t' && string[index] != ' ';index++,j++) {
 		temp[j] = string[index];
 	}
+	temp[j] = '\0'; /* End of string */
 
 	if (strcmp(temp, ".extern") == 0) {
 		return EXTERN;
@@ -48,8 +49,13 @@ int process_string_instruction(char *line, int index, char* data_img, int data_i
 			/* ASCII char is 1byte but one word is 3byte. we need to insert 2 zero-bytes, and then the actual data */
 			write_word(data_img, data_img_indx, '\0','\0',line[index]);
 			data_img_indx += 3;
+			data_added_counter++; /* counter that will be returned, indicating the number of processed chars */
 		}
-		data_added_counter++;
+	}
+	else {
+		/* something like: 'LABEL: .string  hello, world\n' - the string isn't surrounded with "" */
+		printf("String must be defined between quotation marks");
+		return 0;
 	}
 	if (data_added_counter == 0) {
 		printf("Error: Empty string definition");

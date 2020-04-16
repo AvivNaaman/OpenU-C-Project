@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-/* TODO REFACTOR: method should return ptr to returned string (which can be maximally 31 chars instead of whether operation is valid. */
 /* Returns whether a string contains a symbol from a certain index. copies the symbol (if exists) to the string argument */
 char *parse_symbol(char *line) {
 	int j,i;
@@ -36,6 +35,7 @@ char *parse_symbol(char *line) {
 	if (line[i] == ':')
 		return to_return;
 
+	printf("Error: label miss ':' right after it's end");
 	return NULL;
 }
 
@@ -44,7 +44,7 @@ char *parse_symbol(char *line) {
 void write_word(char *buffer, int index, char byte0, char byte1, char byte2) {
 	buffer[index++] = byte0;
 	buffer[index++] = byte1;
-	buffer[index++] = byte2;
+	buffer[index] = byte2;
 }
 
 int is_int(char *string) {

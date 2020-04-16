@@ -4,5 +4,5 @@ set(CMAKE_C_STANDARD 90)
 project(UnitTests C)
 add_executable(UnitTests assertions.c assertions.h UnitTests.c ../processfile.c ../processfile.h
 		../table.c ../table.h ../first_pass_line.c ../first_pass_line.h
-		../instructions_handler.c ../instructions_handler.h ../utils.c ../utils.h testTable.c UnitTests.h testUtils.c)
+		../instructions_handler.c ../instructions_handler.h ../utils.c ../utils.h testTable.c UnitTests.h testUtils.c testInstructions.c)
 target_link_libraries(UnitTests m)

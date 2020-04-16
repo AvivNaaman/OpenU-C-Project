@@ -3,3 +3,4 @@
 
 TEST(Table);
 TEST(Utils);
+TEST(Instructions);

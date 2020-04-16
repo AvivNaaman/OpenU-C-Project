@@ -9,14 +9,19 @@ int main() {
 	puts("Starting Tests...");
 
 	/* TESTS HERE. USER MACROS! */
-	puts("Testing table.h");
+	puts("\nTesting table.h");
 	CALL_TEST(Table, total, failed);
 
-	puts("Testing utils.h");
+	puts("\nTesting utils.h");
 	CALL_TEST(Utils, total, failed);
+
+	puts("\nTesting instruction_handler.h");
+	CALL_TEST(Instructions, total, failed);
 
 	/* END TESTS */
 
 	printf("\nPassed %d/%d.\n", total-failed, total);
-	puts("Done. See the above output for more details.");
+	puts("Done. See the above output for more details. Ignore non-assertion error ");
+
+	return(!!failed);
 }

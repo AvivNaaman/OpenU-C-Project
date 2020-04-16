@@ -1,5 +1,7 @@
 #include "instructions_handler.h"
 #include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include "utils.h"
 #include "utils.h"
 
@@ -7,7 +9,7 @@
 instruction_type find_instruction_from_index(char *string, int index){
 	char temp[MAX_LINE_LENGTH];
 	int j;
-	MOVE_TO_NOT_WHITE(string, index); /* get index to first not white place */
+	MOVE_TO_NOT_WHITE(string, index) /* get index to first not white place */
 	if (string[index] != '.') return NONE;
 
 	for (j = 0;string[index] && string[index] != '\t' && string[index] != ' ';index++,j++) {
@@ -23,7 +25,10 @@ instruction_type find_instruction_from_index(char *string, int index){
 	else if (strcmp(temp, ".entry") == 0) {
 		return ENTRY;
 	}
-
+	else if (strcmp(temp, ".string") == 0) {
+		return STRING;
+	}
+	return NONE
 }
 
 /* Instruction line processing helper functions */
@@ -32,21 +37,25 @@ instruction_type find_instruction_from_index(char *string, int index){
  * Returns the count of processed chars.
  * */
 int process_string_instruction(char *line, int index, char* data_img, int data_img_indx) {
-	int cntr; /* counts processed chars amount */
+	int data_added_counter; /* counts processed chars amount */
 	data_img_indx *= 3; /* We need to find location in char array. each word is 3-byte, char in ansi-c is 1-byte */
+	data_added_counter = 0;
 	MOVE_TO_NOT_WHITE(line, index)
 	if (line[index] == '"') {
 		index++;
 		/* Foreach char between the two " */
-		for (cntr = 0;line[index] != '"';index++) {
+		for (;line[index] != '"' && line[index] && line[index] != '\n' && line[index] != EOF;index++) {
 			/* ASCII char is 1byte but one word is 3byte. we need to insert 2 zero-bytes, and then the actual data */
-			data_img[data_img_indx++] = '\0';
-			data_img[data_img_indx++] = '\0';
-			data_img[data_img_indx++] = line[index];
+			write_word(data_img, data_img_indx, '\0','\0',line[index]);
+			data_img_indx += 3;
 		}
+		data_added_counter++;
+	}
+	if (data_added_counter == 0) {
+		printf("Error: Empty string definition");
 	}
 	/* Return processed chars count */
-	return cntr;
+	return data_added_counter;
 }
 
 /*
@@ -64,10 +73,10 @@ int process_data_instruction(char *line, int index, char *data_img, int dc) {
 		temp[i] = '\0'; /* End of string */
 		if (!is_int(temp)) {
 			/* TODO: Write error and return flag that indicates error (somehow) */
-			fprintf(stderr, "Error: line : expected number after .data instruction (got %s)", temp)
+			printf("Error: line : expected number after .data instruction (got %s)", temp);
 			return FALSE;
 		}
-		int curr_val = atoi(temp);
+		curr_val = atoi(temp);
 		/* Now let's write to data buffer */
 		byte0 = (curr_val >> 16) & 0xFF;
 		byte1 = (curr_val >> 8) & 0xFF;

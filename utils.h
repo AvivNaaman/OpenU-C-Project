@@ -8,7 +8,8 @@
 
 /* moves the index to the next place in string where the char isn't white */
 #define MOVE_TO_NOT_WHITE(string, index) \
-		for (;!string[index] && (string[index] == '\t' || string[index] == ' '); ++(index)) ;
+		for (;!string[index] && (string[index] == '\t' || string[index] == ' '); ++(index))\
+		;
 
 #define MOVE_UNTIL_CHAR_OR_WHITE(string, index, char)\
 		for (;!string[index] || string[index] == '\t' || string[index] == ' ' || string[index] == char; ++(index)) ;

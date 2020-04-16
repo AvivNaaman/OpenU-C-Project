@@ -11,7 +11,8 @@
  * code_img - the code image array.
  * data_img - the data image array.
  */
-int firstpass_analyze_line(char *line, table datas, table codes, table externals, int *IC, int *DC, char *code_img, char *data_img, char *filename) {
+int firstpass_analyze_line(char *line, table datas, table codes, table externals, int *IC, int *DC, char *code_img,
+                           char *data_img, char *filename) {
 	int i;
 	int is_symbol, is_instruction;
 	char temp[80];
@@ -24,7 +25,6 @@ int firstpass_analyze_line(char *line, table datas, table codes, table externals
 	is_symbol = parse_symbol(line, i, temp);
 
 
-
 	MOVE_TO_NOT_WHITE(line, i); /* Move to next not-white char */
 
 	/* Check if it's an instruction (starting with '.') */
@@ -33,21 +33,23 @@ int firstpass_analyze_line(char *line, table datas, table codes, table externals
 	MOVE_TO_NOT_WHITE(line, i);
 
 	if (instruction != NONE) {
+		/* if .string or .data, put it into the symbol table */
 		if (instruction == DATA || instruction == STRING) {
 			if (is_symbol) {
 				/* is data or string, add DC with the symbol to the table */
 				add_item(datas, temp, *DC);
 			}
-			/* If instruction is string, encode it */
-			if (instruction == STRING) {
-				(*DC) += process_string_instruction(line, i, data_img, DC);
-			}
-			/* Handle number(s), .data instruction */
-			else {
-				/* TODO: Implement. add to dc size of 24-bit words added to data_img. */
-				process_data_instruction(line, i, data_img, DC);
-			}
 		}
+		/* if string, encode into data image buffer and increase dc as needed. */
+		if (instruction == STRING) {
+			(*DC) += process_string_instruction(line, i, data_img, DC);
+		}
+		/* if .data, do same. */
+		else if (instruction == DATA) {
+			/* TODO: Implement. add to dc size of 24-bit words added to data_img. */
+			(*DC) += process_data_instruction(line, i, data_img, DC);
+		}
+		/* if .extern, add to externs symbol table */
 		else if (instruction == EXTERN) {
 			add_item(externals, temp, *DC);
 		}

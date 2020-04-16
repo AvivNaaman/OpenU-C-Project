@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "processfile.h"
 #include "utils.h" /* constants */
 #include "first_pass_line.h"
@@ -28,6 +29,7 @@ int process_file(char *filename) {
 		fgets(temp_line, MAX_LINE_LENGTH, filedes); /* Get line */
 		 iserror = iserror || firstpass_analyze_line(temp_line, data_table, code_table, ext_table, &ic, &dc, code_img, data_img, filename);
 	}
+	if (iserror) exit(1); /* Don't continue on exit. */
 	/* First pass done right. start second pass: */
 
 	/* Everything was done. Write outputs to *filename.ob/.ext/.ent */

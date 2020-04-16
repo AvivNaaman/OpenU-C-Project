@@ -6,8 +6,8 @@
 /* Returns whether a string contains a symbol from a certain index. copies the symbol (if exists) to the string argument */
 char *parse_symbol(char *line) {
 	int j,i;
+	char *to_return;
 	i = j = 0;
-	char *result;
 
 	/* Skip white chars at the beginning TODO: Check if necessary */
 	MOVE_TO_NOT_WHITE(line, i);
@@ -18,7 +18,7 @@ char *parse_symbol(char *line) {
 		return NULL;
 	}
 	/* Let's allocate some memory to the string needed to be returned */
-	char *to_return = malloc_with_check(sizeof(char) * 32); /* Max length +1 */
+	to_return = malloc_with_check(sizeof(char) * 32); /* Max length +1 */
 	if (to_return == NULL) return NULL;
 	for (; line[i] && line[i] != ':' && i <= 31; i++, j++) {
 		to_return[j] = line[i]; /* Go on until empty char OR symbol */

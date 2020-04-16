@@ -1,22 +1,32 @@
-# final executable
-assembler: assembler.o processfile.o first_pass_line.o utils.o table.o instructions_handler.o
-	gcc -g assembler.o processfile.o first_pass_ln.o instructions_handler.o table.o  -ansi -Wall -pedantic -o assembler
+# final executable compilation & linkage
+assembler: assembler.o processfile.o instructions.o table.o firstpass.o utils.o
+	gcc -g assembler.o processfile.o instructions.o table.o firstpass.o utils.o -ansi -Wall -pedantic -o assembler
 
+
+# modules (sorted by importancy):
+## main module
 assembler.o: assembler.c processfile.h
 	gcc -c assembler.c -ansi -Wall -pedantic -o assembler.o
 
-processfile.o: processfile.c processfile.h globals.h
+## single file process module
+processfile.o: processfile.c processfile.h
 	gcc -c processfile.c -ansi -Wall -pedantic -o processfile.o
 
-first_pass_ln.o: first_pass_line.c first_pass_line.h
-	gcc -c first_pass_line.c -ansi -Wall -pedantic -o first_pass_ln.o
 
-instructions_handler.o: instructions_handler.c instructions_handler.h
-	gcc -c instructions_handler.c -ansi -Wall -pedantic -o instructions_handler.o
+## first pass module
+firstpass.o: firstpass.c firstpass.h instructions.h
+	gcc -c firstpass.c -ansi -Wall -pedantic -o firstpass.o
 
+## symbol table module
 table.o: table.c table.h
 	gcc -c table.c -ansi -Wall -pedantic -o table.o
 
+## instructions helper function module
+instructions.o: instructions.c instructions.h utils.h
+	gcc -c instructions.c -ansi -Wall -pedantic -o instructions.o
+
+## common function & definitions module
 utils.o: utils.c utils.h
 	gcc -c utils.c -ansi -Wall -pedantic -o utils.o
+
 

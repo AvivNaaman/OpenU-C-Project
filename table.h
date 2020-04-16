@@ -12,7 +12,7 @@ typedef struct entry {
 } table_entry;
 
 /* Adds a new entry to the table. */
-void add_item(table *tab, char *key, int value);
+void add_table_item(table *tab, char *key, int value);
 
 /* Returns a pointer to the entry where the key is the same as the argument. if no such one, returns null */
 table_entry *find_by_key(table tab, char key[]);

@@ -2,10 +2,10 @@
 #include <stdlib.h>
 #include "processfile.h"
 #include "utils.h" /* constants */
-#include "first_pass_line.h"
+#include "firstpass.h"
 
 /* Fully processes the assembly file, and writing all the associated files. Returns whether succeeded. */
-int process_file(char *filename) {
+void process_file(char *filename) {
 	int i, ic, dc, iserror;
 	char temp_line[MAX_LINE_LENGTH+1]; /* temporary string for storing line, read from file */
 	FILE *filedes; /* Current assembly file descriptor to process */
@@ -16,8 +16,8 @@ int process_file(char *filename) {
 	filedes = fopen(filename, "r");
 	if (filedes == NULL) {
 		/* if file couldn't be opened, write to stderr. */
-		fprintf(stderr,"Error: Can't open file \"%s\" for reading.", filename);
-		return 0; /* TODO: Ask if the program should halt when any error occur, or just current file processing should. */
+		printf("Error: Can't open file \"%s\" for reading.", filename);
+		return; /* TODO: Ask if the program should halt when any error occur, or just current file processing should. */
 	}
 	/* Initialize  */
 	data_table = code_table = ext_table = NULL;
@@ -26,11 +26,19 @@ int process_file(char *filename) {
 	dc = 0;
 	/* File opened successfully, start first pass: */
 	while (!feof(filedes)) {
-		fgets(temp_line, MAX_LINE_LENGTH, filedes); /* Get line */
-		 iserror = iserror || firstpass_analyze_line(temp_line, data_table, code_table, ext_table, &ic, &dc, code_img, data_img, filename);
+		fgets(temp_line, MAX_LINE_LENGTH, filedes); /* Get line */ /* TODO Make sure pointer to pointer to struct is sent in table arguments! */
+		iserror = iserror || process_line_fpass(temp_line, data_table, code_table, ext_table, &ic, &dc, code_img, data_img, filename);
 	}
-	if (iserror) exit(1); /* Don't continue on exit. */
+	if (iserror) {
+		printf("Assemble of the file %s stopped.\n", filename);
+		printf("Syntax error found in the file. See the above output for more information");
+		return;
+	}
 	/* First pass done right. start second pass: */
-
+	rewind(filedes); /* Reread the file from the beginning */
+	while (!feof(filedes)) {
+		fgets(temp_line, MAX_LINE_LENGTH, filedes); /* Get line */ /* TODO: Implement */
+		iserror = iserror || process_line_spass(temp_line,ent_table, code_table, &ic, ext_table, data_table, code_table);
+	}
 	/* Everything was done. Write outputs to *filename.ob/.ext/.ent */
 }

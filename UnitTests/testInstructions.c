@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include "assertions.h"
 #include "UnitTests.h"
-#include "../instructions_handler.h"
+#include "../instructions.h"
 
 char *build_string_from_memory(char data_img[], int dc, int length);
 

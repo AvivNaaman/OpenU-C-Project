@@ -1,25 +1,22 @@
 #include "assertions.h"
 #include <stdio.h>
 #include "../table.h"
-int total, failed;
-
-int testTable(int *, int *);
+#include "UnitTests.h"
 
 int main() {
+	int total, failed;
+	total = failed = 0;
 	puts("Starting Tests...");
 
-	testTable(&total, &failed);
+	/* TESTS HERE. USER MACROS! */
+	puts("Testing table.h");
+	CALL_TEST(Table, total, failed);
 
-	puts("Done. Seed the above output for more details.");
-}
+	puts("Testing utils.h");
+	CALL_TEST(Utils, total, failed);
 
-int testTable(int *total, int *failed) {
-	/* Initialize */
-	table t0, t1, t2;
-	t0 = t1 = t2 = NULL;
-	/* END Initialize */
+	/* END TESTS */
 
-	add_item(t0, )
-
-	return 0;
+	printf("Passed %d/%d.\n", total-failed, total);
+	puts("Done. See the above output for more details.");
 }

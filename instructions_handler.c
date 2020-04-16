@@ -28,7 +28,7 @@ instruction_type find_instruction_from_index(char *string, int index){
 	else if (strcmp(temp, ".string") == 0) {
 		return STRING;
 	}
-	return NONE
+	return NONE;
 }
 
 /* Instruction line processing helper functions */

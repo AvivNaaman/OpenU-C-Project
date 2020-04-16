@@ -22,7 +22,7 @@ int firstpass_analyze_line(char *line, table datas, table codes, table externals
 	if (line[i] == '\n') return FALSE; /* Empty line */
 
 	/* Check if symbol (*:), stages 1.3-1.5 */
-	is_symbol = parse_symbol(line, i, temp);
+	is_symbol = parse_symbol(line);
 
 
 	MOVE_TO_NOT_WHITE(line, i); /* Move to next not-white char */

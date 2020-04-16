@@ -3,7 +3,7 @@
 //
 #include <stdio.h>
 #include "assertions.h"
-
+#include <string.h>
 
 int assert_true(int value, const char *description, int *total, int *failed) {
 	(*total)++;
@@ -42,8 +42,16 @@ int assert_char(char expected, char actual, const char *description, int *total,
 }
 int assert_str(char *expected, char *actual, const char *description, int *total, int *failed){
 	(*total)++;
-	if (expected != actual) {
-		printf("Test FAILED on %s. Expected %s but got %s.", description, expected, actual);
+	if (strcmp(expected, actual) != 0) {
+		printf("Test FAILED on %s. Expected '%s' but got '%s'.\n", description, expected, actual);
+		(*failed)++;
+	}
+}
+
+int assert_null(void *ptr, const char *description, int *total, int *failed) {
+	(*total)++;
+	if (ptr != NULL) {
+		printf("Test FAILED on %s. Pointer *ptr should be NULL.\n", description);
 		(*failed)++;
 	}
 }

@@ -8,3 +8,4 @@ int assert_int(int expected, int actual, const char *description, int *total, in
 int assert_double(double expected, double actual, const char *description, int *total, int *failed);
 int assert_char(char expected, char actual, const char *description, int *total, int *failed);
 int assert_str(char *expected, char *actual, const char *description, int *total, int *failed);
+int assert_null(void *ptr, const char *description, int *total, int *failed);

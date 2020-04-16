@@ -5,9 +5,10 @@ typedef struct entry* table;
 typedef struct entry {
 	/* Next table entry */
 	table *next;
-	/* key (string) and value (int) pair */
+	/* one-word sized value (24bit=3byte) */
 	char value[3];
-	char key[MAX_LINE_LENGTH];
+	/* string key */
+	char key[];
 } table_entry;
 
 /* Adds a new entry to the table. */

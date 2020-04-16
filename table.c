@@ -11,22 +11,10 @@ table add_item(table tab, char key[], int value) {
 
 /* TODO: Documentation */
 
-table_entry *find_by_key(table_entry *table, char *key) {
-	table_entry *temp;
-	/* As long as not end of table */
-	for (temp = table; temp ;temp = temp->next){
-		/* if entry's key equals the key argument, return the pointer to the entry */
-		if (key == temp->key) return temp;
-	}
+table_entry *find_by_key(table tab, char *key) {
 	return NULL;
 }
 
-table_entry *find_by_value(table_entry * table, int value){
-	table_entry *temp;
-	/* As long as not end of table */
-	for (temp = table; temp ;temp = temp->next){
-		/* if entry's value equals the value argument, return the pointer to the entry */
-		if (value == temp->value) return temp;
-	}
+table_entry *find_by_value(table  tab, int value){
 	return NULL;
 }

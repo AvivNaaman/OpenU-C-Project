@@ -1,8 +1,10 @@
-//
-// Created by aviv on 16/04/2020.
-//
 
-#ifndef ASSEMBLER_ASSERTIONS_H
-#define ASSEMBLER_ASSERTIONS_H
+#define SUCCESS 1
+#define FAILURE 0
 
-#endif //ASSEMBLER_ASSERTIONS_H
+int assert_true(int value, const char *description, int *total, int *failed);
+int assert_false(int value, const char *description, int *total, int *failed);
+int assert_int(int expected, int actual, const char *description, int *total, int *failed);
+int assert_double(double expected, double actual, const char *description, int *total, int *failed);
+int assert_char(char expected, char actual, const char *description, int *total, int *failed);
+int assert_str(char *expected, char *actual, const char *description, int *total, int *failed);

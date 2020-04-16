@@ -40,6 +40,12 @@ TEST(Instructions) {
 	assert_str("Nice Tests, Indeed. I like good unit testing!", build_string_from_memory(data_img, 2, temp), "process .string instruction split succeeded for Hullo, World!",total,failed);
 
 	/* process .data instruction */
+	temp = process_data_instruction("LABEL: .data 0,-5,2,76234", 12, data_img, 4); // write 0,-5,2,76 across 4 words of 24bit and return 4:
+	assert_int(4, temp, "process .data instruction count for \"LABEL: .data 0,-5,2,76\"", total, failed);
+	assert_int(0, build_int_from_memory(data_img, 4), "process .data instruction value for \"LABEL: .data 0,-5,2,76\"", total, failed);
+	assert_int(-5, build_int_from_memory(data_img, 5), "process .data instruction value for \"LABEL: .data 0,-5,2,76\"", total, failed);
+	assert_int(2, build_int_from_memory(data_img, 6), "process .data instruction value for \"LABEL: .data 0,-5,2,76\"", total, failed);
+	assert_int(76234, build_int_from_memory(data_img, 7), "process .data instruction value for \"LABEL: .data 0,-5,2,76\"", total, failed);
 }
 
 char *build_string_from_memory(char data_img[], int dc, int length) {
@@ -53,4 +59,12 @@ char *build_string_from_memory(char data_img[], int dc, int length) {
 	}
 	str[j] = '\0'; /* EOS */
 	return str;
+}
+
+int build_int_from_memory(char data_img[], int dc) {
+	int to_return = 0;
+	dc *= 3;
+	to_return |= (data_img[dc] << 16);
+	to_return |= (data_img[dc+1] << 8);
+	to_return |= (data_img[dc+2]);
 }

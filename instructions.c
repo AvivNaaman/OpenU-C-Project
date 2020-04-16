@@ -39,7 +39,6 @@ instruction_type find_instruction_from_index(char *string, int index){
  * */
 int process_string_instruction(char *line, int index, char* data_img, int data_img_indx) {
 	int data_added_counter; /* counts processed chars amount */
-	data_img_indx *= 3; /* We need to find location in char array. each word is 3-byte, char in ansi-c is 1-byte */
 	data_added_counter = 0;
 	MOVE_TO_NOT_WHITE(line, index)
 	if (line[index] == '"') {
@@ -48,7 +47,7 @@ int process_string_instruction(char *line, int index, char* data_img, int data_i
 		for (;line[index] != '"' && line[index] && line[index] != '\n' && line[index] != EOF;index++) {
 			/* ASCII char is 1byte but one word is 3byte. we need to insert 2 zero-bytes, and then the actual data */
 			write_word(data_img, data_img_indx, '\0','\0',line[index]);
-			data_img_indx += 3;
+			data_img_indx++;
 			data_added_counter++; /* counter that will be returned, indicating the number of processed chars */
 		}
 	}
@@ -68,7 +67,7 @@ int process_string_instruction(char *line, int index, char* data_img, int data_i
  * Parses a .data instruction. copies each number value to data_img by dc position, and returns the amount of processed data.
  */
 int process_data_instruction(char *line, int index, char *data_img, int dc) {
-	char temp[80], byte0, byte1, byte2;
+	char temp[80], byte0, byte1, byte2, *temp_ptr;
 	int i, curr_val, data_counter;
 	data_counter = 0;
 	do {
@@ -82,19 +81,14 @@ int process_data_instruction(char *line, int index, char *data_img, int dc) {
 			printf("Error: line : expected number after .data instruction (got %s)", temp);
 			return FALSE;
 		}
-		curr_val = atoi(temp);
 		/* Now let's write to data buffer */
-		byte0 = (curr_val >> 16) & 0xFF;
-		byte1 = (curr_val >> 8) & 0xFF;
-		byte2 = curr_val & 0xFF;
-		write_word(data_img, dc, byte0, byte1, byte2);
+		temp_ptr = int_to_word(atoi(temp));
+		write_word(data_img, dc+data_counter, temp_ptr[0], temp_ptr[1], temp_ptr[2]); /* TODO: Free allocated data for temp_ptr! */
 		data_counter++; /* a word was written right now */
 		MOVE_TO_NOT_WHITE(line, index)
-		if (line[index] != '\n' && line[index] != EOF && line[index] != ',') {
-			/* We're after parsed number, after all white chars but no comma or end of line. */
-			/* TODO: Error, Unexpected char or something */
-			fprintf(stderr, "Error: line : expected comma separation between integers (char '%c')", line[index]);
-		}
+		/* TODO: Some error if something (Think!) */
+		if (line[index] == ',') index++;
+		else if (!line[index] || line[index] == '\n' || line[index] == EOF) break; /* End of line/file/string => nothing to process anymore */
 	} while (line[index] != '\n' && line[index] != EOF);
 	return data_counter;
 }

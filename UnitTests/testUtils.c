@@ -30,7 +30,7 @@ TEST(Utils) {
 	assert_char(0x50, buff[0], "Write word 0x505050 to buff[0]", total, failed);
 	assert_char(0x50, buff[1], "Write word 0x505050 to buff[0]", total, failed);
 	assert_char(0x50, buff[2], "Write word 0x505050 to buff[0]", total, failed);
-	write_word(buff, 3, 0x60,0x60,0x60);
+	write_word(buff, 1, 0x60,0x60,0x60);
 	assert_char(0x50, buff[0], "Write word 0x505050 to buff[0], 0x606060 to buff[3]", total, failed);
 	assert_char(0x50, buff[1], "Write word 0x505050 to buff[0], 0x606060 to buff[3]", total, failed);
 	assert_char(0x50, buff[2], "Write word 0x505050 to buff[0], 0x606060 to buff[3]", total, failed);

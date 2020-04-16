@@ -41,15 +41,17 @@ char *parse_symbol(char *line) {
 
 
 /* Writes a 24-bit word to a buffer in the specified index */
-void write_word(char *buffer, int index, char byte0, char byte1, char byte2) {
-	buffer[index++] = byte0;
-	buffer[index++] = byte1;
-	buffer[index] = byte2;
+void write_word(char *buffer, int dc, char byte0, char byte1, char byte2) {
+	dc *= 3; /* TODO explain! */
+	buffer[dc++] = byte0;
+	buffer[dc++] = byte1;
+	buffer[dc] = byte2;
 }
 
 int is_int(char *string) {
-	int i;
-	for (i = 0; string[i]; i++) {
+	int i = 0;
+	if (string[0] == '-' || string[0] == '+') i++; /* if string starts with +/-, it's OK */
+	for (; string[i]; i++) { /* Just make sure that everything is a digit until the end */
 		if (!isdigit(string[i])) {
 			return FALSE;
 		}

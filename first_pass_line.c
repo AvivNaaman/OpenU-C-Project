@@ -1,8 +1,5 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <ctype.h>
 #include "first_pass_line.h"
-#include "globals.h"
+#include "utils.h"
 #include "instructions_handler.h"
 
 /*

@@ -1,4 +1,4 @@
-#include "globals.h"
+#include "utils.h"
 /* pointer to table  */
 typedef struct entry* table;
 /* Single table entry */

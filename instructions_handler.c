@@ -1,6 +1,6 @@
 #include "instructions_handler.h"
 #include <string.h>
-#include "globals.h"
+#include "utils.h"
 #include "utils.h"
 
 /* Returns the first instruction from the specified index. if no such one, returns NONE */

@@ -1,5 +1,4 @@
 #include "utils.h"
-#include "globals.h"
 #include <ctype.h>
 
 /* Returns whether a string contains a symbol from a certain index. copies the symbol (if exists) to the string argument */

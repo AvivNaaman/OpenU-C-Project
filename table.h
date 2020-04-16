@@ -1,3 +1,4 @@
+#include "globals.h"
 /* pointer to table  */
 typedef struct entry* table;
 /* Single table entry */
@@ -5,8 +6,8 @@ typedef struct entry {
 	/* Next table entry */
 	table *next;
 	/* key (string) and value (int) pair */
-	char key[];
-	int value;
+	char value[3];
+	char key[MAX_LINE_LENGTH];
 } table_entry;
 
 /* Adds a new entry to the table. */

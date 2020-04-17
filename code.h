@@ -1,14 +1,16 @@
 /* Represents an allowed addressing type */
-typedef enum addressing_types_ARE {
+typedef enum addressing_types {
 	/* Immediate addressing (0) */
-	IMMEDIATE = 1 << 2, /* |1|0|0| */
+	IMMEDIATE = 0,
 	/* Direct addressing (1) */
-	DIRECT = 1, /* |0|0|1| */
+	DIRECT = 1,
 	/* Relative addressing (2) */
-	RELATIVE = (1 << 2), /* |1|0|0| */
-	/* command word's are is defaulted to |1|0|0| */
-	COMMAND = 1 << 2
-} addressing_types_ARE ;
+	RELATIVE = 2,
+	/* address via register*/
+	REG = 3,
+	/*illegal addressing type*/
+	ILLEAGEL_ADDRESS = 4
+} addressing_types ;
 
 /* definition for each command opcode */
 typedef enum opcode {
@@ -36,7 +38,6 @@ typedef enum opcode {
 
 	NONE_OP = -1
 } opcode;
-
 /* definition for the value of funct, for different commands with same names */
 typedef enum funct {
 	/* OPCODE 2 */
@@ -56,7 +57,16 @@ typedef enum funct {
 
 	NONE_FUNCT = -1
 } funct;
-
+typedef enum registers{
+    r0 = 0,
+    r1,
+    r2,
+    r3,
+    r4,
+    r5,
+    r6,
+    r7
+}registers;
 /* Represents a single code word */
 typedef struct code_word {
 	/* First byte: ARE+funct */
@@ -82,6 +92,17 @@ typedef struct data_word {
 } data_word;
 
 /* Processes a code line in first pass */
+/*first parameter is the line and second parameter is the code img*/
 int process_code(char *line, int i);
 /* Puts the opcode and the funct values inside the arguments by the name of the command */
 void get_opcode_func(char* cmd, opcode *opcode_out, funct *funct_out);
+/*checks addressing type*/
+int check_type(char *operand);
+/*check if addressing type is through register*/
+int is_register(char *operand);
+/*check if addressing type is direct*/
+int is_direct(char *operand);
+/*check if addressing type is immediate*/
+int is_immediate(char  *operand);
+/*check if addressing type is relative*/
+int is_relative(char *operand);

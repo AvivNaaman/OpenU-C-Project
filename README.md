@@ -1,5 +1,7 @@
 ### directory structure
-1. assembler.c - main function definition
-2. processfile.c - contains methods for processing a single file
-3. first_pass_line - contains methods for processing a single line in the first pass
-4. globals.h contains some useful global definitions
+1. assembler.c - main function definition, argv & argc processing
+2. processfile.c - processing of single file
+3. firstpass.c - first pass methods for processing single line
+4. utils.c - contains common functions & tools
+5. table.c - contains definition of a basic table data structure
+6. instructions.c - contains methods for processing an instruction (.data, .string, etc.)

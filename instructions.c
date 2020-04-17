@@ -49,7 +49,7 @@ int process_string_instruction(char *line, int index, char* data_img, int data_i
 			write_word(data_img, data_img_indx, '\0','\0',line[index]);
 			data_img_indx++;
 			data_added_counter++; /* counter that will be returned, indicating the number of processed chars */
-		}
+		} /* TODO: Error when no second " at the end! */
 	}
 	else {
 		/* something like: 'LABEL: .string  hello, world\n' - the string isn't surrounded with "" */

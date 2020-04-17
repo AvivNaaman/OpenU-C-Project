@@ -55,3 +55,11 @@ int assert_null(void *ptr, const char *description, int *total, int *failed) {
 		(*failed)++;
 	}
 }
+
+int assert_word(char *expected, char *actual, const char *description, int *total, int *failed) {
+	(*total)++;
+	if (expected[0] != actual[0] || expected[1] != actual[1] || expected[2] != actual[2]) {
+		printf("\nASSERTION FAILED! on %s. should be %d,%d,%d but got %d,%d,%d",description,expected[0],expected[1],expected[2],actual[0],actual[1],actual[2]);
+		(*failed)++;
+	}
+}

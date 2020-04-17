@@ -48,4 +48,31 @@ typedef enum funct {
 	JSR__FUNCT = 3
 } funct;
 
+/* Represents a single code word */
+typedef struct code_word {
+	/* First byte: ARE+funct */
+	char A:1;
+	char R:1;
+	char E:1;
+	char funct:5;
+	/* Second byte: destination+addressing, source */
+	char dest_register:3;
+	char dest_addressing:2;
+	char src_register:3;
+	/* Third byte: source addressing, opcode */
+	char src_addressing:2;
+	char opcode: 6;
+} code_word;
+
+/* Represents a single data word. */
+typedef struct data_word {
+	char A:1;
+	char R:1;
+	char E:1;
+	/* The data content itself (a method for putting data into these field is defined) */
+	char data0:5;
+	char data1:8;
+	char data2:8;
+
+} data_word;
 int process_code(char *line, int i);

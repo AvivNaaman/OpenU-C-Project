@@ -5,27 +5,57 @@
 
 
 int process_code(char *line, int i) {
-	char temp[80];
+	char operation[80];
+	char operands[2][80]; /* 2 strings, each for operand */
 	opcode curr_opcode;
 	funct curr_funct;
 	code_word *curr_code; /* current code word */
-	int j;
+	int j, operand_count;
 	/* Skip white chars */
 	MOVE_TO_NOT_WHITE(line, i)
 
 	for (j = 0;line[i] && line[i] != '\t' && line[i] != ' ' && line[i] != '\n' && line[i] != EOF; i++,j++) {
-		temp[j] = line[i];
+		operation[j] = line[i];
 	}
-	temp[j] = '\0'; /* End of string */
+	operation[j] = '\0'; /* End of string */
 
 	/* Get opcode & funct by command name into curr_opcode/curr_funct */
-	get_opcode_func(temp, &curr_opcode, &curr_funct);
+	get_opcode_func(operation, &curr_opcode, &curr_funct);
 	/* If invalid operation, print and skip processing the line. */
 	if (curr_opcode == NONE_OP) {
-		printf("Unrecognized instruction: %s.", temp);
+		printf("Unrecognized instruction: %s.", operation);
 		return TRUE;
 	}
 
+	/* Analyze operands */
+	MOVE_TO_NOT_WHITE(line, i)
+	/* until no too many operands (max of 2) and it's not the end of the line */
+	for (operand_count = 0; line[i] != EOF && line[i] != '\n'; operand_count++) {
+		if (operand_count == 2) /* =We already got 2 operands in, this is the 3rd! */ {
+			printf("Too many operands for operation %s", operation);
+			return TRUE;
+		}
+		/* as long we're still on same operand */ /* TODO: Validate chars of operand */
+		for (j = 0;line[i] && line[i] != '\t' && line[i] != ' ' && line[i] != '\n' && line[i] != EOF; i++,j++) {
+			operands[operand_count][j] = line[i];
+		}
+		MOVE_TO_NOT_WHITE(line,i)
+		if (line[i] == '\n' || line[i] == EOF) break;
+		else if (line[i] != ',') { /* TODO: Error about unexpected character */
+			/* After operand & after white chars there's something that isn't ',' or end of line.. */
+			printf("Error: Expecting ',' between operands (got '%c')", line[i]);
+			return TRUE;
+		}
+		i++;
+		MOVE_TO_NOT_WHITE(line, i);
+		/* if there was just a comma, then (optionally) white char(s) and then end of line */
+		if (line[i] == '\n' || line[i] == EOF) printf("Error: missing operand after comma");
+		else if (line[i] == ',') printf("Error: Multiple consecutive commas");
+		else continue; /* No errors, continue */
+		return TRUE; /* return that errors found */
+	}
+
+	/*  */
 
 }
 

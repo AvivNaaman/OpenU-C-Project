@@ -13,7 +13,7 @@ void process_file(char *filename) {
 	/* We'll use multiple symbol tables, for each symbol type: .data, .code, .ext, .ent */
 	table data_table, code_table, ext_table, ent_table;
 
-	filedes = fopen(filename, "r");
+	filedes = fopen(filename, "r"); /* TODO: The filename, passed from command line args, shouldn't contain extension! it should be added here! */
 	if (filedes == NULL) {
 		/* if file couldn't be opened, write to stderr. */
 		printf("Error: Can't open file \"%s\" for reading.", filename);

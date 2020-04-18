@@ -10,7 +10,6 @@ int process_code(char *line, int i) {
     char operands[2][80]; /* 2 strings, each for operand */
     opcode curr_opcode;
     funct curr_funct;
-    code_word *curr_code; /* current code word */
     int j, operand_count;
     /* Skip white chars */
     MOVE_TO_NOT_WHITE(line, i)
@@ -74,7 +73,7 @@ int process_code(char *line, int i) {
         }
         /*if opcode is 5 or 12*/
         if ((curr_opcode >= CLR_OP && curr_opcode <= DEC_OP) || curr_opcode == RED_OP) {
-            addressing_types type = check_type(operands[1]);
+            addressing_type type = check_type(operands[1]);
             if (!(REG == type || DIRECT == type)) {
                 printf("Error: illegal addressing type");
                 return TRUE;
@@ -82,7 +81,7 @@ int process_code(char *line, int i) {
         }
             /*if opcode is 9*/
         else if (curr_opcode >= JMP_OP && curr_opcode <= JSR_OP) {
-            addressing_types type = check_type(operands[1]);
+            addressing_type type = check_type(operands[1]);
             if (!(RELATIVE == type || DIRECT == type)) {
                 printf("Error: illegal addressing type");
                 return TRUE;
@@ -90,7 +89,7 @@ int process_code(char *line, int i) {
         }
             /*opcode is 13*/
         else {
-            addressing_types type = check_type(operands[1]);
+            addressing_type type = check_type(operands[1]);
             if (!(IMMEDIATE == type || DIRECT == type) || REG == type) {
                 printf("Error: illegal addressing type");
                 return TRUE;
@@ -100,11 +99,11 @@ int process_code(char *line, int i) {
     }
         /*opcode belongs to first  group*/
     else {
+	    addressing_type type1, type2;
         if (operand_count != 2) {
             printf("Error: To many operands");
             return TRUE;
         }
-        addressing_types type1, type2;
         type1 = check_type(operands[1]);
         type2 = check_type(operands[2]);
         /* if opcode is 0*/
@@ -178,7 +177,7 @@ void get_opcode_func(char *cmd, opcode *opcode_out, funct *funct_out) {
         *funct_out = BNE_FUNCT;
     } else if (strcmp(cmd, "jsr") == 0) {
         *opcode_out = JSR_OP;
-        *funct_out = JSR_FUNCT
+        *funct_out = JSR_FUNCT;
     } else if (strcmp(cmd, "red") == 0) {
         *opcode_out = RED_OP;
     } else if (strcmp(cmd, "prn") == 0) {
@@ -190,7 +189,7 @@ void get_opcode_func(char *cmd, opcode *opcode_out, funct *funct_out) {
     } else *opcode_out = NONE_OP; /* Not found! */
 }
 
-int check_type(char *operand) {
+addressing_type check_type(char *operand) {
     if (is_register(operand)) return REG;
     else if (is_immediate(operand)) return IMMEDIATE;
     else if (is_direct(operand)) return DIRECT;
@@ -210,7 +209,7 @@ int is_register(char *operand) {
 }
 
 int is_immediate(char *operand) {
-    int i, flag = FALSE;
+    int flag = FALSE;
     /*in immediate addressing first char is #*/
     if (operand[0] == '#') {
         operand++;

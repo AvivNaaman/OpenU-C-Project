@@ -2,11 +2,10 @@
 #include <stdlib.h>
 #include "processfile.h"
 #include "utils.h" /* constants */
-#include "firstpass.h"
-
+#include "processline.h"
 /* Fully processes the assembly file, and writing all the associated files. Returns whether succeeded. */
 void process_file(char *filename) {
-	int i, ic, dc, iserror;
+	int ic, dc, iserror;
 	char temp_line[MAX_LINE_LENGTH+1]; /* temporary string for storing line, read from file */
 	FILE *filedes; /* Current assembly file descriptor to process */
 	char code_img[CODE_ARR_IMG_LENGTH], data_img[CODE_ARR_IMG_LENGTH]; /* Contains an image of the machine code */
@@ -27,7 +26,7 @@ void process_file(char *filename) {
 	/* File opened successfully, start first pass: */
 	while (!feof(filedes)) {
 		fgets(temp_line, MAX_LINE_LENGTH, filedes); /* Get line */ /* TODO Make sure pointer to pointer to struct is sent in table arguments! */
-		iserror = iserror || process_line_fpass(temp_line, data_table, code_table, ext_table, &ic, &dc, code_img, data_img, filename);
+		iserror = iserror || process_line_fpass(temp_line, &data_table, &code_table, &ext_table, &ic, &dc, code_img, data_img, filename);
 	}
 	if (iserror) {
 		printf("Assemble of the file %s stopped.\n", filename);
@@ -38,7 +37,7 @@ void process_file(char *filename) {
 	rewind(filedes); /* Reread the file from the beginning */
 	while (!feof(filedes)) {
 		fgets(temp_line, MAX_LINE_LENGTH, filedes); /* Get line */ /* TODO: Implement */
-		iserror = iserror || process_line_spass(temp_line,ent_table, code_table, &ic, ext_table, data_table, code_table);
+		iserror = iserror || process_line_spass(temp_line, &ent_table, &code_table, &ic, ext_table, data_table);
 	}
 	/* Everything was done. Write outputs to *filename.ob/.ext/.ent */
 }

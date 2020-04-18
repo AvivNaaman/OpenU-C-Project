@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "utils.h"
-#include "utils.h"
 
 /* Returns the first instruction from the specified index. if no such one, returns NONE */
 instruction_type find_instruction_from_index(char *string, int index){
@@ -67,8 +66,8 @@ int process_string_instruction(char *line, int index, char* data_img, int data_i
  * Parses a .data instruction. copies each number value to data_img by dc position, and returns the amount of processed data.
  */
 int process_data_instruction(char *line, int index, char *data_img, int dc) {
-	char temp[80], byte0, byte1, byte2, *temp_ptr;
-	int i, curr_val, data_counter;
+	char temp[80], *temp_ptr;
+	int i, data_counter;
 	data_counter = 0;
 	do {
 		MOVE_TO_NOT_WHITE(line, index)

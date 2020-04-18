@@ -10,7 +10,7 @@ typedef enum addressing_types {
 	REG = 3,
 	/*illegal addressing type*/
 	ILLEAGEL_ADDRESS = 4
-} addressing_types ;
+} addressing_type ;
 
 /* definition for each command opcode */
 typedef enum opcode {
@@ -70,25 +70,22 @@ typedef enum registers{
 /* Represents a single code word */
 typedef struct code_word {
 	/* First byte: ARE+funct */
-	char ARE:3;
-	char funct:5;
+	int ARE:3;
+	int funct:5;
 	/* Second byte: destination+addressing, source */
-	char dest_register:3;
-	char dest_addressing:2;
-	char src_register:3;
+	int dest_register:3;
+	int dest_addressing:2;
+	int src_register:3;
 	/* Third byte: source addressing, opcode */
-	char src_addressing:2;
-	char opcode: 6;
+	int src_addressing:2;
+	int opcode: 6;
 } code_word;
 
 /* Represents a single data word. */
 typedef struct data_word {
-	char ARE:3;
+	int ARE:3;
 	/* The data content itself (a method for putting data into these field is defined) */
-	char data0:5;
-	char data1:8;
-	char data2:8;
-
+	int data:21;
 } data_word;
 
 /* Processes a code line in first pass */
@@ -97,7 +94,7 @@ int process_code(char *line, int i);
 /* Puts the opcode and the funct values inside the arguments by the name of the command */
 void get_opcode_func(char* cmd, opcode *opcode_out, funct *funct_out);
 /*checks addressing type*/
-int check_type(char *operand);
+addressing_type check_type(char *operand);
 /*check if addressing type is through register*/
 int is_register(char *operand);
 /*check if addressing type is direct*/

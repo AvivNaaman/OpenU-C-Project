@@ -1,7 +1,8 @@
+/* Contains a method for processing a line in the first pass and another for processing a line in the second pass. */
 #include <stdio.h>
-#include "firstpass.h"
-#include "utils.h"
+#include "processline.h"
 #include "instructions.h"
+#include "code.h"
 
 /*
  * processes a single instruction line. returns whether an error occurred.
@@ -12,12 +13,12 @@
  * code_img - the code image array.
  * data_img - the data image array.
  */
-int process_line_fpass(char *line, table *datas, table *codes, table *externals, int *IC, int *DC, char *code_img,
+bool process_line_fpass(char *line, table *datas, table *codes, table *externals, int *IC, int *DC, char *code_img,
                        char *data_img, char *filename) {
 	int i;
-	int is_symbol;
 	char temp[80];
 	char *symbol;
+	instruction_type instruction;
 	/* TODO: implement */
 
 	i = 0;
@@ -32,7 +33,7 @@ int process_line_fpass(char *line, table *datas, table *codes, table *externals,
 	MOVE_TO_NOT_WHITE(line, i) /* Move to next not-white char */
 
 	/* Check if it's an instruction (starting with '.') */
-	instruction_type instruction = find_instruction_from_index(line, i);
+	instruction = find_instruction_from_index(line, i);
 
 	MOVE_TO_NOT_WHITE(line, i);
 
@@ -59,7 +60,12 @@ int process_line_fpass(char *line, table *datas, table *codes, table *externals,
 		if (symbol != NULL)
 			add_table_item(codes, temp, *IC);
 		/* Analyze code */
-		process_code(line, i,code_img)
+		process_code(line, i); /* TODO: Shouldn't it encode into memory?! */
 	}
 	return FALSE;
+}
+
+bool process_line_spass(char *line, table *ent_table, table *code_table, int *ic, table ext_table, table data_table) {
+	/* Todo: Implement */
+	return TRUE;
 }

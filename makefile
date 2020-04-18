@@ -1,6 +1,6 @@
 # final executable compilation & linkage
-assembler: assembler.o processfile.o instructions.o table.o firstpass.o utils.o
-	gcc -g assembler.o processfile.o instructions.o table.o firstpass.o utils.o -ansi -Wall -pedantic -o assembler
+assembler: assembler.o processfile.o instructions.o table.o processline.o utils.o code.o
+	gcc -g assembler.o processfile.o instructions.o table.o processline.o utils.o code.o -ansi -Wall -pedantic -o assembler
 
 
 # modules (sorted by importancy):
@@ -14,8 +14,8 @@ processfile.o: processfile.c processfile.h
 
 
 ## first pass module
-firstpass.o: firstpass.c firstpass.h instructions.h
-	gcc -c firstpass.c -ansi -Wall -pedantic -o firstpass.o
+processline.o: processline.c processline.h instructions.h code.h
+	gcc -c processline.c -ansi -Wall -pedantic -o processline.o
 
 ## symbol table module
 table.o: table.c table.h
@@ -24,6 +24,9 @@ table.o: table.c table.h
 ## instructions helper function module
 instructions.o: instructions.c instructions.h utils.h
 	gcc -c instructions.c -ansi -Wall -pedantic -o instructions.o
+
+code.o: code.c code.h
+	gcc -c code.c -ansi -Wall -pedantic -o code.o
 
 ## common function & definitions module
 utils.o: utils.c utils.h

@@ -6,8 +6,8 @@ add_subdirectory(UnitTests)
 # Default CLion generated
 project(mmn14 C)
 add_executable(mmn14 assembler.c processfile.c processfile.h
-		table.c table.h firstpass.c firstpass.h
-		instructions.c instructions.h utils.c utils.h code.c code.h)
+		table.c table.h
+		instructions.c instructions.h utils.c utils.h code.c code.h processline.c processline.h)
 ## math library, gcc option -lm
 target_link_libraries(mmn14 m)
 

@@ -1,6 +1,7 @@
 /* Booleans */
-#define TRUE 1
-#define FALSE 0
+typedef enum booleans {
+	FALSE = 0, TRUE =1
+} bool;
 
 /* Maximum size of machine code array - provides at least 200 code lines in *.as file */
 #define CODE_ARR_IMG_LENGTH 1200

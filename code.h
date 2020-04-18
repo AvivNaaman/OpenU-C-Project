@@ -1,3 +1,4 @@
+#include "utils.h"
 /* Represents an allowed addressing type */
 typedef enum addressing_types {
 	/* Immediate addressing (0) */
@@ -7,13 +8,13 @@ typedef enum addressing_types {
 	/* Relative addressing (2) */
 	RELATIVE = 2,
 	/* address via register*/
-	REG = 3,
-	/*illegal addressing type*/
-	ILLEAGEL_ADDRESS = 4
+	REGISTER = 3,
+	NONE_ADDR = -1
 } addressing_type ;
 
 /* definition for each command opcode */
 typedef enum opcode {
+	/* First Group */
 	MOV_OP = 0,
 	CMP_OP = 1,
 
@@ -21,7 +22,9 @@ typedef enum opcode {
 	SUB_OP = 2,
 
 	LEA_OP = 4,
+	/* END First Group */
 
+	/* Second Group */
 	CLR_OP = 5,
 	NOT_OP = 5,
 	INC_OP = 5,
@@ -33,9 +36,14 @@ typedef enum opcode {
 
 	RED_OP = 12,
 	PRN_OP = 13,
+	/* END Second Group */
+
+	/* Third Group */
 	RTS_OP = 14,
 	STOP_OP = 15,
+	/* END Third Group */
 
+	/* Failed flag (=no op detected) */
 	NONE_OP = -1
 } opcode;
 /* definition for the value of funct, for different commands with same names */
@@ -72,7 +80,7 @@ typedef struct code_word {
 	/* First byte: ARE+funct */
 	int ARE:3;
 	int funct:5;
-	/* Second byte: destination+addressing, source */
+	/* Seccheck_operand_addressings(addressing_type op1_addressing, addressing_type op2_addressing, int op1_valid_addr_count, int op2_valid_addr_count,...)ond byte: destination+addressing, source */
 	int dest_register:3;
 	int dest_addressing:2;
 	int src_register:3;
@@ -96,10 +104,14 @@ void get_opcode_func(char* cmd, opcode *opcode_out, funct *funct_out);
 /*checks addressing type*/
 addressing_type check_type(char *operand);
 /*check if addressing type is through register*/
-int is_register(char *operand);
+bool is_register(char *operand);
 /*check if addressing type is direct*/
-int is_direct(char *operand);
+bool is_direct(char *operand);
 /*check if addressing type is immediate*/
-int is_immediate(char  *operand);
+bool is_immediate(char  *operand);
 /*check if addressing type is relative*/
-int is_relative(char *operand);
+bool is_relative(char *operand);
+
+code_word *get_code_word(opcode curr_opcode, funct curr_funct, int op_count, char **operands);
+
+bool check_operand_addressings(addressing_type op1_addressing, addressing_type op2_addressing, int op1_valid_addr_count, int op2_valid_addr_count,...);

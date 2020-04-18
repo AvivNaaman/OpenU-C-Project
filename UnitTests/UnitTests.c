@@ -21,6 +21,7 @@ int main() {
 	puts("Testing code.h");
 	CALL_TEST(Code, total, failed);
 
+
 	/* END TESTS */
 
 	printf("\nPassed %d/%d.\n", total-failed, total);

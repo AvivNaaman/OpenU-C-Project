@@ -259,8 +259,8 @@ bool validate_op_addr(addressing_type op1_addressing, addressing_type op2_addres
                       int op2_valid_addr_count, ...) {
 	bool is_valid;
 	va_list list;
-	addressing_type op1_0, op1_1, op1_2, op2_0, op2_1, op2_2; /* valid addressing types for each operand */
-	op1_0 = op1_1 = op1_2 = op2_0 = op2_1 = op2_2 = NONE_ADDR;
+	addressing_type op1_0, op1_1, op1_2, op1_3, op2_0, op2_1, op2_2, op2_3; /* valid addressing types for each operand */
+	op1_0 = op1_1 = op1_2 = op1_3 = op2_0 = op2_1 = op2_2 = op2_3 = NONE_ADDR;
 	va_start(list, op2_valid_addr_count);
 	/* Put the valid addressing types in the op[1|2]_[0|1|2] varriables, using va_arg (we user the count operand to determine how many arguments are sent */
 	if (op1_valid_addr_count >= 1) {
@@ -291,15 +291,19 @@ bool validate_op_addr(addressing_type op1_addressing, addressing_type op2_addres
 	va_end(list);
 	is_valid = TRUE;
 	/* if operand addressing is not valid, print error */
-	if (!((op1_valid_addr_count > 0 && op1_0 == op1_addressing) ||
-	      (op1_valid_addr_count > 1 && op1_1 == op1_addressing) ||
-	      (op1_valid_addr_count > 2 && op1_2 == op1_addressing))) {
+	if (!((op1_valid_addr_count == 0 && op1_addressing == NONE_ADDR) ||
+	(op1_valid_addr_count > 0 && op1_0 == op1_addressing) ||
+	(op1_valid_addr_count > 1 && op1_1 == op1_addressing)||
+	(op1_valid_addr_count > 2 && op1_2 == op1_addressing) ||
+	(op1_valid_addr_count > 3 && op1_3 == op1_addressing))) {
 		printf("Error: invalid addressing mode for first operand");
 		is_valid = FALSE;
 	}
-	if (!((op2_valid_addr_count > 0 && op2_0 == op2_addressing) ||
-	      (op2_valid_addr_count > 1 && op2_1 == op2_addressing) ||
-	      (op2_valid_addr_count > 2 && op2_2 == op2_addressing))) {
+	if (!((op2_valid_addr_count == 0 && op2_addressing == NONE_ADDR) ||
+	    (op2_valid_addr_count > 0 && op2_0 == op2_addressing) ||
+	    (op2_valid_addr_count > 1 && op2_1 == op2_addressing)||
+	    (op2_valid_addr_count > 2 && op2_2 == op2_addressing) ||
+	    (op2_valid_addr_count > 3 && op2_3 == op2_addressing))) {
 		printf("Error: invalid addressing mode for second operand");
 		is_valid = FALSE;
 	}

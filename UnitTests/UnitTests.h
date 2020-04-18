@@ -8,4 +8,6 @@ TEST(Instructions);
 TEST(Code);
 TEST(Code_GetOpCodeFunc);
 TEST(Code_GetAddrType);
+TEST(Code_GetCodeWord);
+TEST(Code_ValidateOp);
 /**/

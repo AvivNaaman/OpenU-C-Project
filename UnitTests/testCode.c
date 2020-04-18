@@ -8,6 +8,8 @@
 TEST(Code) {
 	CALL_TEST(Code_GetOpCodeFunc, *total, *failed)
 	CALL_TEST(Code_GetAddrType, *total, *failed)
+	CALL_TEST(Code_GetCodeWord, *total, *failed);
+	CALL_TEST(Code_ValidateOp, *total, *failed);
 
 }
 
@@ -122,3 +124,42 @@ TEST(Code_GetAddrType) {
 	assert_int(NONE_ADDR, get_addressing_type("label:"), "get addressing type label", total, failed);
 	assert_int(NONE_ADDR, get_addressing_type(":label"), "get addressing type label", total, failed);
 }
+
+TEST(Code_GetCodeWord) {
+	code_word *codeword;
+	char **operands;
+}
+
+
+TEST(Code_ValidateOp) {
+	assert_true(validate_op_addr(REGISTER, RELATIVE, 4,4,REGISTER,RELATIVE,IMMEDIATE,DIRECT,REGISTER,RELATIVE,IMMEDIATE,DIRECT),"validate operatrion register,relative,4,4",total,failed);
+	assert_true(validate_op_addr(REGISTER,NONE_ADDR,4,0,REGISTER,RELATIVE,IMMEDIATE,DIRECT),"validate operation register 4,0,everything", total, failed);
+	assert_true(validate_op_addr(REGISTER,NONE_ADDR,4,0,DIRECT,RELATIVE,IMMEDIATE,REGISTER),"validate operation addressing REGISTER TO ALL RESGISTER LAST",total,failed);
+	assert_false(validate_op_addr(REGISTER,REGISTER,3,3,DIRECT,RELATIVE,IMMEDIATE,DIRECT,RELATIVE,IMMEDIATE),"validate operation addressing that is not here double REGISTER",total,failed);
+	assert_false(validate_op_addr(RELATIVE,NONE_ADDR,2,0,IMMEDIATE,REGISTER),"",total,failed);
+	assert_false(validate_op_addr(DIRECT,NONE_ADDR,3,0,IMMEDIATE,REGISTER,RELATIVE),"",total,failed);
+	assert_false(validate_op_addr(IMMEDIATE,NONE_ADDR,3,0,REGISTER,DIRECT,RELATIVE),"",total,failed);
+	assert_false(validate_op_addr(REGISTER,NONE_ADDR,3,0,IMMEDIATE,DIRECT,RELATIVE),"",total,failed);
+
+	assert_false(validate_op_addr(REGISTER,REGISTER,3,3,IMMEDIATE,DIRECT,RELATIVE,IMMEDIATE,DIRECT,RELATIVE),"",total,failed);
+	assert_false(validate_op_addr(REGISTER,DIRECT,3,3,IMMEDIATE,DIRECT,RELATIVE,IMMEDIATE,REGISTER,RELATIVE),"",total,failed);
+	assert_false(validate_op_addr(REGISTER,RELATIVE,3,3,IMMEDIATE,DIRECT,RELATIVE,IMMEDIATE,DIRECT,REGISTER),"",total,failed);
+	assert_false(validate_op_addr(REGISTER,IMMEDIATE,3,3,IMMEDIATE,DIRECT,RELATIVE,REGISTER,DIRECT,RELATIVE),"",total,failed);
+
+	assert_false(validate_op_addr(DIRECT,REGISTER,3,3,IMMEDIATE,REGISTER,RELATIVE,IMMEDIATE,DIRECT,RELATIVE),"",total,failed);
+	assert_false(validate_op_addr(DIRECT,IMMEDIATE,3,3,IMMEDIATE,REGISTER,RELATIVE,REGISTER,DIRECT,RELATIVE),"",total,failed);
+	assert_false(validate_op_addr(DIRECT,DIRECT,3,3,IMMEDIATE,REGISTER,RELATIVE,IMMEDIATE,REGISTER,RELATIVE),"",total,failed);
+	assert_false(validate_op_addr(DIRECT,RELATIVE,3,3,IMMEDIATE,REGISTER,RELATIVE,IMMEDIATE,DIRECT,REGISTER),"",total,failed);
+
+	assert_false(validate_op_addr(IMMEDIATE,REGISTER,3,3,DIRECT,REGISTER,RELATIVE,IMMEDIATE,DIRECT,RELATIVE),"",total,failed);
+	assert_false(validate_op_addr(IMMEDIATE,IMMEDIATE,3,3,DIRECT,REGISTER,RELATIVE,REGISTER,DIRECT,RELATIVE),"",total,failed);
+	assert_false(validate_op_addr(IMMEDIATE,DIRECT,3,3,DIRECT,REGISTER,RELATIVE,IMMEDIATE,REGISTER,RELATIVE),"",total,failed);
+	assert_false(validate_op_addr(IMMEDIATE,RELATIVE,3,3,DIRECT,REGISTER,RELATIVE,IMMEDIATE,DIRECT,REGISTER),"",total,failed);
+
+	assert_false(validate_op_addr(RELATIVE,REGISTER,3,3,IMMEDIATE,REGISTER,DIRECT,IMMEDIATE,DIRECT,RELATIVE),"",total,failed);
+	assert_false(validate_op_addr(RELATIVE,IMMEDIATE,3,3,IMMEDIATE,REGISTER,DIRECT,REGISTER,DIRECT,RELATIVE),"",total,failed);
+	assert_false(validate_op_addr(RELATIVE,DIRECT,3,3,IMMEDIATE,REGISTER,DIRECT,IMMEDIATE,REGISTER,RELATIVE),"",total,failed);
+	assert_false(validate_op_addr(RELATIVE,RELATIVE,3,3,IMMEDIATE,REGISTER,DIRECT,IMMEDIATE,DIRECT,REGISTER),"",total,failed);
+
+}
+

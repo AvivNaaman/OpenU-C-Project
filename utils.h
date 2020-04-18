@@ -20,7 +20,7 @@ char *parse_symbol(char *line);
 /* Writes 2 bytes in order to buffer from index */
 void write_word(char* buffer, int index, char byte0, char byte1, char byte2);
 
-/* TODO: DOC */
+/* Returns TRUE if the string is int */
 int is_int(char* string);
 
 /* Returns a 3-byte array that contains the lower 24byte content of the argument. */
@@ -28,3 +28,12 @@ char *int_to_word(int);
 
 /* allocates a memory block in length of size argument. returns NULL if failed, and prints error if failed. */
 void *malloc_with_check(long size);
+
+/*Returns true if the string is legal label name*/
+int is_legal_label(char* string);
+
+/*Returns TRUE if string contains non alphanumeric chars*/
+int is_contain_non_alphanumeric(char *string);
+
+/*Returns TRUE if string is saved word*/
+int is_saved_word(char *string);

@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "processfile.h"
 #include "processline.h"
+#include "utils.h"
 /* Fully processes the assembly file, and writing all the associated files. Returns whether succeeded. */
 void process_file(char *filename) {
 	int ic, dc, iserror;

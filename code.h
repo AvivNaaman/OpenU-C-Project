@@ -65,44 +65,45 @@ typedef enum funct {
 
 	NONE_FUNCT = -1
 } funct;
-typedef enum registers{
-    r0 = 0,
-    r1,
-    r2,
-    r3,
-    r4,
-    r5,
-    r6,
-    r7
-}registers;
+typedef enum registers {
+    R0 = 0,
+    R1,
+    R2,
+    R3,
+    R4,
+    R5,
+    R6,
+    R7,
+    NONE_REG = -1
+} reg;
 /* Represents a single code word */
 typedef struct code_word {
 	/* First byte: ARE+funct */
-	int ARE:3;
-	int funct:5;
-	/* Seccheck_operand_addressings(addressing_type op1_addressing, addressing_type op2_addressing, int op1_valid_addr_count, int op2_valid_addr_count,...)ond byte: destination+addressing, source */
-	int dest_register:3;
-	int dest_addressing:2;
-	int src_register:3;
+	unsigned int ARE:3;
+	unsigned int funct:5;
+	/* 2nd byte: destination+addressing, source */
+	unsigned int dest_register:3;
+	unsigned int dest_addressing:2;
+	unsigned int src_register:3;
 	/* Third byte: source addressing, opcode */
-	int src_addressing:2;
-	int opcode: 6;
+	unsigned int src_addressing:2;
+	unsigned int opcode: 6;
 } code_word;
 
 /* Represents a single data word. */
 typedef struct data_word {
 	int ARE:3;
 	/* The data content itself (a method for putting data into these field is defined) */
-	int data:21;
+	unsigned int data:21;
 } data_word;
 
 /* Processes a code line in first pass */
 /*first parameter is the line and second parameter is the code img*/
-int process_code(char *line, int i);
+int process_code(char *line, int i, int *ci, char *code_img);
 /* Puts the opcode and the funct values inside the arguments by the name of the command */
 void get_opcode_func(char* cmd, opcode *opcode_out, funct *funct_out);
 /*checks addressing type*/
-addressing_type check_type(char *operand);
+addressing_type get_addressing_type(char *operand);
 /*check if addressing type is through register*/
 bool is_register(char *operand);
 /*check if addressing type is direct*/
@@ -114,4 +115,8 @@ bool is_relative(char *operand);
 
 code_word *get_code_word(opcode curr_opcode, funct curr_funct, int op_count, char **operands);
 
-bool check_operand_addressings(addressing_type op1_addressing, addressing_type op2_addressing, int op1_valid_addr_count, int op2_valid_addr_count,...);
+bool validate_op_addr(addressing_type op1_addressing, addressing_type op2_addressing, int op1_valid_addr_count, int op2_valid_addr_count,...);
+
+reg get_register_by_name(char *name);
+
+data_word *build_data_word(addressing_type addressing, int data);

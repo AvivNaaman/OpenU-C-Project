@@ -13,7 +13,7 @@
  * code_img - the code image array.
  * data_img - the data image array.
  */
-bool process_line_fpass(char *line, table *datas, table *codes, table *externals, int *IC, int *DC, char *code_img,
+int process_line_fpass(char *line, table *datas, table *codes, table *externals, int *IC, int *DC, char *code_img,
                        char *data_img, char *filename) {
 	int i;
 	char temp[80];
@@ -60,12 +60,12 @@ bool process_line_fpass(char *line, table *datas, table *codes, table *externals
 		if (symbol != NULL)
 			add_table_item(codes, temp, *IC);
 		/* Analyze code */
-		process_code(line, i); /* TODO: Shouldn't it encode into memory?! */
+		process_code(line, i, NULL, NULL); /* TODO: Shouldn't it encode into memory?! */
 	}
 	return FALSE;
 }
 
-bool process_line_spass(char *line, table *ent_table, table *code_table, int *ic, table ext_table, table data_table) {
+int process_line_spass(char *line, table *ent_table, table *code_table, int *ic, table ext_table, table data_table) {
 	/* Todo: Implement */
 	return TRUE;
 }

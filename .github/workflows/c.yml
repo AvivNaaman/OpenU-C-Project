@@ -13,5 +13,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - name: remove old complied files
+      run: rm -rf *.o
     - name: make
       run: make

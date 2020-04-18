@@ -4,3 +4,8 @@
 TEST(Table);
 TEST(Utils);
 TEST(Instructions);
+/**/
+TEST(Code);
+TEST(Code_GetOpCodeFunc);
+TEST(Code_GetAddrType);
+/**/

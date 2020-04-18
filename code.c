@@ -149,14 +149,8 @@ bool is_register(char *operand) {
 }
 
 bool is_immediate(char *operand) {
-	int flag = FALSE;
 	/*in immediate addressing first char is #*/
-	if (operand[0] == '#') {
-		operand++;
-		/*check if after the # the operand is int*/
-		if (is_int(operand)) flag = TRUE;
-	}
-	return flag;
+	return (operand[0] == '#' && is_int(operand+1));
 }
 
 bool is_direct(char *operand) {

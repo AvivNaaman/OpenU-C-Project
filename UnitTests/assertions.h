@@ -1,4 +1,7 @@
-
+///
+/// Basic automated Unit tests
+/// (c) Aviv Naaman, 2020, under MIT License
+///
 #define SUCCESS 1
 #define FAILURE 0
 

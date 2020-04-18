@@ -18,6 +18,9 @@ int main() {
 	puts("\nTesting instruction_handler.h");
 	CALL_TEST(Instructions, total, failed);
 
+	puts("Testing code.h");
+	CALL_TEST(Code, total, failed);
+
 	/* END TESTS */
 
 	printf("\nPassed %d/%d.\n", total-failed, total);

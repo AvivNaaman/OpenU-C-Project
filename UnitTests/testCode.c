@@ -11,7 +11,7 @@ TEST(Code) {
 	CALL_TEST(Code_GetAddrType, *total, *failed)
 	CALL_TEST(Code_GetCodeWord, *total, *failed);
 	CALL_TEST(Code_ValidateOp, *total, *failed);
-
+	CALL_TEST(Code_BuilDataWord,*total,*failed);
 }
 
 TEST(Code_GetOpCodeFunc) {
@@ -255,6 +255,30 @@ TEST(Code_GetCodeWord) {
 	assert_word(get_word(codeword,0), get_word(finals, 20), "stop get code word",total,failed);
 }
 
+TEST(Code_BuilDataWord) {
+	int *dw;
+	int finals[20] = {
+		0b0100,
+		0b1100,
+		0b111111111111111111111001,
+		0b111111111111111111001100,
+		0b0111000100,
+		0b011111111111111111111100,
+		0b100000000000000000001100,
+		0b011111111111111111111001,
+		0b100000000000000000001001
+	};
+	assert_word(get_word((int *)build_data_word(IMMEDIATE, 0),0),get_word(finals,0),"build data word of 0 Immediate addressing",total,failed);
+	assert_word(get_word((int *)build_data_word(RELATIVE, 1),0),get_word(finals,1),"build data word of 1 Relative addressing",total,failed);
+	assert_word(get_word((int *)build_data_word(DIRECT, -1),0),get_word(finals,2),"build data word of -1 Direct addressing",total,failed);
+
+	assert_word(get_word((int *)build_data_word(IMMEDIATE, -7),0),get_word(finals,3),"build data word of -7 Immediate addressing",total,failed);
+	assert_word(get_word((int *)build_data_word(IMMEDIATE, 56),0),get_word(finals,4),"build data word of 56 Immediate addressing",total,failed);
+	assert_word(get_word((int *)build_data_word(IMMEDIATE, 1048575),0),get_word(finals,5),"build data word of 1048575 Immediate addressing",total,failed);
+	assert_word(get_word((int *)build_data_word(IMMEDIATE, -1048575),0),get_word(finals,6),"build data word of -1048575 Immediate addressing",total,failed);
+	assert_word(get_word((int *)build_data_word(DIRECT, 1048575),0),get_word(finals,7),"build data word of 1048575 Immediate addressing",total,failed);
+	assert_word(get_word((int *)build_data_word(DIRECT, -1048575),0),get_word(finals,8),"build data word of -1048575 Immediate addressing",total,failed);
+}
 
 TEST(Code_ValidateOp) {
 	assert_true(validate_op_addr(REGISTER, RELATIVE, 4,4,REGISTER,RELATIVE,IMMEDIATE,DIRECT,REGISTER,RELATIVE,IMMEDIATE,DIRECT),"validate operatrion register,relative,4,4",total,failed);

@@ -330,7 +330,7 @@ reg get_register_by_name(char *name) {
 
 data_word *build_data_word(addressing_type addressing, int data) {
 	signed int mask; /* For bitwise operations for data conversion */
-	unsigned int ARE = 1 << 2, mask_un;
+	unsigned int ARE = 0b100, mask_un;
 	data_word *dataword = malloc_with_check(sizeof(data_word));
 
 	if (addressing == DIRECT) ARE = 1;

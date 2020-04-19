@@ -211,7 +211,7 @@ code_word *get_code_word(opcode curr_opcode, funct curr_funct, int op_count, cha
 		} else if (curr_opcode == JMP_OP) {/* Also for BNE,JSR */
 			is_valid = validate_op_addr(first_addressing, NONE_ADDR, 2, 0, DIRECT, RELATIVE);
 		} else { /* Then it's PRN */
-			is_valid = validate_op_addr(first_addressing, NONE_ADDR, 3, 0, IMMEDIATE, DIRECT, RELATIVE);
+			is_valid = validate_op_addr(first_addressing, NONE_ADDR, 3, 0, IMMEDIATE, DIRECT, REGISTER);
 		}
 	} else if (curr_opcode <= STOP_OP && curr_opcode >= RTS_OP) {
 		/*if operand number is not 0 there are Too many operands*/
@@ -227,12 +227,12 @@ code_word *get_code_word(opcode curr_opcode, funct curr_funct, int op_count, cha
 	if (codeword == NULL) return NULL; /* stop if allocation failed */
 
 	codeword->opcode = curr_opcode;
-	codeword->funct = curr_funct;
+	codeword->funct = curr_funct; /* if no funct, curr_funct = NONE_FUNCT = 0, and it should be the default. */
 	codeword->ARE = ((1<<2)&0xFF); /* A is the only one who is 1 when it's n operation. we treat ARE as a single unit so j */
 	/* Default values of register bits are 0 */
 	codeword->dest_addressing = codeword->dest_register = codeword->src_addressing = codeword->src_register = 0;
 	/* Check if need to set the registers bits */
-	if (curr_opcode >= MOV_OP && curr_opcode <= PRN_OP) { /* First Group, two operands */
+	if (curr_opcode >= MOV_OP && curr_opcode <= LEA_OP) { /* First Group, two operands */
 		codeword->src_addressing = first_addressing;
 		codeword->dest_addressing = second_addressing;
 		/* if it's register, set it's name in the proper locations */
@@ -242,7 +242,7 @@ code_word *get_code_word(opcode curr_opcode, funct curr_funct, int op_count, cha
 		if (second_addressing == REGISTER) {
 			codeword->dest_register = get_register_by_name(operands[1]);
 		}
-	} else if (curr_opcode >= MOV_OP && curr_opcode <= PRN_OP) {
+	} else if (curr_opcode >= CLR_OP && curr_opcode <= PRN_OP) {
 		codeword->dest_addressing = first_addressing;
 		if (first_addressing == REGISTER) {
 			codeword->dest_register = get_register_by_name(operands[0]);
@@ -275,6 +275,11 @@ bool validate_op_addr(addressing_type op1_addressing, addressing_type op2_addres
 		op1_2 = va_arg(list,
 		               int);
 	}
+	if (op1_valid_addr_count >= 4) {
+		op1_3 = va_arg(list,
+		               int);
+	}
+	for(;op1_valid_addr_count > 5;va_arg(list,int),op1_valid_addr_count--) ; /* Go on with stack until got all (even above limitation of 4) */
 	/* Again for second operand by the count */
 	if (op2_valid_addr_count >= 1) {
 		op2_0 = va_arg(list,
@@ -288,7 +293,11 @@ bool validate_op_addr(addressing_type op1_addressing, addressing_type op2_addres
 		op2_2 = va_arg(list,
 		               int);
 	}
-	va_end(list);
+	if (op2_valid_addr_count >= 4) {
+		op2_3 = va_arg(list,
+		               int);
+	}
+	va_end(list);  /* We got all the arguments we wanted */
 	is_valid = TRUE;
 	/* if operand addressing is not valid, print error */
 	if (!((op1_valid_addr_count == 0 && op1_addressing == NONE_ADDR) ||
@@ -296,7 +305,7 @@ bool validate_op_addr(addressing_type op1_addressing, addressing_type op2_addres
 	(op1_valid_addr_count > 1 && op1_1 == op1_addressing)||
 	(op1_valid_addr_count > 2 && op1_2 == op1_addressing) ||
 	(op1_valid_addr_count > 3 && op1_3 == op1_addressing))) {
-		printf("Error: invalid addressing mode for first operand");
+		printf("Error: invalid addressing mode for first operand.");
 		is_valid = FALSE;
 	}
 	if (!((op2_valid_addr_count == 0 && op2_addressing == NONE_ADDR) ||
@@ -304,7 +313,7 @@ bool validate_op_addr(addressing_type op1_addressing, addressing_type op2_addres
 	    (op2_valid_addr_count > 1 && op2_1 == op2_addressing)||
 	    (op2_valid_addr_count > 2 && op2_2 == op2_addressing) ||
 	    (op2_valid_addr_count > 3 && op2_3 == op2_addressing))) {
-		printf("Error: invalid addressing mode for second operand");
+		printf("Error: invalid addressing mode for second operand.");
 		is_valid = FALSE;
 	}
 	return is_valid;

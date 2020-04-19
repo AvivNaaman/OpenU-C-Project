@@ -1,6 +1,7 @@
 //
 // Created by aviv on 18/04/2020.
 //
+#include <stdlib.h>
 #include "UnitTests.h"
 #include "assertions.h"
 #include "../code.h"
@@ -125,16 +126,143 @@ TEST(Code_GetAddrType) {
 	assert_int(NONE_ADDR, get_addressing_type(":label"), "get addressing type label", total, failed);
 }
 
+char *get_word(int *arr, int indx) {
+	if (arr == NULL) return NULL;
+	char *ptr = calloc(3,sizeof(char));
+	unsigned int val = arr[indx];
+	*ptr = (val & (0xFF << 16))>>16;
+	*(ptr+1) = (val & (0xFF << 8))>>8;
+	*(ptr+2) = val & (0xFF);
+	return ptr;
+}
+
 TEST(Code_GetCodeWord) {
-	code_word *codeword;
-	char **operands;
+	int *codeword;
+	int finals[21] = {
+			0b000000110011101000000100,
+			0b000000000000100000000100,
+			0b000001000001111000000100,
+			0b000001010000000000000100,
+			0b000010111001101000010100,
+			0b000010000001111100010100,
+			0b000010111010100000001100,
+			0b000010010000100000001100,
+			0b000100010001101100000100,
+			0b000101000000100000010100,
+			0b000101000001111100001100,
+			0b000101000001111000011100,
+			0b000101000000100000100100,
+			0b001001000001000000001100,
+			0b001001000000100000010100,
+			0b001001000000100000011100,
+			0b001001000001000000011100,
+			0b001100000001101100000100,
+			0b001101000000100000000100,
+			0b001110000000000000000100,
+			0b001111000000000000000100,
+	};
+	/* mov r1,r2 */
+	char *(operands[]) = {"r1","r2"};
+	codeword = (int *)get_code_word(MOV_OP, NONE_FUNCT, 2, (char**)(operands));
+	assert_word(get_word(codeword,0), get_word(finals, 0), "MOV r1,r2 get code word",total,failed);
+	/* mov #5, label */
+	operands[0] = "#5";
+	operands[1] = "label";
+	codeword = (int *)get_code_word(MOV_OP, NONE_FUNCT, 2, (char**)(operands));
+	assert_word(get_word(codeword,0), get_word(finals, 1), "mov #5, label get code word",total,failed);
+	/* cmp #-8,r6 */
+	operands[0] = "#-8";
+	operands[1] = "r6";
+	codeword = (int *)get_code_word(CMP_OP, NONE_FUNCT, 2, (char**)(operands));
+	assert_word(get_word(codeword,0), get_word(finals, 2), "cmp #-8, r6 get code word",total,failed);
+	/* cmp label, #+2 */
+	operands[0] = "label";
+	operands[1] = "#+2";
+	codeword = (int *)get_code_word(CMP_OP, NONE_FUNCT, 2, (char**)(operands));
+	assert_word(get_word(codeword,0), get_word(finals, 3), "cmp label, #+2 get code word",total,failed);
+	/* sub r4,r2 */
+	operands[0] = "r4";
+	operands[1] = "r2";
+	codeword = (int *)get_code_word(SUB_OP, SUB_FUNCT, 2, (char**)(operands));
+	assert_word(get_word(codeword,0), get_word(finals, 4), "sub r4, r2 get code word",total,failed);
+	/* sub #45,r7 */
+	operands[0] = "#45";
+	operands[1] = "r7";
+	codeword = (int *)get_code_word(SUB_OP, SUB_FUNCT, 2, (char**)(operands));
+	assert_word(get_word(codeword,0), get_word(finals, 5), "sub #45, r7 get code word",total,failed);
+	/* add r5,label */
+	operands[0] = "r5";
+	operands[1] = "label";
+	codeword = (int *)get_code_word(ADD_OP, ADD_FUNCT, 2, (char**)(operands));
+	assert_word(get_word(codeword,0), get_word(finals, 6), "add r5, label get code word",total,failed);
+	/* add label,label */
+	operands[0] = "label";
+	operands[1] = "label";
+	codeword = (int *)get_code_word(ADD_OP, ADD_FUNCT, 2, (char**)(operands));
+	assert_word(get_word(codeword,0), get_word(finals, 7), "add label, label get code word",total,failed);
+	/* lea label,r3 */
+	operands[0] = "label";
+	operands[1] = "r3";
+	codeword = (int *)get_code_word(LEA_OP, NONE_FUNCT, 2, (char**)(operands));
+	assert_word(get_word(codeword,0), get_word(finals, 8), "lea label,r3 get code word",total,failed);
+	operands[1] = "";
+
+	/* not label */
+	operands[0] = "label";
+	codeword = (int *)get_code_word(NOT_OP, NOT_FUNCT, 1, (char**)(operands));
+	assert_word(get_word(codeword,0), get_word(finals, 9), "not label get code word",total,failed);
+	/* clr r7 */
+	operands[0] = "r7";
+	codeword = (int *)get_code_word(CLR_OP, CLR_FUNCT, 1, (char**)(operands));
+	assert_word(get_word(codeword,0), get_word(finals, 10), "clr r7 get code word",total,failed);
+	/* inc r6 */
+	operands[0] = "r6";
+	codeword = (int *)get_code_word(INC_OP, INC_FUNCT, 1, (char**)(operands));
+	assert_word(get_word(codeword,0), get_word(finals, 11), "inc r6 get code word",total,failed);
+	/* dec label */
+	operands[0] = "label";
+	codeword = (int *)get_code_word(DEC_OP, DEC_FUNCT, 1, (char**)(operands));
+	assert_word(get_word(codeword,0), get_word(finals, 12), "dec label get code word",total,failed);
+	/* jmp &label */
+	operands[0] = "&label";
+	codeword = (int *)get_code_word(JMP_OP, JMP_FUNCT, 1, (char**)(operands));
+	assert_word(get_word(codeword,0), get_word(finals, 13), "jmp &label get code word",total,failed);
+	/* bne label */
+	operands[0] = "label";
+	codeword = (int *)get_code_word(BNE_OP, BNE_FUNCT, 1, (char**)(operands));
+	assert_word(get_word(codeword,0), get_word(finals, 14), "bne label get code word",total,failed);
+	/* jsr label */
+	operands[0] = "label";
+	codeword = (int *)get_code_word(JSR_OP, JSR_FUNCT, 1, (char**)(operands));
+	assert_word(get_word(codeword,0), get_word(finals, 15), "jsr label get code word",total,failed);
+	/* jsr &label */
+	operands[0] = "&label";
+	codeword = (int *)get_code_word(JSR_OP, JSR_FUNCT, 1, (char**)(operands));
+	assert_word(get_word(codeword,0), get_word(finals, 16), "jsr &label get code word",total,failed);
+	/* red r3 */
+	operands[0] = "r3";
+	codeword = (int *)get_code_word(RED_OP, NONE_FUNCT, 1, (char**)(operands));
+	assert_word(get_word(codeword,0), get_word(finals, 17), "red r3 get code word",total,failed);
+	/* prn &label */
+	operands[0] = "label";
+	codeword = (int *)get_code_word(PRN_OP, NONE_FUNCT, 1, (char**)(operands));
+	assert_word(get_word(codeword,0), get_word(finals, 18), "prn &label get code word",total,failed);
+
+	operands[0] = "";
+	codeword = (int *)get_code_word(RTS_OP, NONE_FUNCT, 0, (char**)(operands));
+	assert_word(get_word(codeword,0), get_word(finals, 19), "rts get code word",total,failed);
+	codeword = (int *)get_code_word(STOP_OP, NONE_FUNCT, 0, (char**)(operands));
+	assert_word(get_word(codeword,0), get_word(finals, 20), "stop get code word",total,failed);
 }
 
 
 TEST(Code_ValidateOp) {
 	assert_true(validate_op_addr(REGISTER, RELATIVE, 4,4,REGISTER,RELATIVE,IMMEDIATE,DIRECT,REGISTER,RELATIVE,IMMEDIATE,DIRECT),"validate operatrion register,relative,4,4",total,failed);
 	assert_true(validate_op_addr(REGISTER,NONE_ADDR,4,0,REGISTER,RELATIVE,IMMEDIATE,DIRECT),"validate operation register 4,0,everything", total, failed);
-	assert_true(validate_op_addr(REGISTER,NONE_ADDR,4,0,DIRECT,RELATIVE,IMMEDIATE,REGISTER),"validate operation addressing REGISTER TO ALL RESGISTER LAST",total,failed);
+	assert_true(validate_op_addr(REGISTER,NONE_ADDR,4,0,DIRECT,RELATIVE,IMMEDIATE,REGISTER),"validate operation addressing REGISTER TO ALL RESGISTER LAST x2",total,failed);
+	assert_true(validate_op_addr(REGISTER,REGISTER,4,4,DIRECT,RELATIVE,IMMEDIATE,REGISTER,DIRECT,RELATIVE,IMMEDIATE,REGISTER),"validate operation addressing REGISTER TO ALL RESGISTER LAST",total,failed);
+	assert_true(validate_op_addr(REGISTER,REGISTER,1,1,REGISTER,REGISTER),"validate operation addressing REGISTER REGISTER to REGISTER REGISTER",total,failed);
+
 	assert_false(validate_op_addr(REGISTER,REGISTER,3,3,DIRECT,RELATIVE,IMMEDIATE,DIRECT,RELATIVE,IMMEDIATE),"validate operation addressing that is not here double REGISTER",total,failed);
 	assert_false(validate_op_addr(RELATIVE,NONE_ADDR,2,0,IMMEDIATE,REGISTER),"",total,failed);
 	assert_false(validate_op_addr(DIRECT,NONE_ADDR,3,0,IMMEDIATE,REGISTER,RELATIVE),"",total,failed);

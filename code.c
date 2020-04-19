@@ -9,7 +9,7 @@
 int process_code(char *line, int i, int *ci, char *code_img) {
 	char operation[80];
 	char *temp;
-	char operands[2][80]; /* 2 strings, each for operand */
+	char *operands[2]; /* 2 strings, each for operand */
 	opcode curr_opcode;
 	code_word *codeword;
 	funct curr_funct;
@@ -31,18 +31,22 @@ int process_code(char *line, int i, int *ci, char *code_img) {
 	}
 	/* Analyze operands */
 	MOVE_TO_NOT_WHITE(line, i)
+	/* Make some space to the operand strings */
+	operands[0] = malloc_with_check(MAX_LINE_LENGTH);
+	operands[1] = malloc_with_check(MAX_LINE_LENGTH);
 	/* until no too many operands (max of 2) and it's not the end of the line */
-	for (operand_count = 0; line[i] != EOF && line[i] != '\n'; operand_count++) {
-		if (operand_count == 2) /* =We already got 2 operands in, this is the 3rd! */ {
+	for (operand_count = 0; line[i] != EOF && line[i] != '\n'; ) {
+		if (operand_count == 2) /* =We already got 2 operands in, We're going ot get the third! */ {
 			printf("Too many operands for operation %s", operation);
 			return TRUE;
 		}
 		/* as long we're still on same operand */ /* TODO: Validate chars of operand */
-		for (j = 0; line[i] && line[i] != '\t' && line[i] != ' ' && line[i] != '\n' && line[i] != EOF; i++, j++) {
+		for (j = 0; line[i] && line[i] != '\t' && line[i] != ' ' && line[i] != '\n' && line[i] != EOF && line[i] != ','; i++, j++) {
 			operands[operand_count][j] = line[i];
 		}
+		operand_count++; /* We've just saved another operand! */
 		MOVE_TO_NOT_WHITE(line, i)
-		if (line[i] == '\n' || line[i] == EOF) break;
+		if (line[i] == '\n' || line[i] == EOF || !line[i]) break;
 		else if (line[i] != ',') { /* TODO: Error about unexpected character */
 			/* After operand & after white chars there's something that isn't ',' or end of line.. */
 			printf("Error: Expecting ',' between operands (got '%c')", line[i]);
@@ -59,8 +63,10 @@ int process_code(char *line, int i, int *ci, char *code_img) {
 	}
 
 	/* Build code word (returns null if validation failed) */
-	if ((codeword = get_code_word(curr_opcode, curr_funct, curr_opcode, (char**)operands)) == NULL) return TRUE;
+	if ((codeword = get_code_word(curr_opcode, curr_funct, operand_count, operands)) == NULL) return TRUE;
 
+	temp = (char*)codeword;
+	write_word(code_img, *ci, temp[2],temp[1],temp[0]);
 	/* Now we got our data word in *codeword. all left is to build all the data words for the operation and add the count to ci. */
 	/* We can only encode to code image immediate addressed number */
 	if (get_addressing_type(operands[0]) == IMMEDIATE){
@@ -172,7 +178,7 @@ bool is_relative(char *operand) {
 }
 
 /* Assembles a code word by the  */
-code_word *get_code_word(opcode curr_opcode, funct curr_funct, int op_count, char **operands) {
+code_word *get_code_word(opcode curr_opcode, funct curr_funct, int op_count, char *operands[2]) {
 	addressing_type first_addressing, second_addressing;
 	bool is_valid = TRUE;
 	code_word *codeword;

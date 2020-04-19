@@ -117,7 +117,7 @@ bool is_relative(char *operand);
  * builds a code binary word by the opcode, funct, operand count and operands. validates that the operands are in the correct form.
  * if operation or validation fail, prints an error and returns NULL. otherwise returns a pointer to struct code_word, with the required contents.
  */
-code_word *get_code_word(opcode curr_opcode, funct curr_funct, int op_count, char **operands);
+code_word *get_code_word(opcode curr_opcode, funct curr_funct, int op_count, char *operands[2]);
 
 /* Returns whether both operands' addressing types are valid, by the valid addressing types passed after the hard-coded arguments.
  * addressing_type arguments are the types to check, both valid_addr_counts are the count for each valida adreesing type list length.

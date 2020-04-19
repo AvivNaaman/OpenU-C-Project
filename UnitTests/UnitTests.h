@@ -11,4 +11,5 @@ TEST(Code_GetAddrType);
 TEST(Code_GetCodeWord);
 TEST(Code_ValidateOp);
 TEST(Code_BuilDataWord);
+TEST(Code_Process);
 /**/

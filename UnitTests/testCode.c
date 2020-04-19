@@ -11,56 +11,57 @@ TEST(Code) {
 	CALL_TEST(Code_GetAddrType, *total, *failed)
 	CALL_TEST(Code_GetCodeWord, *total, *failed);
 	CALL_TEST(Code_ValidateOp, *total, *failed);
-	CALL_TEST(Code_BuilDataWord,*total,*failed);
+	CALL_TEST(Code_BuilDataWord, *total, *failed);
+	CALL_TEST(Code_Process, *total, *failed);
 }
 
 TEST(Code_GetOpCodeFunc) {
 
-		opcode opcode_out;
-		funct funct_out;
-		/* Get opcode */
-		get_opcode_func("mov", &opcode_out, &funct_out);
-		assert_int(0,opcode_out,"get opcode mov", total, failed);
-		get_opcode_func("cmp", &opcode_out, &funct_out);
-		assert_int(1,opcode_out,"get opcode cmp", total, failed);
-		get_opcode_func("add", &opcode_out, &funct_out);
-		assert_int(2,opcode_out,"get opcode add", total, failed);
-		assert_int(1,funct_out,"get opcode add", total, failed);
-		get_opcode_func("sub", &opcode_out, &funct_out);
-		assert_int(2,opcode_out,"get opcode sub", total, failed);
-		assert_int(2,funct_out,"get opcode sub", total, failed);
-		get_opcode_func("lea", &opcode_out, &funct_out);
-		assert_int(4,opcode_out,"get opcode lea", total, failed);
+	opcode opcode_out;
+	funct funct_out;
+	/* Get opcode */
+	get_opcode_func("mov", &opcode_out, &funct_out);
+	assert_int(0, opcode_out, "get opcode mov", total, failed);
+	get_opcode_func("cmp", &opcode_out, &funct_out);
+	assert_int(1, opcode_out, "get opcode cmp", total, failed);
+	get_opcode_func("add", &opcode_out, &funct_out);
+	assert_int(2, opcode_out, "get opcode add", total, failed);
+	assert_int(1, funct_out, "get opcode add", total, failed);
+	get_opcode_func("sub", &opcode_out, &funct_out);
+	assert_int(2, opcode_out, "get opcode sub", total, failed);
+	assert_int(2, funct_out, "get opcode sub", total, failed);
+	get_opcode_func("lea", &opcode_out, &funct_out);
+	assert_int(4, opcode_out, "get opcode lea", total, failed);
 
-		get_opcode_func("clr", &opcode_out, &funct_out);
-		assert_int(5,opcode_out,"get opcode clr", total, failed);
-		assert_int(1,funct_out,"get opcode clr", total, failed);
-		get_opcode_func("not", &opcode_out, &funct_out);
-		assert_int(5,opcode_out,"get opcode not", total, failed);
-		assert_int(2,funct_out,"get opcode not", total, failed);
-		get_opcode_func("inc", &opcode_out, &funct_out);
-		assert_int(5,opcode_out,"get opcode inc", total, failed);
-		assert_int(3,funct_out,"get opcode inc", total, failed);
-		get_opcode_func("dec", &opcode_out, &funct_out);
-		assert_int(5,opcode_out,"get opcode dec", total, failed);
-		assert_int(4,funct_out,"get opcode dec", total, failed);
-		get_opcode_func("jmp", &opcode_out, &funct_out);
-		assert_int(9,opcode_out,"get opcode jmp", total, failed);
-		assert_int(1,funct_out,"get opcode jmp", total, failed);
-		get_opcode_func("bne", &opcode_out, &funct_out);
-		assert_int(9,opcode_out,"get opcode bne", total, failed);
-		assert_int(2,funct_out,"get opcode bne", total, failed);
-		get_opcode_func("jsr", &opcode_out, &funct_out);
-		assert_int(9,opcode_out,"get opcode jsr", total, failed);
-		assert_int(3,funct_out,"get opcode jsr", total, failed);
-		get_opcode_func("red", &opcode_out, &funct_out);
-		assert_int(12,opcode_out,"get opcode red", total, failed);
-		get_opcode_func("prn", &opcode_out, &funct_out);
-		assert_int(13,opcode_out,"get opcode prn", total, failed);
-		get_opcode_func("rts", &opcode_out, &funct_out);
-		assert_int(14,opcode_out,"get opcode rts", total, failed);
-		get_opcode_func("stop", &opcode_out, &funct_out);
-		assert_int(15,opcode_out,"get opcode stop", total, failed);
+	get_opcode_func("clr", &opcode_out, &funct_out);
+	assert_int(5, opcode_out, "get opcode clr", total, failed);
+	assert_int(1, funct_out, "get opcode clr", total, failed);
+	get_opcode_func("not", &opcode_out, &funct_out);
+	assert_int(5, opcode_out, "get opcode not", total, failed);
+	assert_int(2, funct_out, "get opcode not", total, failed);
+	get_opcode_func("inc", &opcode_out, &funct_out);
+	assert_int(5, opcode_out, "get opcode inc", total, failed);
+	assert_int(3, funct_out, "get opcode inc", total, failed);
+	get_opcode_func("dec", &opcode_out, &funct_out);
+	assert_int(5, opcode_out, "get opcode dec", total, failed);
+	assert_int(4, funct_out, "get opcode dec", total, failed);
+	get_opcode_func("jmp", &opcode_out, &funct_out);
+	assert_int(9, opcode_out, "get opcode jmp", total, failed);
+	assert_int(1, funct_out, "get opcode jmp", total, failed);
+	get_opcode_func("bne", &opcode_out, &funct_out);
+	assert_int(9, opcode_out, "get opcode bne", total, failed);
+	assert_int(2, funct_out, "get opcode bne", total, failed);
+	get_opcode_func("jsr", &opcode_out, &funct_out);
+	assert_int(9, opcode_out, "get opcode jsr", total, failed);
+	assert_int(3, funct_out, "get opcode jsr", total, failed);
+	get_opcode_func("red", &opcode_out, &funct_out);
+	assert_int(12, opcode_out, "get opcode red", total, failed);
+	get_opcode_func("prn", &opcode_out, &funct_out);
+	assert_int(13, opcode_out, "get opcode prn", total, failed);
+	get_opcode_func("rts", &opcode_out, &funct_out);
+	assert_int(14, opcode_out, "get opcode rts", total, failed);
+	get_opcode_func("stop", &opcode_out, &funct_out);
+	assert_int(15, opcode_out, "get opcode stop", total, failed);
 }
 
 TEST(Code_GetAddrType) {
@@ -73,41 +74,44 @@ TEST(Code_GetAddrType) {
 	assert_int(REGISTER, get_addressing_type("r6"), "get addressing type r6", total, failed);
 	assert_int(REGISTER, get_addressing_type("r7"), "get addressing type r7", total, failed);
 
-	assert_int(IMMEDIATE, get_addressing_type("#0"),"get addressing type #0",total,failed);
-	assert_int(IMMEDIATE, get_addressing_type("#1"),"get addressing type #1",total,failed);
-	assert_int(IMMEDIATE, get_addressing_type("#236"),"get addressing type #236",total,failed);
-	assert_int(IMMEDIATE, get_addressing_type("#-1"),"get addressing type #-1",total,failed);
-	assert_int(IMMEDIATE, get_addressing_type("#-236"),"get addressing type #-236",total,failed);
-	assert_int(IMMEDIATE, get_addressing_type("#4756"),"get addressing type #4756",total,failed);
-	assert_int(IMMEDIATE, get_addressing_type("#-0"),"get addressing type #-0",total,failed);
-	assert_int(IMMEDIATE, get_addressing_type("#+99"),"get addressing type #+0",total,failed);
-	assert_int(IMMEDIATE, get_addressing_type("#+1"),"get addressing type #+0",total,failed);
-	assert_int(IMMEDIATE, get_addressing_type("#+0"),"get addressing type #+0",total,failed);
-	assert_int(IMMEDIATE, get_addressing_type("#-0"),"get addressing type #-0",total,failed);
-	assert_int(NONE_ADDR, get_addressing_type("#--1"),"get addressing type #--1",total,failed);
-	assert_int(NONE_ADDR, get_addressing_type("#.5"),"get addressing type #.5",total,failed);
-	assert_int(NONE_ADDR, get_addressing_type("#4.8"),"get addressing type #4.8",total,failed);
-	assert_int(NONE_ADDR, get_addressing_type("#ABC"),"get addressing type #ABC",total,failed);
-	assert_int(NONE_ADDR, get_addressing_type("#123$"),"get addressing type #123$",total,failed);
-	assert_int(NONE_ADDR, get_addressing_type("#$123"),"get addressing type #$123",total,failed);
-	assert_int(NONE_ADDR, get_addressing_type("#$123"),"get addressing type $123",total,failed);
-	assert_int(NONE_ADDR, get_addressing_type("#"),"get addressing type #",total,failed);
+	assert_int(IMMEDIATE, get_addressing_type("#0"), "get addressing type #0", total, failed);
+	assert_int(IMMEDIATE, get_addressing_type("#1"), "get addressing type #1", total, failed);
+	assert_int(IMMEDIATE, get_addressing_type("#236"), "get addressing type #236", total, failed);
+	assert_int(IMMEDIATE, get_addressing_type("#-1"), "get addressing type #-1", total, failed);
+	assert_int(IMMEDIATE, get_addressing_type("#-236"), "get addressing type #-236", total, failed);
+	assert_int(IMMEDIATE, get_addressing_type("#4756"), "get addressing type #4756", total, failed);
+	assert_int(IMMEDIATE, get_addressing_type("#-0"), "get addressing type #-0", total, failed);
+	assert_int(IMMEDIATE, get_addressing_type("#+99"), "get addressing type #+0", total, failed);
+	assert_int(IMMEDIATE, get_addressing_type("#+1"), "get addressing type #+0", total, failed);
+	assert_int(IMMEDIATE, get_addressing_type("#+0"), "get addressing type #+0", total, failed);
+	assert_int(IMMEDIATE, get_addressing_type("#-0"), "get addressing type #-0", total, failed);
+	assert_int(NONE_ADDR, get_addressing_type("#--1"), "get addressing type #--1", total, failed);
+	assert_int(NONE_ADDR, get_addressing_type("#.5"), "get addressing type #.5", total, failed);
+	assert_int(NONE_ADDR, get_addressing_type("#4.8"), "get addressing type #4.8", total, failed);
+	assert_int(NONE_ADDR, get_addressing_type("#ABC"), "get addressing type #ABC", total, failed);
+	assert_int(NONE_ADDR, get_addressing_type("#123$"), "get addressing type #123$", total, failed);
+	assert_int(NONE_ADDR, get_addressing_type("#$123"), "get addressing type #$123", total, failed);
+	assert_int(NONE_ADDR, get_addressing_type("#$123"), "get addressing type $123", total, failed);
+	assert_int(NONE_ADDR, get_addressing_type("#"), "get addressing type #", total, failed);
 
-	assert_int(RELATIVE, get_addressing_type("&labello"),"get addressing type &labello",total,failed);
-	assert_int(RELATIVE, get_addressing_type("&hullo123"),"get addressing type &hullo123",total,failed);
-	assert_int(RELATIVE, get_addressing_type("&hULLO23"),"get addressing type &hULLO23",total,failed);
-	assert_int(RELATIVE, get_addressing_type("&Hullo123"),"get addressing type &Hullo123",total,failed);
-	assert_int(RELATIVE, get_addressing_type("&labelllllllllllllllllllllllllll"),"get addressing type &labelllllllllllllllllllllllllll",total,failed);
-	assert_int(RELATIVE, get_addressing_type("&R5"),"get addressing type &R5",total,failed);
-	assert_int(NONE_ADDR, get_addressing_type("&1label"),"get addressing type &1label",total,failed);
-	assert_int(NONE_ADDR, get_addressing_type("&labellllllllllllllllllllllllllll"),"get addressing type &labellllllllllllllllllllllllllll",total,failed);
-	assert_int(NONE_ADDR, get_addressing_type("&hul$lo"),"get addressing type &hul$lo",total,failed);
-	assert_int(NONE_ADDR, get_addressing_type("&hullo$"),"get addressing type &hullo$",total,failed);
-	assert_int(NONE_ADDR, get_addressing_type("&$hullo"),"get addressing type &$hullo",total,failed);
-	assert_int(NONE_ADDR, get_addressing_type("&r5"),"get addressing type &r5",total,failed);
+	assert_int(RELATIVE, get_addressing_type("&labello"), "get addressing type &labello", total, failed);
+	assert_int(RELATIVE, get_addressing_type("&hullo123"), "get addressing type &hullo123", total, failed);
+	assert_int(RELATIVE, get_addressing_type("&hULLO23"), "get addressing type &hULLO23", total, failed);
+	assert_int(RELATIVE, get_addressing_type("&Hullo123"), "get addressing type &Hullo123", total, failed);
+	assert_int(RELATIVE, get_addressing_type("&labelllllllllllllllllllllllllll"),
+	           "get addressing type &labelllllllllllllllllllllllllll", total, failed);
+	assert_int(RELATIVE, get_addressing_type("&R5"), "get addressing type &R5", total, failed);
+	assert_int(NONE_ADDR, get_addressing_type("&1label"), "get addressing type &1label", total, failed);
+	assert_int(NONE_ADDR, get_addressing_type("&labellllllllllllllllllllllllllll"),
+	           "get addressing type &labellllllllllllllllllllllllllll", total, failed);
+	assert_int(NONE_ADDR, get_addressing_type("&hul$lo"), "get addressing type &hul$lo", total, failed);
+	assert_int(NONE_ADDR, get_addressing_type("&hullo$"), "get addressing type &hullo$", total, failed);
+	assert_int(NONE_ADDR, get_addressing_type("&$hullo"), "get addressing type &$hullo", total, failed);
+	assert_int(NONE_ADDR, get_addressing_type("&r5"), "get addressing type &r5", total, failed);
 
 	assert_int(DIRECT, get_addressing_type("label"), "get addressing type label", total, failed);
-	assert_int(DIRECT, get_addressing_type("labelllllllllllllllllllllllllll"), "get addressing type label", total, failed);
+	assert_int(DIRECT, get_addressing_type("labelllllllllllllllllllllllllll"), "get addressing type label", total,
+	           failed);
 	assert_int(DIRECT, get_addressing_type("hello123"), "get addressing type label", total, failed);
 	assert_int(DIRECT, get_addressing_type("he110123"), "get addressing type label", total, failed);
 	assert_int(DIRECT, get_addressing_type("he110123"), "get addressing type label", total, failed);
@@ -118,7 +122,8 @@ TEST(Code_GetAddrType) {
 	assert_int(DIRECT, get_addressing_type("R0"), "get addressing type label", total, failed);
 	assert_int(NONE_ADDR, get_addressing_type("$label"), "get addressing type label", total, failed);
 	assert_int(NONE_ADDR, get_addressing_type("1label"), "get addressing type label", total, failed);
-	assert_int(NONE_ADDR, get_addressing_type("labellllllllllllllllllllllllllll"), "get addressing type label", total, failed);
+	assert_int(NONE_ADDR, get_addressing_type("labellllllllllllllllllllllllllll"), "get addressing type label", total,
+	           failed);
 	assert_int(NONE_ADDR, get_addressing_type("lab%l"), "get addressing type label", total, failed);
 	assert_int(NONE_ADDR, get_addressing_type("label$"), "get addressing type label", total, failed);
 	assert_int(NONE_ADDR, get_addressing_type("H*"), "get addressing type label", total, failed);
@@ -128,11 +133,11 @@ TEST(Code_GetAddrType) {
 
 char *get_word(int *arr, int indx) {
 	if (arr == NULL) return NULL;
-	char *ptr = calloc(3,sizeof(char));
+	char *ptr = calloc(3, sizeof(char));
 	unsigned int val = arr[indx];
-	*ptr = (val & (0xFF << 16))>>16;
-	*(ptr+1) = (val & (0xFF << 8))>>8;
-	*(ptr+2) = val & (0xFF);
+	*ptr = (val & (0xFF << 16)) >> 16;
+	*(ptr + 1) = (val & (0xFF << 8)) >> 8;
+	*(ptr + 2) = val & (0xFF);
 	return ptr;
 }
 
@@ -162,156 +167,226 @@ TEST(Code_GetCodeWord) {
 			0b001111000000000000000100,
 	};
 	/* mov r1,r2 */
-	char *(operands[]) = {"r1","r2"};
-	codeword = (int *)get_code_word(MOV_OP, NONE_FUNCT, 2, (char**)(operands));
-	assert_word(get_word(codeword,0), get_word(finals, 0), "MOV r1,r2 get code word",total,failed);
+	char *(operands[2]) = {"r1", "r2"};
+	codeword = (int *) get_code_word(MOV_OP, NONE_FUNCT, 2,  operands);
+	assert_word(get_word(codeword, 0), get_word(finals, 0), "MOV r1,r2 get code word", total, failed);
 	/* mov #5, label */
 	operands[0] = "#5";
 	operands[1] = "label";
-	codeword = (int *)get_code_word(MOV_OP, NONE_FUNCT, 2, (char**)(operands));
-	assert_word(get_word(codeword,0), get_word(finals, 1), "mov #5, label get code word",total,failed);
+	codeword = (int *) get_code_word(MOV_OP, NONE_FUNCT, 2, (char **) (operands));
+	assert_word(get_word(codeword, 0), get_word(finals, 1), "mov #5, label get code word", total, failed);
 	/* cmp #-8,r6 */
 	operands[0] = "#-8";
 	operands[1] = "r6";
-	codeword = (int *)get_code_word(CMP_OP, NONE_FUNCT, 2, (char**)(operands));
-	assert_word(get_word(codeword,0), get_word(finals, 2), "cmp #-8, r6 get code word",total,failed);
+	codeword = (int *) get_code_word(CMP_OP, NONE_FUNCT, 2, (char **) (operands));
+	assert_word(get_word(codeword, 0), get_word(finals, 2), "cmp #-8, r6 get code word", total, failed);
 	/* cmp label, #+2 */
 	operands[0] = "label";
 	operands[1] = "#+2";
-	codeword = (int *)get_code_word(CMP_OP, NONE_FUNCT, 2, (char**)(operands));
-	assert_word(get_word(codeword,0), get_word(finals, 3), "cmp label, #+2 get code word",total,failed);
+	codeword = (int *) get_code_word(CMP_OP, NONE_FUNCT, 2, (char **) (operands));
+	assert_word(get_word(codeword, 0), get_word(finals, 3), "cmp label, #+2 get code word", total, failed);
 	/* sub r4,r2 */
 	operands[0] = "r4";
 	operands[1] = "r2";
-	codeword = (int *)get_code_word(SUB_OP, SUB_FUNCT, 2, (char**)(operands));
-	assert_word(get_word(codeword,0), get_word(finals, 4), "sub r4, r2 get code word",total,failed);
+	codeword = (int *) get_code_word(SUB_OP, SUB_FUNCT, 2, (char **) (operands));
+	assert_word(get_word(codeword, 0), get_word(finals, 4), "sub r4, r2 get code word", total, failed);
 	/* sub #45,r7 */
 	operands[0] = "#45";
 	operands[1] = "r7";
-	codeword = (int *)get_code_word(SUB_OP, SUB_FUNCT, 2, (char**)(operands));
-	assert_word(get_word(codeword,0), get_word(finals, 5), "sub #45, r7 get code word",total,failed);
+	codeword = (int *) get_code_word(SUB_OP, SUB_FUNCT, 2, (char **) (operands));
+	assert_word(get_word(codeword, 0), get_word(finals, 5), "sub #45, r7 get code word", total, failed);
 	/* add r5,label */
 	operands[0] = "r5";
 	operands[1] = "label";
-	codeword = (int *)get_code_word(ADD_OP, ADD_FUNCT, 2, (char**)(operands));
-	assert_word(get_word(codeword,0), get_word(finals, 6), "add r5, label get code word",total,failed);
+	codeword = (int *) get_code_word(ADD_OP, ADD_FUNCT, 2, (char **) (operands));
+	assert_word(get_word(codeword, 0), get_word(finals, 6), "add r5, label get code word", total, failed);
 	/* add label,label */
 	operands[0] = "label";
 	operands[1] = "label";
-	codeword = (int *)get_code_word(ADD_OP, ADD_FUNCT, 2, (char**)(operands));
-	assert_word(get_word(codeword,0), get_word(finals, 7), "add label, label get code word",total,failed);
+	codeword = (int *) get_code_word(ADD_OP, ADD_FUNCT, 2, (char **) (operands));
+	assert_word(get_word(codeword, 0), get_word(finals, 7), "add label, label get code word", total, failed);
 	/* lea label,r3 */
 	operands[0] = "label";
 	operands[1] = "r3";
-	codeword = (int *)get_code_word(LEA_OP, NONE_FUNCT, 2, (char**)(operands));
-	assert_word(get_word(codeword,0), get_word(finals, 8), "lea label,r3 get code word",total,failed);
+	codeword = (int *) get_code_word(LEA_OP, NONE_FUNCT, 2, (char **) (operands));
+	assert_word(get_word(codeword, 0), get_word(finals, 8), "lea label,r3 get code word", total, failed);
 	operands[1] = "";
 
 	/* not label */
 	operands[0] = "label";
-	codeword = (int *)get_code_word(NOT_OP, NOT_FUNCT, 1, (char**)(operands));
-	assert_word(get_word(codeword,0), get_word(finals, 9), "not label get code word",total,failed);
+	codeword = (int *) get_code_word(NOT_OP, NOT_FUNCT, 1, (char **) (operands));
+	assert_word(get_word(codeword, 0), get_word(finals, 9), "not label get code word", total, failed);
 	/* clr r7 */
 	operands[0] = "r7";
-	codeword = (int *)get_code_word(CLR_OP, CLR_FUNCT, 1, (char**)(operands));
-	assert_word(get_word(codeword,0), get_word(finals, 10), "clr r7 get code word",total,failed);
+	codeword = (int *) get_code_word(CLR_OP, CLR_FUNCT, 1, (char **) (operands));
+	assert_word(get_word(codeword, 0), get_word(finals, 10), "clr r7 get code word", total, failed);
 	/* inc r6 */
 	operands[0] = "r6";
-	codeword = (int *)get_code_word(INC_OP, INC_FUNCT, 1, (char**)(operands));
-	assert_word(get_word(codeword,0), get_word(finals, 11), "inc r6 get code word",total,failed);
+	codeword = (int *) get_code_word(INC_OP, INC_FUNCT, 1, (char **) (operands));
+	assert_word(get_word(codeword, 0), get_word(finals, 11), "inc r6 get code word", total, failed);
 	/* dec label */
 	operands[0] = "label";
-	codeword = (int *)get_code_word(DEC_OP, DEC_FUNCT, 1, (char**)(operands));
-	assert_word(get_word(codeword,0), get_word(finals, 12), "dec label get code word",total,failed);
+	codeword = (int *) get_code_word(DEC_OP, DEC_FUNCT, 1, (char **) (operands));
+	assert_word(get_word(codeword, 0), get_word(finals, 12), "dec label get code word", total, failed);
 	/* jmp &label */
 	operands[0] = "&label";
-	codeword = (int *)get_code_word(JMP_OP, JMP_FUNCT, 1, (char**)(operands));
-	assert_word(get_word(codeword,0), get_word(finals, 13), "jmp &label get code word",total,failed);
+	codeword = (int *) get_code_word(JMP_OP, JMP_FUNCT, 1, (char **) (operands));
+	assert_word(get_word(codeword, 0), get_word(finals, 13), "jmp &label get code word", total, failed);
 	/* bne label */
 	operands[0] = "label";
-	codeword = (int *)get_code_word(BNE_OP, BNE_FUNCT, 1, (char**)(operands));
-	assert_word(get_word(codeword,0), get_word(finals, 14), "bne label get code word",total,failed);
+	codeword = (int *) get_code_word(BNE_OP, BNE_FUNCT, 1, (char **) (operands));
+	assert_word(get_word(codeword, 0), get_word(finals, 14), "bne label get code word", total, failed);
 	/* jsr label */
 	operands[0] = "label";
-	codeword = (int *)get_code_word(JSR_OP, JSR_FUNCT, 1, (char**)(operands));
-	assert_word(get_word(codeword,0), get_word(finals, 15), "jsr label get code word",total,failed);
+	codeword = (int *) get_code_word(JSR_OP, JSR_FUNCT, 1, (char **) (operands));
+	assert_word(get_word(codeword, 0), get_word(finals, 15), "jsr label get code word", total, failed);
 	/* jsr &label */
 	operands[0] = "&label";
-	codeword = (int *)get_code_word(JSR_OP, JSR_FUNCT, 1, (char**)(operands));
-	assert_word(get_word(codeword,0), get_word(finals, 16), "jsr &label get code word",total,failed);
+	codeword = (int *) get_code_word(JSR_OP, JSR_FUNCT, 1, (char **) (operands));
+	assert_word(get_word(codeword, 0), get_word(finals, 16), "jsr &label get code word", total, failed);
 	/* red r3 */
 	operands[0] = "r3";
-	codeword = (int *)get_code_word(RED_OP, NONE_FUNCT, 1, (char**)(operands));
-	assert_word(get_word(codeword,0), get_word(finals, 17), "red r3 get code word",total,failed);
+	codeword = (int *) get_code_word(RED_OP, NONE_FUNCT, 1, (char **) (operands));
+	assert_word(get_word(codeword, 0), get_word(finals, 17), "red r3 get code word", total, failed);
 	/* prn &label */
 	operands[0] = "label";
-	codeword = (int *)get_code_word(PRN_OP, NONE_FUNCT, 1, (char**)(operands));
-	assert_word(get_word(codeword,0), get_word(finals, 18), "prn &label get code word",total,failed);
+	codeword = (int *) get_code_word(PRN_OP, NONE_FUNCT, 1, (char **) (operands));
+	assert_word(get_word(codeword, 0), get_word(finals, 18), "prn &label get code word", total, failed);
 
 	operands[0] = "";
-	codeword = (int *)get_code_word(RTS_OP, NONE_FUNCT, 0, (char**)(operands));
-	assert_word(get_word(codeword,0), get_word(finals, 19), "rts get code word",total,failed);
-	codeword = (int *)get_code_word(STOP_OP, NONE_FUNCT, 0, (char**)(operands));
-	assert_word(get_word(codeword,0), get_word(finals, 20), "stop get code word",total,failed);
+	codeword = (int *) get_code_word(RTS_OP, NONE_FUNCT, 0, (char **) (operands));
+	assert_word(get_word(codeword, 0), get_word(finals, 19), "rts get code word", total, failed);
+	codeword = (int *) get_code_word(STOP_OP, NONE_FUNCT, 0, (char **) (operands));
+	assert_word(get_word(codeword, 0), get_word(finals, 20), "stop get code word", total, failed);
 }
 
 TEST(Code_BuilDataWord) {
 	int *dw;
 	int finals[20] = {
-		0b0100,
-		0b1100,
-		0b111111111111111111111001,
-		0b111111111111111111001100,
-		0b0111000100,
-		0b011111111111111111111100,
-		0b100000000000000000001100,
-		0b011111111111111111111001,
-		0b100000000000000000001001
+			0b0100,
+			0b1100,
+			0b111111111111111111111001,
+			0b111111111111111111001100,
+			0b0111000100,
+			0b011111111111111111111100,
+			0b100000000000000000001100,
+			0b011111111111111111111001,
+			0b100000000000000000001001
 	};
-	assert_word(get_word((int *)build_data_word(IMMEDIATE, 0),0),get_word(finals,0),"build data word of 0 Immediate addressing",total,failed);
-	assert_word(get_word((int *)build_data_word(RELATIVE, 1),0),get_word(finals,1),"build data word of 1 Relative addressing",total,failed);
-	assert_word(get_word((int *)build_data_word(DIRECT, -1),0),get_word(finals,2),"build data word of -1 Direct addressing",total,failed);
+	assert_word(get_word((int *) build_data_word(IMMEDIATE, 0), 0), get_word(finals, 0),
+	            "build data word of 0 Immediate addressing", total, failed);
+	assert_word(get_word((int *) build_data_word(RELATIVE, 1), 0), get_word(finals, 1),
+	            "build data word of 1 Relative addressing", total, failed);
+	assert_word(get_word((int *) build_data_word(DIRECT, -1), 0), get_word(finals, 2),
+	            "build data word of -1 Direct addressing", total, failed);
 
-	assert_word(get_word((int *)build_data_word(IMMEDIATE, -7),0),get_word(finals,3),"build data word of -7 Immediate addressing",total,failed);
-	assert_word(get_word((int *)build_data_word(IMMEDIATE, 56),0),get_word(finals,4),"build data word of 56 Immediate addressing",total,failed);
-	assert_word(get_word((int *)build_data_word(IMMEDIATE, 1048575),0),get_word(finals,5),"build data word of 1048575 Immediate addressing",total,failed);
-	assert_word(get_word((int *)build_data_word(IMMEDIATE, -1048575),0),get_word(finals,6),"build data word of -1048575 Immediate addressing",total,failed);
-	assert_word(get_word((int *)build_data_word(DIRECT, 1048575),0),get_word(finals,7),"build data word of 1048575 Immediate addressing",total,failed);
-	assert_word(get_word((int *)build_data_word(DIRECT, -1048575),0),get_word(finals,8),"build data word of -1048575 Immediate addressing",total,failed);
+	assert_word(get_word((int *) build_data_word(IMMEDIATE, -7), 0), get_word(finals, 3),
+	            "build data word of -7 Immediate addressing", total, failed);
+	assert_word(get_word((int *) build_data_word(IMMEDIATE, 56), 0), get_word(finals, 4),
+	            "build data word of 56 Immediate addressing", total, failed);
+	assert_word(get_word((int *) build_data_word(IMMEDIATE, 1048575), 0), get_word(finals, 5),
+	            "build data word of 1048575 Immediate addressing", total, failed);
+	assert_word(get_word((int *) build_data_word(IMMEDIATE, -1048575), 0), get_word(finals, 6),
+	            "build data word of -1048575 Immediate addressing", total, failed);
+	assert_word(get_word((int *) build_data_word(DIRECT, 1048575), 0), get_word(finals, 7),
+	            "build data word of 1048575 Immediate addressing", total, failed);
+	assert_word(get_word((int *) build_data_word(DIRECT, -1048575), 0), get_word(finals, 8),
+	            "build data word of -1048575 Immediate addressing", total, failed);
 }
 
 TEST(Code_ValidateOp) {
-	assert_true(validate_op_addr(REGISTER, RELATIVE, 4,4,REGISTER,RELATIVE,IMMEDIATE,DIRECT,REGISTER,RELATIVE,IMMEDIATE,DIRECT),"validate operatrion register,relative,4,4",total,failed);
-	assert_true(validate_op_addr(REGISTER,NONE_ADDR,4,0,REGISTER,RELATIVE,IMMEDIATE,DIRECT),"validate operation register 4,0,everything", total, failed);
-	assert_true(validate_op_addr(REGISTER,NONE_ADDR,4,0,DIRECT,RELATIVE,IMMEDIATE,REGISTER),"validate operation addressing REGISTER TO ALL RESGISTER LAST x2",total,failed);
-	assert_true(validate_op_addr(REGISTER,REGISTER,4,4,DIRECT,RELATIVE,IMMEDIATE,REGISTER,DIRECT,RELATIVE,IMMEDIATE,REGISTER),"validate operation addressing REGISTER TO ALL RESGISTER LAST",total,failed);
-	assert_true(validate_op_addr(REGISTER,REGISTER,1,1,REGISTER,REGISTER),"validate operation addressing REGISTER REGISTER to REGISTER REGISTER",total,failed);
+	assert_true(validate_op_addr(REGISTER, RELATIVE, 4, 4, REGISTER, RELATIVE, IMMEDIATE, DIRECT, REGISTER, RELATIVE,
+	                             IMMEDIATE, DIRECT), "validate operatrion register,relative,4,4", total, failed);
+	assert_true(validate_op_addr(REGISTER, NONE_ADDR, 4, 0, REGISTER, RELATIVE, IMMEDIATE, DIRECT),
+	            "validate operation register 4,0,everything", total, failed);
+	assert_true(validate_op_addr(REGISTER, NONE_ADDR, 4, 0, DIRECT, RELATIVE, IMMEDIATE, REGISTER),
+	            "validate operation addressing REGISTER TO ALL RESGISTER LAST x2", total, failed);
+	assert_true(validate_op_addr(REGISTER, REGISTER, 4, 4, DIRECT, RELATIVE, IMMEDIATE, REGISTER, DIRECT, RELATIVE,
+	                             IMMEDIATE, REGISTER), "validate operation addressing REGISTER TO ALL RESGISTER LAST",
+	            total, failed);
+	assert_true(validate_op_addr(REGISTER, REGISTER, 1, 1, REGISTER, REGISTER),
+	            "validate operation addressing REGISTER REGISTER to REGISTER REGISTER", total, failed);
 
-	assert_false(validate_op_addr(REGISTER,REGISTER,3,3,DIRECT,RELATIVE,IMMEDIATE,DIRECT,RELATIVE,IMMEDIATE),"validate operation addressing that is not here double REGISTER",total,failed);
-	assert_false(validate_op_addr(RELATIVE,NONE_ADDR,2,0,IMMEDIATE,REGISTER),"",total,failed);
-	assert_false(validate_op_addr(DIRECT,NONE_ADDR,3,0,IMMEDIATE,REGISTER,RELATIVE),"",total,failed);
-	assert_false(validate_op_addr(IMMEDIATE,NONE_ADDR,3,0,REGISTER,DIRECT,RELATIVE),"",total,failed);
-	assert_false(validate_op_addr(REGISTER,NONE_ADDR,3,0,IMMEDIATE,DIRECT,RELATIVE),"",total,failed);
+	assert_false(validate_op_addr(REGISTER, REGISTER, 3, 3, DIRECT, RELATIVE, IMMEDIATE, DIRECT, RELATIVE, IMMEDIATE),
+	             "validate operation addressing that is not here double REGISTER", total, failed);
+	assert_false(validate_op_addr(RELATIVE, NONE_ADDR, 2, 0, IMMEDIATE, REGISTER), "", total, failed);
+	assert_false(validate_op_addr(DIRECT, NONE_ADDR, 3, 0, IMMEDIATE, REGISTER, RELATIVE), "", total, failed);
+	assert_false(validate_op_addr(IMMEDIATE, NONE_ADDR, 3, 0, REGISTER, DIRECT, RELATIVE), "", total, failed);
+	assert_false(validate_op_addr(REGISTER, NONE_ADDR, 3, 0, IMMEDIATE, DIRECT, RELATIVE), "", total, failed);
 
-	assert_false(validate_op_addr(REGISTER,REGISTER,3,3,IMMEDIATE,DIRECT,RELATIVE,IMMEDIATE,DIRECT,RELATIVE),"",total,failed);
-	assert_false(validate_op_addr(REGISTER,DIRECT,3,3,IMMEDIATE,DIRECT,RELATIVE,IMMEDIATE,REGISTER,RELATIVE),"",total,failed);
-	assert_false(validate_op_addr(REGISTER,RELATIVE,3,3,IMMEDIATE,DIRECT,RELATIVE,IMMEDIATE,DIRECT,REGISTER),"",total,failed);
-	assert_false(validate_op_addr(REGISTER,IMMEDIATE,3,3,IMMEDIATE,DIRECT,RELATIVE,REGISTER,DIRECT,RELATIVE),"",total,failed);
+	assert_false(validate_op_addr(REGISTER, REGISTER, 3, 3, IMMEDIATE, DIRECT, RELATIVE, IMMEDIATE, DIRECT, RELATIVE),
+	             "", total, failed);
+	assert_false(validate_op_addr(REGISTER, DIRECT, 3, 3, IMMEDIATE, DIRECT, RELATIVE, IMMEDIATE, REGISTER, RELATIVE),
+	             "", total, failed);
+	assert_false(validate_op_addr(REGISTER, RELATIVE, 3, 3, IMMEDIATE, DIRECT, RELATIVE, IMMEDIATE, DIRECT, REGISTER),
+	             "", total, failed);
+	assert_false(validate_op_addr(REGISTER, IMMEDIATE, 3, 3, IMMEDIATE, DIRECT, RELATIVE, REGISTER, DIRECT, RELATIVE),
+	             "", total, failed);
 
-	assert_false(validate_op_addr(DIRECT,REGISTER,3,3,IMMEDIATE,REGISTER,RELATIVE,IMMEDIATE,DIRECT,RELATIVE),"",total,failed);
-	assert_false(validate_op_addr(DIRECT,IMMEDIATE,3,3,IMMEDIATE,REGISTER,RELATIVE,REGISTER,DIRECT,RELATIVE),"",total,failed);
-	assert_false(validate_op_addr(DIRECT,DIRECT,3,3,IMMEDIATE,REGISTER,RELATIVE,IMMEDIATE,REGISTER,RELATIVE),"",total,failed);
-	assert_false(validate_op_addr(DIRECT,RELATIVE,3,3,IMMEDIATE,REGISTER,RELATIVE,IMMEDIATE,DIRECT,REGISTER),"",total,failed);
+	assert_false(validate_op_addr(DIRECT, REGISTER, 3, 3, IMMEDIATE, REGISTER, RELATIVE, IMMEDIATE, DIRECT, RELATIVE),
+	             "", total, failed);
+	assert_false(validate_op_addr(DIRECT, IMMEDIATE, 3, 3, IMMEDIATE, REGISTER, RELATIVE, REGISTER, DIRECT, RELATIVE),
+	             "", total, failed);
+	assert_false(validate_op_addr(DIRECT, DIRECT, 3, 3, IMMEDIATE, REGISTER, RELATIVE, IMMEDIATE, REGISTER, RELATIVE),
+	             "", total, failed);
+	assert_false(validate_op_addr(DIRECT, RELATIVE, 3, 3, IMMEDIATE, REGISTER, RELATIVE, IMMEDIATE, DIRECT, REGISTER),
+	             "", total, failed);
 
-	assert_false(validate_op_addr(IMMEDIATE,REGISTER,3,3,DIRECT,REGISTER,RELATIVE,IMMEDIATE,DIRECT,RELATIVE),"",total,failed);
-	assert_false(validate_op_addr(IMMEDIATE,IMMEDIATE,3,3,DIRECT,REGISTER,RELATIVE,REGISTER,DIRECT,RELATIVE),"",total,failed);
-	assert_false(validate_op_addr(IMMEDIATE,DIRECT,3,3,DIRECT,REGISTER,RELATIVE,IMMEDIATE,REGISTER,RELATIVE),"",total,failed);
-	assert_false(validate_op_addr(IMMEDIATE,RELATIVE,3,3,DIRECT,REGISTER,RELATIVE,IMMEDIATE,DIRECT,REGISTER),"",total,failed);
+	assert_false(validate_op_addr(IMMEDIATE, REGISTER, 3, 3, DIRECT, REGISTER, RELATIVE, IMMEDIATE, DIRECT, RELATIVE),
+	             "", total, failed);
+	assert_false(validate_op_addr(IMMEDIATE, IMMEDIATE, 3, 3, DIRECT, REGISTER, RELATIVE, REGISTER, DIRECT, RELATIVE),
+	             "", total, failed);
+	assert_false(validate_op_addr(IMMEDIATE, DIRECT, 3, 3, DIRECT, REGISTER, RELATIVE, IMMEDIATE, REGISTER, RELATIVE),
+	             "", total, failed);
+	assert_false(validate_op_addr(IMMEDIATE, RELATIVE, 3, 3, DIRECT, REGISTER, RELATIVE, IMMEDIATE, DIRECT, REGISTER),
+	             "", total, failed);
 
-	assert_false(validate_op_addr(RELATIVE,REGISTER,3,3,IMMEDIATE,REGISTER,DIRECT,IMMEDIATE,DIRECT,RELATIVE),"",total,failed);
-	assert_false(validate_op_addr(RELATIVE,IMMEDIATE,3,3,IMMEDIATE,REGISTER,DIRECT,REGISTER,DIRECT,RELATIVE),"",total,failed);
-	assert_false(validate_op_addr(RELATIVE,DIRECT,3,3,IMMEDIATE,REGISTER,DIRECT,IMMEDIATE,REGISTER,RELATIVE),"",total,failed);
-	assert_false(validate_op_addr(RELATIVE,RELATIVE,3,3,IMMEDIATE,REGISTER,DIRECT,IMMEDIATE,DIRECT,REGISTER),"",total,failed);
+	assert_false(validate_op_addr(RELATIVE, REGISTER, 3, 3, IMMEDIATE, REGISTER, DIRECT, IMMEDIATE, DIRECT, RELATIVE),
+	             "", total, failed);
+	assert_false(validate_op_addr(RELATIVE, IMMEDIATE, 3, 3, IMMEDIATE, REGISTER, DIRECT, REGISTER, DIRECT, RELATIVE),
+	             "", total, failed);
+	assert_false(validate_op_addr(RELATIVE, DIRECT, 3, 3, IMMEDIATE, REGISTER, DIRECT, IMMEDIATE, REGISTER, RELATIVE),
+	             "", total, failed);
+	assert_false(validate_op_addr(RELATIVE, RELATIVE, 3, 3, IMMEDIATE, REGISTER, DIRECT, IMMEDIATE, DIRECT, REGISTER),
+	             "", total, failed);
 
 }
 
+TEST(Code_Process) {
+	char codeImg[500];
+	int ci = 100;
+	int finals[20] = {
+			0b000000110011101000000100,
+			0b000000000001110100000100,
+			0b111111111111111001001100,
+			0b000001110001100100000100,
+			0b000001000000000000000100,
+			0b000000000000000000101100,
+			0b000000000000000001000100,
+	};
+	assert_false(process_code("\t mov \t r1\t , \tr2", 0, &ci, codeImg), "mov r1,r2", total, failed);
+	assert_int(101,ci,"mov r1,r2 ci",total,failed);
+	assert_word(get_word(finals,0),&codeImg[(ci-1)*3],"mov r1,r2 machine code",total,failed);
+
+	assert_false(process_code("\t mov \t #-55\t , \tr5", 0, &ci, codeImg), "mov #-55,r5", total, failed);
+	assert_int(103,ci,"mov r1,r2 ci",total,failed);
+	assert_word(get_word(finals,1),&codeImg[(ci-2)*3],"mov r1,r2 machine code",total,failed);
+	assert_word(get_word(finals,2),&codeImg[(ci-1)*3],"mov r1,r2 machine code data",total,failed);
+
+	assert_false(process_code("cmp r0,r1",0,&ci,codeImg),"cmp r0,r1",total,failed);
+	assert_int(104,ci,"cmp r0,r1 ci",total,failed);
+	assert_word(get_word(finals,3),&codeImg[(ci-1)*3],"cmp r0,r1 machine code",total,failed);
+
+	assert_false(process_code("cmp #5,#8",0,&ci,codeImg),"cmp #5,#8",total,failed);
+	assert_int(107,ci,"cmp #5,#8 ci",total,failed);
+	assert_word(get_word(finals,4),&codeImg[(ci-3)*3],"cmp #5,#8 machine code",total,failed);
+	assert_word(get_word(finals,5),&codeImg[(ci-2)*3],"cmp #5,#8 machine code data",total,failed);
+	assert_word(get_word(finals,6),&codeImg[(ci-1)*3],"cmp #5,#8 machine code data",total,failed);
+
+	{
+		int curr_ci = ci;
+		assert_true(process_code("stop #5", 0, &ci, codeImg), "stop #5", total, failed); /* fails */
+		assert_true(process_code("jsr #5", 0, &ci, codeImg), "jsr #5", total, failed);
+		assert_int(curr_ci, ci, "2 invalid operations",total, failed);
+	}
+}

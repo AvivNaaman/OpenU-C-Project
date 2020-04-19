@@ -49,6 +49,7 @@ void write_word(char *buffer, int dc, char byte0, char byte1, char byte2) {
 	buffer[dc] = byte2;
 }
 
+
 int is_int(char *string) {
 	int i = 0;
 	if (string[0] == '-' || string[0] == '+') i++; /* if string starts with +/-, it's OK */

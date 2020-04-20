@@ -1,8 +1,9 @@
-#include "utils.h"
 #include <ctype.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include "utils.h"
+#include "processfile.h" /* For getting line number and file names */
 
 /* Returns whether a string contains a symbol from a certain index. copies the symbol (if exists) to the string argument */
 char *parse_symbol(char *line) {
@@ -155,4 +156,9 @@ int is_saved_word(char *string) {
 		return TRUE;
 	}
 	return FALSE;
+}
+
+/* Prints a detailed error message to the user, including file, line, and message. */
+void print_error(char *message) {
+	printf("Error: In file %s:%d: %s\n",get_curr_filename(),get_curr_line(),message);
 }

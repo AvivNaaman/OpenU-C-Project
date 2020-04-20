@@ -21,43 +21,46 @@ int process_code(char *line, int i, int *ci, char *code_img) {
 		operation[j] = line[i];
 	}
 	operation[j] = '\0'; /* End of string */
-
 	/* Get opcode & funct by command name into curr_opcode/curr_funct */
 	get_opcode_func(operation, &curr_opcode, &curr_funct);
 	/* If invalid operation, print and skip processing the line. */
 	if (curr_opcode == NONE_OP) {
-		printf("Unrecognized instruction: %s.", operation);
-		return TRUE;
+		print_error("Unrecognized command.");
+		return TRUE; /* an error occurred */
 	}
 	/* Analyze operands */
 	MOVE_TO_NOT_WHITE(line, i)
+	if (line[i] == ',') {
+		print_error("Unexpected comma after command.");
+		return TRUE; /* an error occurred */
+	}
 	/* Make some space to the operand strings */
 	operands[0] = malloc_with_check(MAX_LINE_LENGTH);
 	operands[1] = malloc_with_check(MAX_LINE_LENGTH);
 	/* until no too many operands (max of 2) and it's not the end of the line */
 	for (operand_count = 0; line[i] != EOF && line[i] != '\n'; ) {
 		if (operand_count == 2) /* =We already got 2 operands in, We're going ot get the third! */ {
-			printf("Too many operands for operation %s", operation);
-			return TRUE;
+			print_error("Too many operands for command.");
+			return TRUE; /* an error occurred */
 		}
-		/* as long we're still on same operand */ /* TODO: Validate chars of operand */
+		/* as long we're still on same operand */
 		for (j = 0; line[i] && line[i] != '\t' && line[i] != ' ' && line[i] != '\n' && line[i] != EOF && line[i] != ','; i++, j++) {
 			operands[operand_count][j] = line[i];
 		}
+		operands[operand_count][j] = '\0';
 		operand_count++; /* We've just saved another operand! */
 		MOVE_TO_NOT_WHITE(line, i)
 		if (line[i] == '\n' || line[i] == EOF || !line[i]) break;
 		else if (line[i] != ',') { /* TODO: Error about unexpected character */
 			/* After operand & after white chars there's something that isn't ',' or end of line.. */
-			printf("Error: Expecting ',' between operands (got '%c')", line[i]);
+			print_error("Expecting ',' between operands");
 			return TRUE;
 		}
 		i++;
-		operands[operand_count][j] = '\0';
 		MOVE_TO_NOT_WHITE(line, i);
 		/* if there was just a comma, then (optionally) white char(s) and then end of line */
-		if (line[i] == '\n' || line[i] == EOF) printf("Error: missing operand after comma");
-		else if (line[i] == ',') printf("Error: Multiple consecutive commas");
+		if (line[i] == '\n' || line[i] == EOF || !line[i]) print_error("Missing operand after comma.");
+		else if (line[i] == ',') print_error("Multiple consecutive commas.");
 		else continue; /* No errors, continue */
 		return TRUE; /* return that errors found */
 	}
@@ -188,7 +191,10 @@ code_word *get_code_word(opcode curr_opcode, funct curr_funct, int op_count, cha
 	/* Validate the operand types and count */
 	if (curr_opcode >= MOV_OP && curr_opcode <= LEA_OP) {
 		if (op_count != 2) {
-			printf("Error: 2 operands required for operation (got %d)", op_count);
+			if (op_count == 0)
+				print_error("2 operands required for operation (got 0)");
+			else
+				print_error("2 operands required for operation (got 1)");
 			return NULL;
 		}
 
@@ -207,8 +213,8 @@ code_word *get_code_word(opcode curr_opcode, funct curr_funct, int op_count, cha
 		addressing_type first_addressing;
 		/*if operand number is not 1 there are either Too many operands or to few*/
 		if (op_count != 1) {
-			if (op_count < 1) printf("Error: Missing operands");
-			if (op_count > 1) printf("Error: Too many operands");
+			if (op_count < 1) print_error("Missing operands");
+			if (op_count > 1) print_error("Too many operands");
 			return NULL;
 		}
 		first_addressing = get_addressing_type(operands[0]);
@@ -222,7 +228,7 @@ code_word *get_code_word(opcode curr_opcode, funct curr_funct, int op_count, cha
 	} else if (curr_opcode <= STOP_OP && curr_opcode >= RTS_OP) {
 		/*if operand number is not 0 there are Too many operands*/
 		if (op_count > 0) {
-			printf("Error: Too many operands");
+			print_error("Too many operands");
 			return NULL;
 		}
 	}
@@ -311,7 +317,7 @@ bool validate_op_addr(addressing_type op1_addressing, addressing_type op2_addres
 	(op1_valid_addr_count > 1 && op1_1 == op1_addressing)||
 	(op1_valid_addr_count > 2 && op1_2 == op1_addressing) ||
 	(op1_valid_addr_count > 3 && op1_3 == op1_addressing))) {
-		printf("Error: invalid addressing mode for first operand.");
+		print_error("Invalid addressing mode for first operand.");
 		is_valid = FALSE;
 	}
 	if (!((op2_valid_addr_count == 0 && op2_addressing == NONE_ADDR) ||
@@ -319,7 +325,7 @@ bool validate_op_addr(addressing_type op1_addressing, addressing_type op2_addres
 	    (op2_valid_addr_count > 1 && op2_1 == op2_addressing)||
 	    (op2_valid_addr_count > 2 && op2_2 == op2_addressing) ||
 	    (op2_valid_addr_count > 3 && op2_3 == op2_addressing))) {
-		printf("Error: invalid addressing mode for second operand.");
+		print_error("Invalid addressing mode for second operand.");
 		is_valid = FALSE;
 	}
 	return is_valid;
@@ -336,7 +342,7 @@ reg get_register_by_name(char *name) {
 
 data_word *build_data_word(addressing_type addressing, int data) {
 	signed int mask; /* For bitwise operations for data conversion */
-	unsigned int ARE = 0b100, mask_un;
+	unsigned int ARE = 4, mask_un; /* 4 = 2^2 = 1 << 2 */
 	data_word *dataword = malloc_with_check(sizeof(data_word));
 
 	if (addressing == DIRECT) ARE = 1;

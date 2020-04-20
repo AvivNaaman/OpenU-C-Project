@@ -14,7 +14,7 @@
  * data_img - the data image array.
  */
 int process_line_fpass(char *line, table *datas, table *codes, table *externals, int *IC, int *DC, char *code_img,
-                       char *data_img, char *filename) {
+                       char *data_img) {
 	int i;
 	char temp[80];
 	char *symbol;

@@ -2,9 +2,21 @@
 // Created by aviv on 18/04/2020.
 //
 #include <stdlib.h>
+#include <stdio.h>
 #include "UnitTests.h"
 #include "assertions.h"
 #include "../code.h"
+
+#define RED   "\x1B[31m"
+#define GRN   "\x1B[32m"
+#define YEL   "\x1B[33m"
+#define BLU   "\x1B[34m"
+#define MAG   "\x1B[35m"
+#define CYN   "\x1B[36m"
+#define WHT   "\x1B[37m"
+#define SEP_COLOR GRN
+#define RESET "\x1B[0m"
+#define SEPERATOR(color) printf(color "=======================\n" RESET);
 
 TEST(Code) {
 	CALL_TEST(Code_GetOpCodeFunc, *total, *failed)
@@ -85,6 +97,7 @@ TEST(Code_GetAddrType) {
 	assert_int(IMMEDIATE, get_addressing_type("#+1"), "get addressing type #+0", total, failed);
 	assert_int(IMMEDIATE, get_addressing_type("#+0"), "get addressing type #+0", total, failed);
 	assert_int(IMMEDIATE, get_addressing_type("#-0"), "get addressing type #-0", total, failed);
+	SEPERATOR(SEP_COLOR)
 	assert_int(NONE_ADDR, get_addressing_type("#--1"), "get addressing type #--1", total, failed);
 	assert_int(NONE_ADDR, get_addressing_type("#.5"), "get addressing type #.5", total, failed);
 	assert_int(NONE_ADDR, get_addressing_type("#4.8"), "get addressing type #4.8", total, failed);
@@ -93,7 +106,7 @@ TEST(Code_GetAddrType) {
 	assert_int(NONE_ADDR, get_addressing_type("#$123"), "get addressing type #$123", total, failed);
 	assert_int(NONE_ADDR, get_addressing_type("#$123"), "get addressing type $123", total, failed);
 	assert_int(NONE_ADDR, get_addressing_type("#"), "get addressing type #", total, failed);
-
+	SEPERATOR(SEP_COLOR)
 	assert_int(RELATIVE, get_addressing_type("&labello"), "get addressing type &labello", total, failed);
 	assert_int(RELATIVE, get_addressing_type("&hullo123"), "get addressing type &hullo123", total, failed);
 	assert_int(RELATIVE, get_addressing_type("&hULLO23"), "get addressing type &hULLO23", total, failed);
@@ -101,6 +114,7 @@ TEST(Code_GetAddrType) {
 	assert_int(RELATIVE, get_addressing_type("&labelllllllllllllllllllllllllll"),
 	           "get addressing type &labelllllllllllllllllllllllllll", total, failed);
 	assert_int(RELATIVE, get_addressing_type("&R5"), "get addressing type &R5", total, failed);
+	SEPERATOR(SEP_COLOR)
 	assert_int(NONE_ADDR, get_addressing_type("&1label"), "get addressing type &1label", total, failed);
 	assert_int(NONE_ADDR, get_addressing_type("&labellllllllllllllllllllllllllll"),
 	           "get addressing type &labellllllllllllllllllllllllllll", total, failed);
@@ -108,7 +122,7 @@ TEST(Code_GetAddrType) {
 	assert_int(NONE_ADDR, get_addressing_type("&hullo$"), "get addressing type &hullo$", total, failed);
 	assert_int(NONE_ADDR, get_addressing_type("&$hullo"), "get addressing type &$hullo", total, failed);
 	assert_int(NONE_ADDR, get_addressing_type("&r5"), "get addressing type &r5", total, failed);
-
+	SEPERATOR(SEP_COLOR)
 	assert_int(DIRECT, get_addressing_type("label"), "get addressing type label", total, failed);
 	assert_int(DIRECT, get_addressing_type("labelllllllllllllllllllllllllll"), "get addressing type label", total,
 	           failed);
@@ -120,6 +134,7 @@ TEST(Code_GetAddrType) {
 	assert_int(DIRECT, get_addressing_type("H1"), "get addressing type label", total, failed);
 	assert_int(DIRECT, get_addressing_type("H"), "get addressing type label", total, failed);
 	assert_int(DIRECT, get_addressing_type("R0"), "get addressing type label", total, failed);
+	SEPERATOR(SEP_COLOR)
 	assert_int(NONE_ADDR, get_addressing_type("$label"), "get addressing type label", total, failed);
 	assert_int(NONE_ADDR, get_addressing_type("1label"), "get addressing type label", total, failed);
 	assert_int(NONE_ADDR, get_addressing_type("labellllllllllllllllllllllllllll"), "get addressing type label", total,
@@ -129,6 +144,7 @@ TEST(Code_GetAddrType) {
 	assert_int(NONE_ADDR, get_addressing_type("H*"), "get addressing type label", total, failed);
 	assert_int(NONE_ADDR, get_addressing_type("label:"), "get addressing type label", total, failed);
 	assert_int(NONE_ADDR, get_addressing_type(":label"), "get addressing type label", total, failed);
+	SEPERATOR(SEP_COLOR)
 }
 
 char *get_word(int *arr, int indx) {
@@ -309,6 +325,7 @@ TEST(Code_ValidateOp) {
 
 	assert_false(validate_op_addr(REGISTER, REGISTER, 3, 3, DIRECT, RELATIVE, IMMEDIATE, DIRECT, RELATIVE, IMMEDIATE),
 	             "validate operation addressing that is not here double REGISTER", total, failed);
+	SEPERATOR(SEP_COLOR)
 	assert_false(validate_op_addr(RELATIVE, NONE_ADDR, 2, 0, IMMEDIATE, REGISTER), "", total, failed);
 	assert_false(validate_op_addr(DIRECT, NONE_ADDR, 3, 0, IMMEDIATE, REGISTER, RELATIVE), "", total, failed);
 	assert_false(validate_op_addr(IMMEDIATE, NONE_ADDR, 3, 0, REGISTER, DIRECT, RELATIVE), "", total, failed);
@@ -349,7 +366,7 @@ TEST(Code_ValidateOp) {
 	             "", total, failed);
 	assert_false(validate_op_addr(RELATIVE, RELATIVE, 3, 3, IMMEDIATE, REGISTER, DIRECT, IMMEDIATE, DIRECT, REGISTER),
 	             "", total, failed);
-
+	SEPERATOR(SEP_COLOR)
 }
 
 TEST(Code_Process) {
@@ -382,11 +399,82 @@ TEST(Code_Process) {
 	assert_word(get_word(finals,4),&codeImg[(ci-3)*3],"cmp #5,#8 machine code",total,failed);
 	assert_word(get_word(finals,5),&codeImg[(ci-2)*3],"cmp #5,#8 machine code data",total,failed);
 	assert_word(get_word(finals,6),&codeImg[(ci-1)*3],"cmp #5,#8 machine code data",total,failed);
-
+	/* Incalids */
 	{
 		int curr_ci = ci;
+		SEPERATOR(SEP_COLOR)
 		assert_true(process_code("stop #5", 0, &ci, codeImg), "stop #5", total, failed); /* fails */
 		assert_true(process_code("jsr #5", 0, &ci, codeImg), "jsr #5", total, failed);
+		/* Invalid addressing or operand count */
+		assert_true(process_code("mov r0,#5", 0, &ci, codeImg), "mov r0,#5", total, failed);
+		assert_true(process_code("mov r0,&label", 0, &ci, codeImg), "mov r0,&label", total, failed);
+		assert_true(process_code("cmp r0,&label", 0, &ci, codeImg), "cmp r0,&label", total, failed);
+		assert_true(process_code("cmp &label,r0", 0, &ci, codeImg), "cmp &label,r0", total, failed);
+		assert_true(process_code("cmp &label,&label", 0, &ci, codeImg), "cmp &label,&label", total, failed);
+		assert_true(process_code("add &label,r0", 0, &ci, codeImg), "add &label,r0", total, failed);
+		assert_true(process_code("add r0, &label", 0, &ci, codeImg), "add r0, &label", total, failed);
+		assert_true(process_code("add r0, #6", 0, &ci, codeImg), "add r0, #6", total, failed);
+		assert_true(process_code("sub &label,r0", 0, &ci, codeImg), "sub &label,r0", total, failed);
+		assert_true(process_code("sub r0, &label", 0, &ci, codeImg), "sub r0, &label", total, failed);
+		assert_true(process_code("sub r0, #6", 0, &ci, codeImg), "sub r0, #6", total, failed);
+		assert_true(process_code("lea #5,&label", 0, &ci, codeImg), "lea #5,&label", total, failed);
+		assert_true(process_code("lea #5, #7", 0, &ci, codeImg), "lea #5, #7", total, failed);
+		assert_true(process_code("lea #7, r0", 0, &ci, codeImg), "lea #7, r0", total, failed);
+		assert_true(process_code("lea label, #55", 0, &ci, codeImg), "lea label, #55", total, failed);
+		assert_true(process_code("lea label, &label", 0, &ci, codeImg), "lea label, &label", total, failed);
+		assert_true(process_code("clr #5, label", 0, &ci, codeImg), "clr #5, label", total, failed);
+		assert_true(process_code("clr #5", 0, &ci, codeImg), "clr #5", total, failed);
+		assert_true(process_code("clr &label", 0, &ci, codeImg), "clr &label", total, failed);
+		assert_true(process_code("not #5, label", 0, &ci, codeImg), "not #5, label", total, failed);
+		assert_true(process_code("not #5", 0, &ci, codeImg), "not #5", total, failed);
+		assert_true(process_code("not &label", 0, &ci, codeImg), "not &label", total, failed);
+		assert_true(process_code("inc #5, label", 0, &ci, codeImg), "inc #5, label", total, failed);
+		assert_true(process_code("inc #5", 0, &ci, codeImg), "inc #5", total, failed);
+		assert_true(process_code("inc &label", 0, &ci, codeImg), "inc &label", total, failed);
+		assert_true(process_code("dec #5, label", 0, &ci, codeImg), "dec #5, label", total, failed);
+		assert_true(process_code("dec #5", 0, &ci, codeImg), "dec #5", total, failed);
+		assert_true(process_code("dec &label", 0, &ci, codeImg), "dec &label", total, failed);
+		assert_true(process_code("red #5, label", 0, &ci, codeImg), "red #5, label", total, failed);
+		assert_true(process_code("red #5", 0, &ci, codeImg), "red #5", total, failed);
+		assert_true(process_code("red &label", 0, &ci, codeImg), "red &label", total, failed);
+		assert_true(process_code("jmp r0", 0, &ci, codeImg), "jmp r0", total, failed);
+		assert_true(process_code("jmp #7", 0, &ci, codeImg), "jmp #7", total, failed);
+		assert_true(process_code("jmp &label, r0", 0, &ci, codeImg), "jmp &label, r0", total, failed);
+		assert_true(process_code("bne r0", 0, &ci, codeImg), "bne r0", total, failed);
+		assert_true(process_code("bne #7", 0, &ci, codeImg), "bne #7", total, failed);
+		assert_true(process_code("bne &label, r0", 0, &ci, codeImg), "bne &label, r0", total, failed);
+		assert_true(process_code("jsr r0", 0, &ci, codeImg), "jsr r0", total, failed);
+		assert_true(process_code("jsr #7", 0, &ci, codeImg), "jsr #7", total, failed);
+		assert_true(process_code("jsr &label, r0", 0, &ci, codeImg), "jsr &label, r0", total, failed);
+		assert_true(process_code("prn r0,r1", 0, &ci, codeImg), "prn r0,r1", total, failed);
+		assert_true(process_code("prn #9,#10", 0, &ci, codeImg), "prn #9,#10", total, failed);
+		assert_true(process_code("prn &label", 0, &ci, codeImg), "prn &label", total, failed);
+		assert_true(process_code("prn #99,&label", 0, &ci, codeImg), "prn #99,&label", total, failed);
+		assert_true(process_code("rts label", 0, &ci, codeImg), "rts label", total, failed);
+		assert_true(process_code("rts r0", 0, &ci, codeImg), "rts r0", total, failed);
+		assert_true(process_code("rts &label", 0, &ci, codeImg), "rts &label", total, failed);
+		assert_true(process_code("rts #3", 0, &ci, codeImg), "rts #3", total, failed);
+		assert_true(process_code("stop label", 0, &ci, codeImg), "stop label", total, failed);
+		assert_true(process_code("stop r0", 0, &ci, codeImg), "stop r0", total, failed);
+		assert_true(process_code("stop &label", 0, &ci, codeImg), "stop &label", total, failed);
+		assert_true(process_code("stop #3", 0, &ci, codeImg), "stop #3", total, failed);
+		/* Invalid syntax */
+		assert_true(process_code("mov ,r0", 0, &ci, codeImg), "mov ,r0", total, failed);
+		assert_true(process_code("mov ,r0,r0", 0, &ci, codeImg), "mov ,r0,r0", total, failed);
+		assert_true(process_code("mov ,r0,r0,", 0, &ci, codeImg), "mov ,r0,r0,", total, failed);
+		assert_true(process_code("mov r0,r0,", 0, &ci, codeImg), "mov r0,r0,", total, failed);
+		assert_true(process_code("mov r0,,", 0, &ci, codeImg), "mov r0,,", total, failed);
+		assert_true(process_code("mov r0, \t    \t   , \t    ", 0, &ci, codeImg), "mov r0,  \t ,", total, failed);
+		assert_true(process_code("mov r0                r1", 0, &ci, codeImg), "mov r0          r1", total, failed);
+		assert_true(process_code("mov r0r1", 0, &ci, codeImg), "mov r0r1", total, failed);
+		assert_true(process_code("", 0, &ci, codeImg), "", total, failed);
+		assert_true(process_code("clr r 0", 0, &ci, codeImg), "clr r 0", total, failed);
+		assert_true(process_code("clr r         0", 0, &ci, codeImg), "clr r    0", total, failed);
+		assert_true(process_code("clr ,r0", 0, &ci, codeImg), "clr ,r0", total, failed);
+		assert_true(process_code("clr r0,", 0, &ci, codeImg), "clr r0,", total, failed);
+		assert_true(process_code("clr ,r0,", 0, &ci, codeImg), "clr ,r0,", total, failed);
+		assert_true(process_code("clr r0,,", 0, &ci, codeImg), "clr r0,,", total, failed);
+		SEPERATOR(SEP_COLOR)
 		assert_int(curr_ci, ci, "2 invalid operations",total, failed);
 	}
 }

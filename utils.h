@@ -38,3 +38,6 @@ int is_contain_non_alphanumeric(char *string);
 
 /*Returns TRUE if string is saved word*/
 int is_saved_word(char *string);
+
+/* Prints a detailed error message to the user, including file, line, and message. */
+void print_error(char *message);

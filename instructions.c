@@ -5,14 +5,14 @@
 #include "utils.h"
 
 /* Returns the first instruction from the specified index. if no such one, returns NONE */
-instruction_type find_instruction_from_index(char *string, int index){
+instruction_type find_instruction_from_index(char *string, int *index){
 	char temp[MAX_LINE_LENGTH];
 	int j;
-	MOVE_TO_NOT_WHITE(string, index) /* get index to first not white place */
-	if (string[index] != '.') return NONE_INST;
+	MOVE_TO_NOT_WHITE(string, *index) /* get index to first not white place */
+	if (string[*index] != '.') return NONE_INST;
 
-	for (j = 0;string[index] && string[index] != '\t' && string[index] != ' ';index++,j++) {
-		temp[j] = string[index];
+	for (j = 0;string[*index] && string[*index] != '\t' && string[*index] != ' ';(*index)++,j++) {
+		temp[j] = string[*index];
 	}
 	temp[j] = '\0'; /* End of string */
 
@@ -77,7 +77,7 @@ int process_data_instruction(char *line, int index, machine_data **data_img, int
 	int i;
 	do {
 		MOVE_TO_NOT_WHITE(line, index)
-		for (i = 0; line[index] && line[index] != EOF && line[index] != '\t' && line[index] != ' ' && line[index] != ',' ; index++,i++) {
+		for (i = 0; line[index] && line[index] != EOF && line[index] != '\t' && line[index] != ' ' && line[index] != ',' && line[index] != '\n' ; index++,i++) {
 			temp[i] = line[index];
 		}
 		temp[i] = '\0'; /* End of string */

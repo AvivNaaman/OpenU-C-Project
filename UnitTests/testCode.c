@@ -370,7 +370,7 @@ TEST(Code_ValidateOp) {
 }
 
 TEST(Code_Process) {
-	char codeImg[500];
+	machine_word *codeImg[500];
 	int ci = 100;
 	int finals[30] = {
 			0b000000110011101000000100,

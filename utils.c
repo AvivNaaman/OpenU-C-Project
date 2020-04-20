@@ -5,40 +5,42 @@
 #include "utils.h"
 #include "processfile.h" /* For getting line number and file names */
 
-/* Returns whether a string contains a symbol from a certain index. copies the symbol (if exists) to the string argument */
-char *parse_symbol(char *line) {
+/* Returns whether an error ocurred during the try of parsing the symbol. puts the symbol into the second buffer. */
+bool parse_symbol(char *line, char *symbol_dest) {
 	int j, i;
-	char *to_return;
+	bool isvalid; /* Indexes + can it be a valid label */
 	i = j = 0;
 
+	isvalid = TRUE;
 	/* Skip white chars at the beginning TODO: Check if necessary */
 	MOVE_TO_NOT_WHITE(line, i);
 
 	/* Label should start with alpha char */
 	if (!isalpha(line[i])) {
-		printf("Error: label must start with a letter");
-		return NULL;
+		isvalid = FALSE;
 	}
 	/* Let's allocate some memory to the string needed to be returned */
-	to_return = malloc_with_check(sizeof(char) * 32); /* Max length +1 */
-	if (to_return == NULL) return NULL;
 	for (; line[i] && line[i] != ':' && i <= 31; i++, j++) {
-		to_return[j] = line[i]; /* Go on until empty char OR symbol */
+		symbol_dest[j] = line[i]; /* Go on until empty char OR symbol */
 		/* Label must be alphanumeric! */
 		if (!isalnum(line[i])) {
-			free(to_return);
-			printf("Error: label must start with a letter, contain letters and digits and end with ':'.");
-			return NULL;
+			isvalid = FALSE;
 		}
 	}
-	to_return[j] = '\0'; /* End of string */
+	symbol_dest[j] = '\0'; /* End of string */
 
-	/* if IS symbol: (if the last char of the first word in line is ':' */
+	/* if it was a try to define label, print errors if needed. */
 	if (line[i] == ':')
-		return to_return;
-
-	printf("Error: label miss ':' right after it's end");
-	return NULL;
+	{
+		if (!isvalid) {
+			print_error("Label must start with a letter, contain letters and digits only and end with ':'.");
+			symbol_dest[0] = '\0';
+			return TRUE; /* No valid symbol, and no try to define one */
+		}
+		return FALSE;
+	}
+	symbol_dest[0] = '\0';
+	return FALSE; /* There was no error */
 }
 
 
@@ -63,11 +65,7 @@ int is_int(char *string) {
 }
 
 char *int_to_word(int num) {
-	char *word = (char *) calloc(3, sizeof(char));
-	if (word == NULL) {
-		printf("Memory Allocation Failed");
-		exit(1);
-	}
+	char *word = (char *) malloc_with_check(3* sizeof(char));
 	/* Shift bits if needed and keep only eight (2bytes) */
 	word[0] = (num >> 16) & 0xFF;
 	word[1] = (num >> 8) & 0xFF;
@@ -78,7 +76,7 @@ char *int_to_word(int num) {
 void *malloc_with_check(long size) {
 	void *ptr = malloc(size);
 	if (ptr == NULL) {
-		printf("Memory allocation failed");
+		print_error("Memory allocation failed");
 		exit(1);
 	}
 	return ptr;

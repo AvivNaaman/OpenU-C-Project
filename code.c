@@ -6,7 +6,7 @@
 #include "code.h"
 
 
-int process_code(char *line, int i, int *ci, machine_word **code_img) {
+int process_code(char *line, int i, int *ic, machine_word **code_img) {
 	char operation[8]; /* stores the string of the current code operation */
 	char *operands[2]; /* 2 strings, each for operand */
 	opcode curr_opcode; /* the current opcode and funct values */
@@ -82,7 +82,7 @@ int process_code(char *line, int i, int *ci, machine_word **code_img) {
 		word_to_write->is_code_word = TRUE;
 		(word_to_write->word).code = codeword;
 
-		code_img[*ci] = word_to_write;
+		code_img[*ic] = word_to_write;
 	}
 	{
 		addressing_type first_addr, second_addr;
@@ -90,7 +90,7 @@ int process_code(char *line, int i, int *ci, machine_word **code_img) {
 		second_addr = get_addressing_type(operands[1]);
 		/* if an additional data word is required */
 		if (first_addr != NONE_ADDR && first_addr != REGISTER) {
-			(*ci)++; /* increase ci */
+			(*ic)++; /* increase ci */
 			/* if the operand is immediately addressed, we can encode it right now: */
 			if (first_addr == IMMEDIATE) {
 				/* Get value of immediate addressed operand. notice that it starts with #, so we're skipping the # in the call to atoi */
@@ -98,13 +98,13 @@ int process_code(char *line, int i, int *ci, machine_word **code_img) {
 				machine_word *word_to_write = (machine_word *) malloc_with_check(sizeof(machine_word));
 				word_to_write->is_code_word = FALSE;
 				(word_to_write->word).data = build_data_word(IMMEDIATE, value);
-				code_img[*ci] = word_to_write;
+				code_img[*ic] = word_to_write;
 
 			}
 		}
 		/* And again - if another data word is required, increase CI. if it's an immediate addressing, encode it. */
 		if (second_addr != NONE_ADDR && second_addr != REGISTER) {
-			(*ci)++;
+			(*ic)++;
 			if (get_addressing_type(operands[1]) == IMMEDIATE) {
 				/* Get value of immediate addressed operand. notice that it starts with #, so we're skipping the # in the call to atoi */
 				int value = atoi(operands[1] + 1);
@@ -112,12 +112,12 @@ int process_code(char *line, int i, int *ci, machine_word **code_img) {
 				word_to_write->is_code_word = FALSE;
 				(word_to_write->word).data = build_data_word(IMMEDIATE, value);
 
-				code_img[*ci] = word_to_write;
+				code_img[*ic] = word_to_write;
 			}
 		}
 	}
 
-	(*ci)++; /* increase ci to point the next cell */
+	(*ic)++; /* increase ci to point the next cell */
 	return FALSE; /* No errors */
 }
 

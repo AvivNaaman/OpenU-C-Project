@@ -1,7 +1,7 @@
 /* Contains a method for processing a line in the first pass and another for processing a line in the second pass. */
 #include <stdio.h>
+#include <stdlib.h>
 #include "processline.h"
-#include "instructions.h"
 
 /*
  * processes a single instruction line. returns whether an error occurred.
@@ -16,7 +16,7 @@ int process_line_fpass(char *line, table *datas, table *codes, table *externals,
                        machine_data **data_img) {
 	int i;
 	char temp[80];
-	char *symbol;
+	char symbol[32];
 	instruction_type instruction;
 	/* TODO: implement */
 
@@ -26,38 +26,45 @@ int process_line_fpass(char *line, table *datas, table *codes, table *externals,
 	if (line[i] == '\n' || line[i] == EOF || line[i] == ';') return FALSE; /* Empty/Comment line - no errors found (of course) */
 
 	/* Check if symbol (*:), stages 1.3-1.5 */
-	symbol = parse_symbol(line);
+	/* if tried to define label, but it's invalid, return that an error occurred. */
+	if(parse_symbol(line, symbol)) {
+		return TRUE;
+	}
 
+	if (symbol[0] != '\0') {
+		for (;line[i] != ':';i++); /* is symbol detected, start analyzing from it's deceleration end */
+		i++;
+	}
 
 	MOVE_TO_NOT_WHITE(line, i) /* Move to next not-white char */
 
 	/* Check if it's an instruction (starting with '.') */
-	instruction = find_instruction_from_index(line, i);
+	instruction = find_instruction_from_index(line, &i);
 
 	MOVE_TO_NOT_WHITE(line, i);
 
 	/* is it's an instruction */
 	if (instruction != NONE_INST) {
 		/* if .string or .data, and symbol defined, put it into the symbol table */
-		if ((instruction == DATA || instruction == STRING) && symbol != NULL)
+		if ((instruction == DATA || instruction == STRING) && symbol[0] != '\0')
 			/* is data or string, add DC with the symbol to the table */
-			add_table_item(datas, temp, *DC);
+			add_table_item(datas, symbol, *DC);
 		/* if string, encode into data image buffer and increase dc as needed. */
 		if (instruction == STRING)
-			(*DC) += process_string_instruction(line, i, data_img, *DC);
+			(*DC) += process_string_instruction(line, i, data_img, DC);
 			/* if .data, do same but parse numbers. */
 		else if (instruction == DATA)
-			(*DC) += process_data_instruction(line, i, data_img, *DC);
+			(*DC) += process_data_instruction(line, i, data_img, DC);
 			/* if .extern, add to externals symbol table */
 		else if (instruction == EXTERN)
-			add_table_item(externals, temp, *DC);
+			add_table_item(externals, symbol, *DC);
 		/* .entry is handled in second pass! */
 	} /* end if (instruction != NONE) */
 		/* not instruction=>it's a command! */
 	else {
 		/* if symbol defined, add it to the table */
-		if (symbol != NULL)
-			add_table_item(codes, temp, *IC);
+		if (symbol[0] != '\0')
+			add_table_item(codes, symbol, *IC);
 		/* Analyze code */
 		process_code(line, i, IC, code_img);
 	}

@@ -9,14 +9,14 @@ typedef enum booleans {
 
 /* moves the index to the next place in string where the char isn't white */
 #define MOVE_TO_NOT_WHITE(string, index) \
-		for (;string[index] && (string[index] == '\t' || string[index] == ' '); ++(index))\
+		for (;string[(index)] && (string[(index)] == '\t' || string[(index)] == ' '); (++(index)))\
 		;
 
 #define MOVE_UNTIL_CHAR_OR_WHITE(string, index, char)\
 		for (;!string[index] || string[index] == '\t' || string[index] == ' ' || string[index] == char; ++(index)) ;
 
-/* Returns whether a string contains a symbol from a certain index. */
-char *parse_symbol(char *line);
+/* Returns whether an error ocurred during the try of parsing the symbol. puts the symbol into the second buffer. */
+bool parse_symbol(char *line, char *symbol_dest);
 
 /* Writes 2 bytes in order to buffer from index */
 void write_word(char* buffer, int index, char byte0, char byte1, char byte2);

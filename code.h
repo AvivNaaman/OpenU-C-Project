@@ -109,7 +109,7 @@ typedef struct machine_code_word {
 
 /* Processes a code line in first pass */
 /*first parameter is the line and second parameter is the code img*/
-int process_code(char *line, int i, int *ci, machine_word **code_img);
+int process_code(char *line, int i, int *ic, machine_word **code_img);
 /* Puts the opcode and the funct values inside the arguments by the name of the command */
 void get_opcode_func(char* cmd, opcode *opcode_out, funct *funct_out);
 /* Returns the addressing type enum value of the operand's addressing type */

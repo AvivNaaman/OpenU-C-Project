@@ -15,7 +15,7 @@ TEST(Instructions) {
 	ext = EXTERN;
 	ent = ENTRY;
 	str = STRING;
-	non = NONE;
+	non = NONE_INST;
 	char data_img[250];
 	char *temp_str;
 	int temp, i, j;

@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include "processline.h"
 #include "instructions.h"
-#include "code.h"
 
 /*
  * processes a single instruction line. returns whether an error occurred.
@@ -13,8 +12,8 @@
  * code_img - the code image array.
  * data_img - the data image array.
  */
-int process_line_fpass(char *line, table *datas, table *codes, table *externals, int *IC, int *DC, char *code_img,
-                       char *data_img) {
+int process_line_fpass(char *line, table *datas, table *codes, table *externals, int *IC, int *DC, machine_word **code_img,
+                       machine_data **data_img) {
 	int i;
 	char temp[80];
 	char *symbol;
@@ -38,7 +37,7 @@ int process_line_fpass(char *line, table *datas, table *codes, table *externals,
 	MOVE_TO_NOT_WHITE(line, i);
 
 	/* is it's an instruction */
-	if (instruction != NONE) {
+	if (instruction != NONE_INST) {
 		/* if .string or .data, and symbol defined, put it into the symbol table */
 		if ((instruction == DATA || instruction == STRING) && symbol != NULL)
 			/* is data or string, add DC with the symbol to the table */
@@ -60,7 +59,7 @@ int process_line_fpass(char *line, table *datas, table *codes, table *externals,
 		if (symbol != NULL)
 			add_table_item(codes, temp, *IC);
 		/* Analyze code */
-		process_code(line, i, NULL, NULL); /* TODO: Shouldn't it encode into memory?! */
+		process_code(line, i, IC, code_img);
 	}
 	return FALSE;
 }

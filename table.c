@@ -5,7 +5,7 @@
 #include <string.h>
 
 /* Adds a new entry to the table. the value argument is converted to char[3], which is 24bit word. */
-void add_table_item(table *tab, char *key, int value) {
+void add_table_item(table *tab, machine_data *key, int value) {
 	table prev_entry, curr_entry, new_entry;
 	new_entry = (table)malloc(sizeof(table_entry));
 	if (new_entry == NULL) {
@@ -33,9 +33,9 @@ void add_table_item(table *tab, char *key, int value) {
 
 /* TODO: Documentation =>\/ */
 
-table_entry *find_by_key(table tab, char *key) {
+table_entry *find_by_key(table tab, machine_data *key) {
 	while (tab != NULL) {
-		if (strcmp(tab->key,key) == 0) return tab;
+		if (memcmp(*key,tab->key,sizeof(machine_data)) == 0) return tab;
 		tab = tab->next;
 	}
 	return NULL;

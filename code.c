@@ -6,18 +6,19 @@
 #include "code.h"
 
 
-int process_code(char *line, int i, int *ci, char *code_img) {
-	char operation[80];
-	char *temp;
+int process_code(char *line, int i, int *ci, machine_word **code_img) {
+	char operation[8]; /* stores the string of the current code operation */
 	char *operands[2]; /* 2 strings, each for operand */
-	opcode curr_opcode;
-	code_word *codeword;
+	opcode curr_opcode; /* the current opcode and funct values */
 	funct curr_funct;
+	code_word *codeword; /* The current code word */
 	int j, operand_count;
+	machine_word *word_to_write;
 	/* Skip white chars */
 	MOVE_TO_NOT_WHITE(line, i)
 
-	for (j = 0; line[i] && line[i] != '\t' && line[i] != ' ' && line[i] != '\n' && line[i] != EOF; i++, j++) {
+	/* Until white char, end of line, or too big op */
+	for (j = 0; line[i] && line[i] != '\t' && line[i] != ' ' && line[i] != '\n' && line[i] != EOF && j < 6; i++, j++) {
 		operation[j] = line[i];
 	}
 	operation[j] = '\0'; /* End of string */
@@ -55,6 +56,9 @@ int process_code(char *line, int i, int *ci, char *code_img) {
 		else if (line[i] != ',') {
 			/* After operand & after white chars there's something that isn't ',' or end of line.. */
 			print_error("Expecting ',' between operands");
+			/* Release operands dynamically allocated memory */
+			free(operands[0]);
+			free(operands[1]);
 			return TRUE;
 		}
 		i++;
@@ -63,16 +67,23 @@ int process_code(char *line, int i, int *ci, char *code_img) {
 		if (line[i] == '\n' || line[i] == EOF || !line[i]) print_error("Missing operand after comma.");
 		else if (line[i] == ',') print_error("Multiple consecutive commas.");
 		else continue; /* No errors, continue */
-		return TRUE; /* return that errors found */
+		{ /* Error found */
+			/* No one forgot you two! */
+			free(operands[0]);
+			free(operands[1]);
+			return TRUE;
+		}
 	}
 
 	/* Build code word (returns null if validation failed) */
 	if ((codeword = get_code_word(curr_opcode, curr_funct, operand_count, operands)) == NULL) return TRUE;
+	{
+		word_to_write = (machine_word *) malloc_with_check(sizeof(machine_word));
+		word_to_write->is_code_word = TRUE;
+		(word_to_write->word).code = codeword;
 
-	temp = (char *) codeword;
-	write_word(code_img, *ci, temp[2], temp[1], temp[0]);
-
-	/* Same for second operand */
+		code_img[*ci] = word_to_write;
+	}
 	{
 		addressing_type first_addr, second_addr;
 		first_addr = get_addressing_type(operands[0]);
@@ -84,10 +95,11 @@ int process_code(char *line, int i, int *ci, char *code_img) {
 			if (first_addr == IMMEDIATE) {
 				/* Get value of immediate addressed operand. notice that it starts with #, so we're skipping the # in the call to atoi */
 				int value = atoi(operands[0] + 1);
-				temp = (char *) build_data_word(IMMEDIATE, value);
-				/* write data to code image */
-				write_word(code_img, *ci, temp[2], temp[1],
-				           temp[0]); /* [3] contains msb, we want just the 3 lower bytes. */
+				machine_word *word_to_write = (machine_word *) malloc_with_check(sizeof(machine_word));
+				word_to_write->is_code_word = FALSE;
+				(word_to_write->word).data = build_data_word(IMMEDIATE, value);
+				code_img[*ci] = word_to_write;
+
 			}
 		}
 		/* And again - if another data word is required, increase CI. if it's an immediate addressing, encode it. */
@@ -96,16 +108,16 @@ int process_code(char *line, int i, int *ci, char *code_img) {
 			if (get_addressing_type(operands[1]) == IMMEDIATE) {
 				/* Get value of immediate addressed operand. notice that it starts with #, so we're skipping the # in the call to atoi */
 				int value = atoi(operands[1] + 1);
-				temp = (char *) build_data_word(IMMEDIATE, value);
-				/* write data to code image */
-				write_word(code_img, *ci, temp[2], temp[1],
-				           temp[0]); /* [3] contains msb, we want just the 3 lower bytes. */
+				word_to_write = (machine_word *) malloc_with_check(sizeof(machine_word));
+				word_to_write->is_code_word = FALSE;
+				(word_to_write->word).data = build_data_word(IMMEDIATE, value);
+
+				code_img[*ci] = word_to_write;
 			}
 		}
 	}
 
 	(*ci)++; /* increase ci to point the next cell */
-	free(codeword); /* Release malloced memory */
 	return FALSE; /* No errors */
 }
 

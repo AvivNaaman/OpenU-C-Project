@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include "processfile.h"
 #include "processline.h"
-#include "utils.h"
 
 /* Globals because we want to access them only across this file (for get_curr_line/curr_filename, mostly for printing errors) */
 static char *curr_filename;
@@ -12,7 +11,8 @@ void process_file(char *filename) {
 	int ic, dc, is_error;
 	char temp_line[MAX_LINE_LENGTH+1]; /* temporary string for storing line, read from file */
 	FILE *file_des; /* Current assembly file descriptor to process */
-	char code_img[CODE_ARR_IMG_LENGTH], data_img[CODE_ARR_IMG_LENGTH]; /* Contains an image of the machine code */
+	machine_data *data_img[CODE_ARR_IMG_LENGTH]; /* Contains an image of the machine code */
+	machine_word *codeword [CODE_ARR_IMG_LENGTH];
 	/* We'll use multiple symbol tables, for each symbol type: .data, .code, .ext, .ent */
 	table data_table, code_table, ext_table, ent_table;
 
@@ -31,8 +31,8 @@ void process_file(char *filename) {
 	dc = 0;
 	/* File opened successfully, start first pass: */
 	for (curr_line = 1; !feof(file_des); curr_line++) {
-		fgets(temp_line, MAX_LINE_LENGTH, file_des); /* Get line */ /* TODO Make sure pointer to pointer to struct is sent in table arguments! */
-		is_error = is_error || process_line_fpass(temp_line, &data_table, &code_table, &ext_table, &ic, &dc, code_img, data_img);
+		fgets(temp_line, MAX_LINE_LENGTH, file_des); /* Get line */
+		is_error = is_error || process_line_fpass(temp_line, &data_table, &code_table, &ext_table, &ic, &dc, codeword, data_img);
 	}
 	if (is_error) {
 		printf("Stopped assembling the file %s. See the above output for more information.\n", filename);

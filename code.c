@@ -38,20 +38,21 @@ int process_code(char *line, int i, int *ci, char *code_img) {
 	operands[0] = malloc_with_check(MAX_LINE_LENGTH);
 	operands[1] = malloc_with_check(MAX_LINE_LENGTH);
 	/* until no too many operands (max of 2) and it's not the end of the line */
-	for (operand_count = 0; line[i] != EOF && line[i] != '\n'; ) {
+	for (operand_count = 0; line[i] != EOF && line[i] != '\n';) {
 		if (operand_count == 2) /* =We already got 2 operands in, We're going ot get the third! */ {
 			print_error("Too many operands for command.");
 			return TRUE; /* an error occurred */
 		}
 		/* as long we're still on same operand */
-		for (j = 0; line[i] && line[i] != '\t' && line[i] != ' ' && line[i] != '\n' && line[i] != EOF && line[i] != ','; i++, j++) {
+		for (j = 0; line[i] && line[i] != '\t' && line[i] != ' ' && line[i] != '\n' && line[i] != EOF &&
+		            line[i] != ','; i++, j++) {
 			operands[operand_count][j] = line[i];
 		}
 		operands[operand_count][j] = '\0';
 		operand_count++; /* We've just saved another operand! */
 		MOVE_TO_NOT_WHITE(line, i)
 		if (line[i] == '\n' || line[i] == EOF || !line[i]) break;
-		else if (line[i] != ',') { /* TODO: Error about unexpected character */
+		else if (line[i] != ',') {
 			/* After operand & after white chars there's something that isn't ',' or end of line.. */
 			print_error("Expecting ',' between operands");
 			return TRUE;
@@ -68,25 +69,41 @@ int process_code(char *line, int i, int *ci, char *code_img) {
 	/* Build code word (returns null if validation failed) */
 	if ((codeword = get_code_word(curr_opcode, curr_funct, operand_count, operands)) == NULL) return TRUE;
 
-	temp = (char*)codeword;
-	write_word(code_img, *ci, temp[2],temp[1],temp[0]);
-	/* Now we got our data word in *codeword. all left is to build all the data words for the operation and add the count to ci. */
-	/* We can only encode to code image immediate addressed number */
-	if (get_addressing_type(operands[0]) == IMMEDIATE){
-		/* Get value of immediate addressed operand. notice that it starts with #, so we're skipping the # in the call to atoi */
-		int value = atoi(operands[0]+1);
-		temp  = (char *)build_data_word(IMMEDIATE, value);
-		/* Increase ci because the code word was written already. write data to code image */
-		write_word(code_img, ++(*ci), temp[2], temp[1], temp[0]); /* [3] contains msb, we want just the 3 lower bytes. */
-	}
+	temp = (char *) codeword;
+	write_word(code_img, *ci, temp[2], temp[1], temp[0]);
+
 	/* Same for second operand */
-	if (get_addressing_type(operands[1]) == IMMEDIATE){
-		/* Get value of immediate addressed operand. notice that it starts with #, so we're skipping the # in the call to atoi */
-		int value = atoi(operands[1]+1);
-		temp  = (char *)build_data_word(IMMEDIATE, value);
-		/* Increase ci because the code word was written already. write data to code image */
-		write_word(code_img, ++(*ci), temp[2], temp[1], temp[0]); /* [3] contains msb, we want just the 3 lower bytes. */
+	{
+		addressing_type first_addr, second_addr;
+		first_addr = get_addressing_type(operands[0]);
+		second_addr = get_addressing_type(operands[1]);
+		/* if an additional data word is required */
+		if (first_addr != NONE_ADDR && first_addr != REGISTER) {
+			(*ci)++; /* increase ci */
+			/* if the operand is immediately addressed, we can encode it right now: */
+			if (first_addr == IMMEDIATE) {
+				/* Get value of immediate addressed operand. notice that it starts with #, so we're skipping the # in the call to atoi */
+				int value = atoi(operands[0] + 1);
+				temp = (char *) build_data_word(IMMEDIATE, value);
+				/* write data to code image */
+				write_word(code_img, *ci, temp[2], temp[1],
+				           temp[0]); /* [3] contains msb, we want just the 3 lower bytes. */
+			}
+		}
+		/* And again - if another data word is required, increase CI. if it's an immediate addressing, encode it. */
+		if (first_addr != NONE_ADDR && first_addr != REGISTER) {
+			(*ci)++;
+			if (get_addressing_type(operands[1]) == IMMEDIATE) {
+				/* Get value of immediate addressed operand. notice that it starts with #, so we're skipping the # in the call to atoi */
+				int value = atoi(operands[1] + 1);
+				temp = (char *) build_data_word(IMMEDIATE, value);
+				/* write data to code image */
+				write_word(code_img, *ci, temp[2], temp[1],
+				           temp[0]); /* [3] contains msb, we want just the 3 lower bytes. */
+			}
+		}
 	}
+
 	(*ci)++; /* increase ci to point the next cell */
 	free(codeword); /* Release malloced memory */
 	return FALSE; /* No errors */
@@ -159,7 +176,7 @@ bool is_register(char *operand) {
 
 bool is_immediate(char *operand) {
 	/*in immediate addressing first char is #*/
-	return (operand[0] == '#' && is_int(operand+1));
+	return (operand[0] == '#' && is_int(operand + 1));
 }
 
 bool is_direct(char *operand) {
@@ -200,14 +217,14 @@ code_word *get_code_word(opcode curr_opcode, funct curr_funct, int op_count, cha
 
 		if (curr_opcode == CMP_OP) {
 			is_valid = validate_op_addr(first_addressing, second_addressing, 3, 3, IMMEDIATE, DIRECT, REGISTER,
-			                                     IMMEDIATE, DIRECT, REGISTER);
+			                            IMMEDIATE, DIRECT, REGISTER);
 		} else if (curr_opcode == ADD_OP || curr_opcode == MOV_OP) { /* Also SUB_OP */
 			is_valid = validate_op_addr(first_addressing, second_addressing, 3, 2, IMMEDIATE, DIRECT, REGISTER,
-			                                     DIRECT, REGISTER);
+			                            DIRECT, REGISTER);
 		} else if (curr_opcode == LEA_OP) {
 
 			is_valid = validate_op_addr(first_addressing, second_addressing, 1, 2, DIRECT,
-			                                     DIRECT, REGISTER);
+			                            DIRECT, REGISTER);
 		}
 	} else if (curr_opcode >= CLR_OP && curr_opcode <= PRN_OP) {
 		addressing_type first_addressing;
@@ -240,7 +257,8 @@ code_word *get_code_word(opcode curr_opcode, funct curr_funct, int op_count, cha
 
 	codeword->opcode = curr_opcode;
 	codeword->funct = curr_funct; /* if no funct, curr_funct = NONE_FUNCT = 0, and it should be the default. */
-	codeword->ARE = ((1<<2)&0xFF); /* A is the only one who is 1 when it's n operation. we treat ARE as a single unit so j */
+	codeword->ARE = ((1 << 2) &
+	                 0xFF); /* A is the only one who is 1 when it's n operation. we treat ARE as a single unit so j */
 	/* Default values of register bits are 0 */
 	codeword->dest_addressing = codeword->dest_register = codeword->src_addressing = codeword->src_register = 0;
 	/* Check if need to set the registers bits */
@@ -291,7 +309,8 @@ bool validate_op_addr(addressing_type op1_addressing, addressing_type op2_addres
 		op1_3 = va_arg(list,
 		               int);
 	}
-	for(;op1_valid_addr_count > 5;va_arg(list,int),op1_valid_addr_count--) ; /* Go on with stack until got all (even above limitation of 4) */
+	for (; op1_valid_addr_count > 5; va_arg(list,
+	                                        int), op1_valid_addr_count--); /* Go on with stack until got all (even above limitation of 4) */
 	/* Again for second operand by the count */
 	if (op2_valid_addr_count >= 1) {
 		op2_0 = va_arg(list,
@@ -313,18 +332,18 @@ bool validate_op_addr(addressing_type op1_addressing, addressing_type op2_addres
 	is_valid = TRUE;
 	/* if operand addressing is not valid, print error */
 	if (!((op1_valid_addr_count == 0 && op1_addressing == NONE_ADDR) ||
-	(op1_valid_addr_count > 0 && op1_0 == op1_addressing) ||
-	(op1_valid_addr_count > 1 && op1_1 == op1_addressing)||
-	(op1_valid_addr_count > 2 && op1_2 == op1_addressing) ||
-	(op1_valid_addr_count > 3 && op1_3 == op1_addressing))) {
+	      (op1_valid_addr_count > 0 && op1_0 == op1_addressing) ||
+	      (op1_valid_addr_count > 1 && op1_1 == op1_addressing) ||
+	      (op1_valid_addr_count > 2 && op1_2 == op1_addressing) ||
+	      (op1_valid_addr_count > 3 && op1_3 == op1_addressing))) {
 		print_error("Invalid addressing mode for first operand.");
 		is_valid = FALSE;
 	}
 	if (!((op2_valid_addr_count == 0 && op2_addressing == NONE_ADDR) ||
-	    (op2_valid_addr_count > 0 && op2_0 == op2_addressing) ||
-	    (op2_valid_addr_count > 1 && op2_1 == op2_addressing)||
-	    (op2_valid_addr_count > 2 && op2_2 == op2_addressing) ||
-	    (op2_valid_addr_count > 3 && op2_3 == op2_addressing))) {
+	      (op2_valid_addr_count > 0 && op2_0 == op2_addressing) ||
+	      (op2_valid_addr_count > 1 && op2_1 == op2_addressing) ||
+	      (op2_valid_addr_count > 2 && op2_2 == op2_addressing) ||
+	      (op2_valid_addr_count > 3 && op2_3 == op2_addressing))) {
 		print_error("Invalid addressing mode for second operand.");
 		is_valid = FALSE;
 	}

@@ -372,14 +372,37 @@ TEST(Code_ValidateOp) {
 TEST(Code_Process) {
 	char codeImg[500];
 	int ci = 100;
-	int finals[20] = {
+	int finals[30] = {
 			0b000000110011101000000100,
 			0b000000000001110100000100,
 			0b111111111111111001001100,
+			0b000000110000100000000100,
 			0b000001110001100100000100,
 			0b000001000000000000000100,
 			0b000000000000000000101100,
 			0b000000000000000001000100,
+			0b000001000000100000000100,
+			0b000000000000000001111100,
+			0b000001010000100000000100,
+			0b000010000000100000001100,
+			0b000000000000010001010100,
+			0b000010000000100000010100,
+			0b111111111111111111111100,
+			0b000010110001100000010100,
+
+			0b000100010001111100000100,
+			0b000101000001100000001100,
+			0b000101000001111000010100,
+			0b000101000000100000011100,
+			0b000101000000100000100100,
+			0b001001000001000000001100,
+			0b001001000000100000010100,
+			0b001001000001000000011100,
+			0b001100000001110100000100,
+			0b001101000001110000000100,
+			0b001101000000000000000100,
+			0b001110000000000000000100,
+			0b001111000000000000000100,
 	};
 	assert_false(process_code("\t mov \t r1\t , \tr2", 0, &ci, codeImg), "mov r1,r2", total, failed);
 	assert_int(101,ci,"mov r1,r2 ci",total,failed);
@@ -390,16 +413,98 @@ TEST(Code_Process) {
 	assert_word(get_word(finals,1),&codeImg[(ci-2)*3],"mov r1,r2 machine code",total,failed);
 	assert_word(get_word(finals,2),&codeImg[(ci-1)*3],"mov r1,r2 machine code data",total,failed);
 
+
+	assert_false(process_code("mov r0,label", 0, &ci, codeImg), "mov r0,label", total, failed);
+	assert_int(105,ci,"mov r0,label ci",total,failed);
+	assert_word(get_word(finals,3),&codeImg[(ci-2)*3],"mov r0,label machine code",total,failed);
+
 	assert_false(process_code("cmp r0,r1",0,&ci,codeImg),"cmp r0,r1",total,failed);
-	assert_int(104,ci,"cmp r0,r1 ci",total,failed);
-	assert_word(get_word(finals,3),&codeImg[(ci-1)*3],"cmp r0,r1 machine code",total,failed);
+	assert_int(106,ci,"cmp r0,r1 ci",total,failed);
+	assert_word(get_word(finals,4),&codeImg[(ci-1)*3],"cmp r0,r1 machine code",total,failed);
 
 	assert_false(process_code("cmp #5,#8",0,&ci,codeImg),"cmp #5,#8",total,failed);
-	assert_int(107,ci,"cmp #5,#8 ci",total,failed);
-	assert_word(get_word(finals,4),&codeImg[(ci-3)*3],"cmp #5,#8 machine code",total,failed);
-	assert_word(get_word(finals,5),&codeImg[(ci-2)*3],"cmp #5,#8 machine code data",total,failed);
-	assert_word(get_word(finals,6),&codeImg[(ci-1)*3],"cmp #5,#8 machine code data",total,failed);
-	/* Incalids */
+	assert_int(109,ci,"cmp #5,#8 ci",total,failed);
+	assert_word(get_word(finals,5),&codeImg[(ci-3)*3],"cmp #5,#8 machine code",total,failed);
+	assert_word(get_word(finals,6),&codeImg[(ci-2)*3],"cmp #5,#8 machine code data",total,failed);
+	assert_word(get_word(finals,7),&codeImg[(ci-1)*3],"cmp #5,#8 machine code data",total,failed);
+
+	assert_false(process_code("cmp #+15,label",0,&ci,codeImg),"cmp #+15,label",total,failed);
+	assert_int(112,ci,"cmp #+15,label ci",total,failed);
+	assert_word(get_word(finals,8),&codeImg[(ci-3)*3],"cmp #+15,label machine code",total,failed);
+	assert_word(get_word(finals,9),&codeImg[(ci-2)*3],"cmp #+15,label machine code data",total,failed);
+
+
+	assert_false(process_code("LABEL0: cmp label,label",7,&ci,codeImg),"LABEL0: cmp label,label",total,failed);
+	assert_int(115,ci,"LABEL0: cmp label,label ci",total,failed);
+	assert_word(get_word(finals,10),&codeImg[(ci-3)*3],"LABEL0: cmp label,label machine code",total,failed);
+
+	assert_false(process_code("add #138,label",0,&ci,codeImg),"add #138,label",total,failed);
+	assert_int(118,ci,"add #138,label ci",total,failed);
+	assert_word(get_word(finals,11),&codeImg[(ci-3)*3],"add #138,label machine code",total,failed);
+	assert_word(get_word(finals,12),&codeImg[(ci-2)*3],"add #138,label machine code data",total,failed);
+
+	assert_false(process_code("sub #-1,label",0,&ci,codeImg),"sub #-1,label",total,failed);
+	assert_int(121,ci,"sub #-1,label ci",total,failed);
+	assert_word(get_word(finals,13),&codeImg[(ci-3)*3],"sub #-1,label machine code",total,failed);
+	assert_word(get_word(finals,14),&codeImg[(ci-2)*3],"sub #-1,label machine code data",total,failed);
+
+
+	assert_false(process_code("sub r0,r0",0,&ci,codeImg),"sub r0,r0",total,failed);
+	assert_int(122,ci,"sub r0,r0 ci",total,failed);
+	assert_word(get_word(finals,15),&codeImg[(ci-1)*3],"sub r0,r0 machine code",total,failed);
+
+	assert_false(process_code("lea label,r7",0,&ci,codeImg),"lea label,r7",total,failed);
+	assert_int(124,ci,"lea label,r7",total,failed);
+	assert_word(get_word(finals,16),&codeImg[(ci-2)*3],"lea label,r7",total,failed);
+
+	assert_false(process_code("clr r0",0,&ci,codeImg),"clr r0",total,failed);
+	assert_int(125,ci,"clr r0",total,failed);
+	assert_word(get_word(finals,17),&codeImg[(ci-1)*3],"clr r0",total,failed);
+
+	assert_false(process_code("not r6",0,&ci,codeImg),"not r6",total,failed);
+	assert_int(126,ci,"not r6",total,failed);
+	assert_word(get_word(finals,18),&codeImg[(ci-1)*3],"not r6",total,failed);
+
+	assert_false(process_code("inc label",0,&ci,codeImg),"inc label",total,failed);
+	assert_int(128,ci,"inc label",total,failed);
+	assert_word(get_word(finals,19),&codeImg[(ci-2)*3],"inc label",total,failed);
+
+	assert_false(process_code("dec label",0,&ci,codeImg),"dec label",total,failed);
+	assert_int(130,ci,"dec label",total,failed);
+	assert_word(get_word(finals,20),&codeImg[(ci-2)*3],"dec label",total,failed);
+
+	assert_false(process_code("jmp &label",0,&ci,codeImg),"jmp &label",total,failed);
+	assert_int(132,ci,"jmp &label",total,failed);
+	assert_word(get_word(finals,21),&codeImg[(ci-2)*3],"jmp &label",total,failed);
+
+	assert_false(process_code("bne label",0,&ci,codeImg),"bne label",total,failed);
+	assert_int(134,ci,"bne label",total,failed);
+	assert_word(get_word(finals,22),&codeImg[(ci-2)*3],"bne label",total,failed);
+
+	assert_false(process_code("jsr &label",0,&ci,codeImg),"jsr &label",total,failed);
+	assert_int(136,ci,"jsr &label",total,failed);
+	assert_word(get_word(finals,23),&codeImg[(ci-2)*3],"jsr &label",total,failed);
+
+	assert_false(process_code("red r5",0,&ci,codeImg),"red r5",total,failed);
+	assert_int(137,ci,"red r5",total,failed);
+	assert_word(get_word(finals,24),&codeImg[(ci-1)*3],"red r5",total,failed);
+
+	assert_false(process_code("prn r4",0,&ci,codeImg),"prn r4",total,failed);
+	assert_int(138,ci,"prn r4",total,failed);
+	assert_word(get_word(finals,25),&codeImg[(ci-1)*3],"prn r4",total,failed);
+
+	assert_false(process_code("prn #5",0,&ci,codeImg),"prn #5",total,failed);
+	assert_int(140,ci,"prn #5",total,failed);
+	assert_word(get_word(finals,26),&codeImg[(ci-2)*3],"prn #5",total,failed);
+
+	assert_false(process_code("rts",0,&ci,codeImg),"rts",total,failed);
+	assert_int(141,ci,"rts",total,failed);
+	assert_word(get_word(finals,27),&codeImg[(ci-1)*3],"rts",total,failed);
+
+	assert_false(process_code("stop",0,&ci,codeImg),"stop",total,failed);
+	assert_int(142,ci,"stop",total,failed);
+	assert_word(get_word(finals,28),&codeImg[(ci-1)*3],"stop",total,failed);
+	/* Invalids */
 	{
 		int curr_ci = ci;
 		SEPERATOR(SEP_COLOR)

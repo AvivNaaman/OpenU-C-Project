@@ -38,7 +38,7 @@ int process_code(char *line, int i, int *ci, char *code_img) {
 	operands[0] = malloc_with_check(MAX_LINE_LENGTH);
 	operands[1] = malloc_with_check(MAX_LINE_LENGTH);
 	/* until no too many operands (max of 2) and it's not the end of the line */
-	for (operand_count = 0; line[i] != EOF && line[i] != '\n';) {
+	for (operand_count = 0; line[i] != EOF && line[i] != '\n' && line[i];) {
 		if (operand_count == 2) /* =We already got 2 operands in, We're going ot get the third! */ {
 			print_error("Too many operands for command.");
 			return TRUE; /* an error occurred */
@@ -91,7 +91,7 @@ int process_code(char *line, int i, int *ci, char *code_img) {
 			}
 		}
 		/* And again - if another data word is required, increase CI. if it's an immediate addressing, encode it. */
-		if (first_addr != NONE_ADDR && first_addr != REGISTER) {
+		if (second_addr != NONE_ADDR && second_addr != REGISTER) {
 			(*ci)++;
 			if (get_addressing_type(operands[1]) == IMMEDIATE) {
 				/* Get value of immediate addressed operand. notice that it starts with #, so we're skipping the # in the call to atoi */

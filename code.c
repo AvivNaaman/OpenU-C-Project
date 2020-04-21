@@ -4,6 +4,7 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include "code.h"
+#include "table.h"
 
 
 int process_code(char *line, int i, int *ic, machine_word **code_img) {
@@ -12,7 +13,7 @@ int process_code(char *line, int i, int *ic, machine_word **code_img) {
 	opcode curr_opcode; /* the current opcode and funct values */
 	funct curr_funct;
 	code_word *codeword; /* The current code word */
-	int j, operand_count;
+	int j, operand_count, ic_before;
 	machine_word *word_to_write;
 	/* Skip white chars */
 	MOVE_TO_NOT_WHITE(line, i)
@@ -30,27 +31,148 @@ int process_code(char *line, int i, int *ic, machine_word **code_img) {
 		return TRUE; /* an error occurred */
 	}
 	/* Analyze operands */
+
+	if (analyze_operands(line, i, operands, &operand_count)) return TRUE; /* if error, return error */
+
+	/* Build code word (returns null if validation failed) */
+	if ((codeword = get_code_word(curr_opcode, curr_funct, operand_count, operands)) == NULL) return TRUE;
+
+	ic_before = *ic;
+
+	word_to_write = (machine_word *) malloc_with_check(sizeof(machine_word));
+	(word_to_write->word).code = codeword;
+
+	code_img[*ic] = word_to_write;
+
+	{
+		addressing_type first_addr, second_addr;
+		first_addr = get_addressing_type(operands[0]);
+		second_addr = get_addressing_type(operands[1]);
+		/* if an additional data word is required */
+		if (first_addr != NONE_ADDR && first_addr != REGISTER) {
+			(*ic)++; /* increase ci */
+			/* if the operand is immediately addressed, we can encode it right now: */
+			if (first_addr == IMMEDIATE) {
+				/* Get value of immediate addressed operand. notice that it starts with #, so we're skipping the # in the call to atoi */
+				int value = atoi(operands[0] + 1);
+				machine_word *word_to_write = (machine_word *) malloc_with_check(sizeof(machine_word));
+				word_to_write->length = 0; /* Not code word! */
+				(word_to_write->word).data = build_data_word(IMMEDIATE, value);
+				code_img[*ic] = word_to_write;
+
+			}
+		}
+		/* And again - if another data word is required, increase CI. if it's an immediate addressing, encode it. */
+		if (second_addr != NONE_ADDR && second_addr != REGISTER) {
+			(*ic)++;
+			if (get_addressing_type(operands[1]) == IMMEDIATE) {
+				/* Get value of immediate addressed operand. notice that it starts with #, so we're skipping the # in the call to atoi */
+				int value = atoi(operands[1] + 1);
+				word_to_write = (machine_word *) malloc_with_check(sizeof(machine_word));
+				word_to_write->length = 0; /* Not Code word! */
+				(word_to_write->word).data = build_data_word(IMMEDIATE, value);
+
+				code_img[*ic] = word_to_write;
+			}
+		}
+	}
+
+	(*ic)++; /* increase ci to point the next cell */
+
+	/* Add the final length (of code word + data words) to the code word struct: */
+	word_to_write->length = (*ic) - ic_before;
+
+	return FALSE; /* No errors */
+}
+
+/* Completes the assembling process  */
+int add_symbols_to_code(char *line, int *ic, machine_word **code_img, table code_table, table data_table) {
+	char temp[80];
+	char *operands[2];
+	int i = 0, operand_count;
+	int length = code_img[*ic]->length;
+	/* if the length is 1, then there's only the code word, no data. */
+	if (length > 1) {
+		addressing_type op1_addr, op2_addr;
+		/* Now, we need to skip command, and get the operands themselves: */
+		MOVE_TO_NOT_WHITE(line,i)
+		parse_symbol(line, temp);
+		if (temp[0] != '\0') { /* if symbol is defined */
+			/* move i right after it's end */
+			for (;line[i] && line[i] != '\n' && line[i] != EOF && line[i] != ' ' && line[i] != '\t'; i++);
+			i++;
+		}
+		MOVE_TO_NOT_WHITE(line, i)
+		/* now skip command */
+		for (;line[i] && line[i] != ' ' && line[i] != '\t' && line[i] != '\n' && line[i] != EOF; i++ ) ;
+		/* now analyze operands */
+		analyze_operands(line, i, operands, &operand_count);
+		/* Now check each operand addressing, determine whether we should change anything and if so, change that thing: */
+		 op1_addr = get_addressing_type(operands[0]);
+		 op2_addr = get_addressing_type(operands[1]);
+		if (op1_addr == DIRECT || op1_addr == RELATIVE) {
+			machine_word *word_to_write;
+			table_entry *entry = find_by_key(data_table, operands[0]);
+			if (entry == NULL) {
+				entry = find_by_key(code_table, operands[0]);
+				if (entry == NULL) { /* Symbol not found! */
+					print_error("Symbol not found.");
+					return TRUE;
+				}
+			}
+			/* symbol found. build data word and assign: */
+			word_to_write = (machine_word *) malloc_with_check(sizeof(machine_word));
+			word_to_write->length = 0; /* Not Code word! */
+			(word_to_write->word).data = build_data_word(IMMEDIATE, entry->value);
+			code_img[(*ic)+1] = word_to_write;
+		}
+		if (op2_addr == DIRECT || op2_addr == RELATIVE) {
+			machine_word *word_to_write;
+			table_entry *entry = find_by_key(data_table, operands[1]);
+			if (entry == NULL) {
+				entry = find_by_key(code_table, operands[1]);
+				if (entry == NULL) { /* Symbol not found! */
+					print_error("Symbol not found.");
+					return TRUE;
+				}
+			}
+			/* symbol found. build data word and assign: */
+			word_to_write = (machine_word *) malloc_with_check(sizeof(machine_word));
+			word_to_write->length = 0; /* Not Code word! */
+			(word_to_write->word).data = build_data_word(IMMEDIATE, entry->value);
+			code_img[(*ic)+2] = word_to_write;
+		}
+	}
+	/*  */
+	(*ic) += length;
+	return FALSE;
+}
+
+
+int analyze_operands(char *line, int i, char *operands[2], int *operand_count) {
+/* Make some space to the operand strings */
+	int j;
+	*operand_count = 0;
 	MOVE_TO_NOT_WHITE(line, i)
 	if (line[i] == ',') {
 		print_error("Unexpected comma after command.");
 		return TRUE; /* an error occurred */
 	}
-	/* Make some space to the operand strings */
 	operands[0] = malloc_with_check(MAX_LINE_LENGTH);
 	operands[1] = malloc_with_check(MAX_LINE_LENGTH);
 	/* until no too many operands (max of 2) and it's not the end of the line */
-	for (operand_count = 0; line[i] != EOF && line[i] != '\n' && line[i];) {
-		if (operand_count == 2) /* =We already got 2 operands in, We're going ot get the third! */ {
+	for (*operand_count = 0; line[i] != EOF && line[i] != '\n' && line[i];) {
+		if (*operand_count == 2) /* =We already got 2 operands in, We're going ot get the third! */ {
 			print_error("Too many operands for command.");
 			return TRUE; /* an error occurred */
 		}
 		/* as long we're still on same operand */
 		for (j = 0; line[i] && line[i] != '\t' && line[i] != ' ' && line[i] != '\n' && line[i] != EOF &&
 		            line[i] != ','; i++, j++) {
-			operands[operand_count][j] = line[i];
+			operands[*operand_count][j] = line[i];
 		}
-		operands[operand_count][j] = '\0';
-		operand_count++; /* We've just saved another operand! */
+		operands[*operand_count][j] = '\0';
+		(*operand_count)++; /* We've just saved another operand! */
 		MOVE_TO_NOT_WHITE(line, i)
 		if (line[i] == '\n' || line[i] == EOF || !line[i]) break;
 		else if (line[i] != ',') {
@@ -74,51 +196,7 @@ int process_code(char *line, int i, int *ic, machine_word **code_img) {
 			return TRUE;
 		}
 	}
-
-	/* Build code word (returns null if validation failed) */
-	if ((codeword = get_code_word(curr_opcode, curr_funct, operand_count, operands)) == NULL) return TRUE;
-	{
-		word_to_write = (machine_word *) malloc_with_check(sizeof(machine_word));
-		word_to_write->is_code_word = TRUE;
-		(word_to_write->word).code = codeword;
-
-		code_img[*ic] = word_to_write;
-	}
-	{
-		addressing_type first_addr, second_addr;
-		first_addr = get_addressing_type(operands[0]);
-		second_addr = get_addressing_type(operands[1]);
-		/* if an additional data word is required */
-		if (first_addr != NONE_ADDR && first_addr != REGISTER) {
-			(*ic)++; /* increase ci */
-			/* if the operand is immediately addressed, we can encode it right now: */
-			if (first_addr == IMMEDIATE) {
-				/* Get value of immediate addressed operand. notice that it starts with #, so we're skipping the # in the call to atoi */
-				int value = atoi(operands[0] + 1);
-				machine_word *word_to_write = (machine_word *) malloc_with_check(sizeof(machine_word));
-				word_to_write->is_code_word = FALSE;
-				(word_to_write->word).data = build_data_word(IMMEDIATE, value);
-				code_img[*ic] = word_to_write;
-
-			}
-		}
-		/* And again - if another data word is required, increase CI. if it's an immediate addressing, encode it. */
-		if (second_addr != NONE_ADDR && second_addr != REGISTER) {
-			(*ic)++;
-			if (get_addressing_type(operands[1]) == IMMEDIATE) {
-				/* Get value of immediate addressed operand. notice that it starts with #, so we're skipping the # in the call to atoi */
-				int value = atoi(operands[1] + 1);
-				word_to_write = (machine_word *) malloc_with_check(sizeof(machine_word));
-				word_to_write->is_code_word = FALSE;
-				(word_to_write->word).data = build_data_word(IMMEDIATE, value);
-
-				code_img[*ic] = word_to_write;
-			}
-		}
-	}
-
-	(*ic)++; /* increase ci to point the next cell */
-	return FALSE; /* No errors */
+	return FALSE;
 }
 
 void get_opcode_func(char *cmd, opcode *opcode_out, funct *funct_out) {
@@ -168,6 +246,7 @@ void get_opcode_func(char *cmd, opcode *opcode_out, funct *funct_out) {
 }
 
 addressing_type get_addressing_type(char *operand) {
+	if (operand[0] == '\0') return NONE_ADDR;
 	if (is_register(operand)) return REGISTER;
 	else if (is_immediate(operand)) return IMMEDIATE;
 	else if (is_direct(operand)) return DIRECT;

@@ -1,4 +1,4 @@
-#include "instructions.h"
+#include "table.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -101,5 +101,33 @@ int process_data_instruction(char *line, int index, machine_data **data_img, int
 		if (line[index] == ',') index++;
 		else if (!line[index] || line[index] == '\n' || line[index] == EOF) break; /* End of line/file/string => nothing to process anymore */
 	} while (line[index] != '\n' && line[index] != EOF);
+	return FALSE;
+}
+
+int process_entry_instruction(char *line, int i, table *ent_table, table code_table, table data_table) {
+	int j;
+	char ent_symbol[80];
+	table_entry *entry;
+	MOVE_TO_NOT_WHITE(line, i)
+	for (j = 0; line[i] && line[i] != '\n' && line[i] != EOF && line[i] != ' ' && line[i] != '\t' && line[i] != ':';i++,j++)
+		ent_symbol[j] = line[i];
+	ent_symbol[j] = '\0';
+
+	MOVE_TO_NOT_WHITE(line,i)
+	if (line[i] != '\n' && line[i] != EOF && !line[i]) {
+		print_error(".entry instruction accepts only 1 parameter.");
+		return TRUE;
+	}
+
+	if ((entry = find_by_key(code_table, ent_symbol)) == NULL) {
+		if ((entry = find_by_key(data_table, ent_symbol)) == NULL) {
+			print_error("Symbol for entry instruction not found");
+			return TRUE;
+		}
+	}
+
+	/* Add to entries table */
+	add_table_item(ent_table, entry->key, entry->value);
+
 	return FALSE;
 }

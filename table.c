@@ -59,7 +59,15 @@ void free_table(table tab) {
 	while (curr_entry != NULL) {
 		prev_entry = curr_entry;
 		curr_entry = curr_entry->next;
-		free(prev_entry->key);
+		free(prev_entry->key); /* Didn't forget you!ssss */
 		free(prev_entry);
+	}
+}
+
+void add_to_each_value(table tab, int to_add) {
+	table curr_entry;
+	/* for each entry, increase value by to_add */
+	for (curr_entry = tab; curr_entry != NULL; curr_entry = curr_entry->next) {
+		curr_entry->value += to_add;
 	}
 }

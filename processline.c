@@ -4,7 +4,7 @@
 #include "processline.h"
 
 /*
- * processes a single instruction line. returns whether an error occurred.
+ * processes a single instruction line in first pass. returns whether an error occurred.
  * line - the text line from .asm file.
  * datas, code, externals - symbol tables for .data, .code and .external instruction.
  * IC - a pointer to the instruction counter.
@@ -15,7 +15,6 @@
 int process_line_fpass(char *line, table *datas, table *codes, table *externals, int *IC, int *DC, machine_word **code_img,
                        machine_data **data_img) {
 	int i;
-	char temp[80];
 	char symbol[32];
 	instruction_type instruction;
 	/* TODO: implement */
@@ -70,7 +69,13 @@ int process_line_fpass(char *line, table *datas, table *codes, table *externals,
 	}
 	return FALSE;
 }
-
+/*
+ * Processes a single instruction line in second pass.
+ * returns whether error occurred.
+ * line - the line from .as file
+ * tables - all symbol tables that are needed
+ * ic - pointer to IC counter
+ */
 int process_line_spass(char *line, table *ent_table, table *code_table, int *ic, table ext_table, table data_table) {
 	/* Todo: Implement */
 	return TRUE;

@@ -23,3 +23,6 @@ table_entry *find_by_key(table tab, char *key);
 table_entry *find_by_value(table tab, int value);
 
 void free_table(table tab); /* TODO: DOC */
+
+/* Add the to_add argument to each value of entry in the table */
+void add_to_each_value(table tab, int to_add);

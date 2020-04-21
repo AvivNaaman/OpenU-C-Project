@@ -88,6 +88,7 @@ typedef struct code_word {
 	/* Third byte: source addressing, opcode */
 	unsigned int src_addressing:2;
 	unsigned int opcode: 6;
+
 } code_word;
 
 /* Represents a single data word. */
@@ -98,9 +99,8 @@ typedef struct data_word {
 } data_word;
 
 /* Represents a general machine code word contents */
-/* TODO: Migrate from char[] to this! */
 typedef struct machine_code_word {
-	bool is_code_word;
+	int length; /* The length of the code word (if it's a code word), including data words required by it. */
 	union word {
 		data_word *data;
 		code_word *code;
@@ -139,3 +139,6 @@ reg get_register_by_name(char *name);
 
 /* builds a data word by the addressing type and the data of it. */
 data_word *build_data_word(addressing_type addressing, int data);
+
+/* TODO: Doc better - returns whether an error occurred */
+int analyze_operands(char *line, int i, char *destination[2], int *operand_count);

@@ -1,8 +1,8 @@
 /* Contains a method for processing a line in the first pass and another for processing a line in the second pass. */
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 #include "processline.h"
-
 /*
  * processes a single instruction line in first pass. returns whether an error occurred.
  * line - the text line from .asm file.
@@ -77,6 +77,29 @@ int process_line_fpass(char *line, table *datas, table *codes, table *externals,
  * ic - pointer to IC counter
  */
 int process_line_spass(char *line, table *ent_table, table *code_table, int *ic, table ext_table, table data_table) {
-	/* Todo: Implement */
+	int i;
+	char * indexOfColon;
+	char * token
+	indexOfColon = strchr(line,':');
+	/*check for label */
+	if(indexOfColon != NULL){
+	    i  = indexOfColon-line;
+	    i++;
+	}
+	/* if it's guide line*/
+	if(line[i] == '.'){
+	    /*if it's entry we add it to the symbol table*/
+	    if(strcmp(".entry",line)){
+	        i+=6;
+	        MOVE_TO_NOT_WHITE(line,i)
+	        token = strtok(line, " ")
+            /*if label is already in table dont add it*/
+            if(find_by_key(ent_table,token)!=NULL){
+                add_table_item(ent_table,token,find_by_key(data_table,token);
+            }
+	    }
+	    return TRUE;
+	}
+
 	return TRUE;
 }

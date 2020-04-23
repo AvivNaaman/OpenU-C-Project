@@ -76,10 +76,10 @@ int process_line_fpass(char *line, table *datas, table *codes, table *externals,
  * tables - all symbol tables that are needed
  * ic - pointer to IC counter
  */
-int process_line_spass(char *line, table *ent_table, table *code_table, int *ic, table ext_table, table data_table) {
+int process_line_spass(char *line, table *ent_table, table *code_table, int *ic, table ext_table, table data_table,machine_word **code_img) {
 	int i;
 	char * indexOfColon;
-	char * token
+	char * token;
 	indexOfColon = strchr(line,':');
 	/*check for label */
 	if(indexOfColon != NULL){
@@ -92,14 +92,16 @@ int process_line_spass(char *line, table *ent_table, table *code_table, int *ic,
 	    if(strcmp(".entry",line)){
 	        i+=6;
 	        MOVE_TO_NOT_WHITE(line,i)
-	        token = strtok(line, " ")
+	        token = strtok(line, " ");
             /*if label is already in table dont add it*/
             if(find_by_key(ent_table,token)!=NULL){
-                add_table_item(ent_table,token,find_by_key(data_table,token);
+                add_table_item(ent_table,token,find_by_key(data_table,token));
             }
 	    }
-	    return TRUE;
+	    return FALSE;
 	}
-
-	return TRUE;
+    if(add_symbols_to_code(line,ic,code_img,code_table,data_table)){
+        return TRUE;
+    }
+	return FALSE;
 }

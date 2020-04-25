@@ -42,7 +42,7 @@ int process_code(char *line, int i, int *ic, machine_word **code_img) {
 	word_to_write = (machine_word *) malloc_with_check(sizeof(machine_word));
 	(word_to_write->word).code = codeword;
 
-	code_img[*ic] = word_to_write;
+	code_img[(*ic)-IC_INIT_VALUE] = word_to_write; /* Avoid "spending" cells of the array */
 
 	{
 		addressing_type first_addr, second_addr;
@@ -58,7 +58,7 @@ int process_code(char *line, int i, int *ic, machine_word **code_img) {
 				machine_word *word_to_write = (machine_word *) malloc_with_check(sizeof(machine_word));
 				word_to_write->length = 0; /* Not code word! */
 				(word_to_write->word).data = build_data_word(IMMEDIATE, value);
-				code_img[*ic] = word_to_write;
+				code_img[(*ic)-IC_INIT_VALUE] = word_to_write;
 
 			}
 		}
@@ -72,7 +72,7 @@ int process_code(char *line, int i, int *ic, machine_word **code_img) {
 				word_to_write->length = 0; /* Not Code word! */
 				(word_to_write->word).data = build_data_word(IMMEDIATE, value);
 
-				code_img[*ic] = word_to_write;
+				code_img[(*ic)-IC_INIT_VALUE] = word_to_write;
 			}
 		}
 	}
@@ -90,7 +90,7 @@ int add_symbols_to_code(char *line, int *ic, machine_word **code_img, table code
 	char temp[80];
 	char *operands[2];
 	int i = 0, operand_count;
-	int length = code_img[*ic]->length;
+	int length = code_img[(*ic)-IC_INIT_VALUE]->length;
 	/* if the length is 1, then there's only the code word, no data. */
 	if (length > 1) {
 		addressing_type op1_addr, op2_addr;
@@ -124,7 +124,7 @@ int add_symbols_to_code(char *line, int *ic, machine_word **code_img, table code
 			word_to_write = (machine_word *) malloc_with_check(sizeof(machine_word));
 			word_to_write->length = 0; /* Not Code word! */
 			(word_to_write->word).data = build_data_word(IMMEDIATE, entry->value);
-			code_img[(*ic)+1] = word_to_write;
+			code_img[(*ic)+1-IC_INIT_VALUE] = word_to_write;
 		}
 		if (op2_addr == DIRECT || op2_addr == RELATIVE) {
 			machine_word *word_to_write;
@@ -140,7 +140,7 @@ int add_symbols_to_code(char *line, int *ic, machine_word **code_img, table code
 			word_to_write = (machine_word *) malloc_with_check(sizeof(machine_word));
 			word_to_write->length = 0; /* Not Code word! */
 			(word_to_write->word).data = build_data_word(IMMEDIATE, entry->value);
-			code_img[(*ic)+2] = word_to_write;
+			code_img[(*ic)+2-IC_INIT_VALUE] = word_to_write;
 		}
 	}
 	/*  */

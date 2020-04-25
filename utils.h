@@ -7,6 +7,8 @@ typedef enum booleans {
 #define CODE_ARR_IMG_LENGTH 1200
 #define MAX_LINE_LENGTH 80
 
+#define IC_INIT_VALUE 100 /* Initial value of IC */
+
 /* moves the index to the next place in string where the char isn't white */
 #define MOVE_TO_NOT_WHITE(string, index) \
 		for (;string[(index)] && (string[(index)] == '\t' || string[(index)] == ' '); (++(index)))\

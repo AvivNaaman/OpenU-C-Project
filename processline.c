@@ -89,13 +89,16 @@ int process_line_spass(char *line, table *ent_table, table *code_table, int *ic,
 	/* if it's guide line*/
 	if(line[i] == '.'){
 	    /*if it's entry we add it to the symbol table*/
-	    if(strcmp(".entry",line)){
+	    if(strncmp(".entry",line,6)==0){
 	        i+=6;
-	        MOVE_TO_NOT_WHITE(line,i)
+	        MOVE_TO_NOT_WHITE(line,i);
 	        token = strtok(line, " ");
             /*if label is already in table dont add it*/
-            if(find_by_key(ent_table,token)!=NULL){
-                add_table_item(ent_table,token,find_by_key(data_table,token));
+            if(find_by_key(&ent_table,token)==NULL){
+                int val;
+                token = strtok(NULL, "\n");
+                val = find_by_key(data_table,token)->value;
+                add_table_item(ent_table,token, val);
             }
 	    }
 	    return FALSE;

@@ -110,9 +110,18 @@ int process_line_spass(char *line, table *ent_table, table *code_table, int *ic,
             token = strtok(line, " ");
             /*if label is already in table dont add it*/
             if (find_by_key(*ent_table, token) == NULL) {
+                table_entry *entry;
                 int val;
                 token = strtok(NULL, "\n"); /*get name of label*/
-                val = find_by_key(data_table, token)->value;
+                if(token[0] == '&') token++;
+                entry = find_by_key(data_table, token);
+                if(entry == NULL){
+                    entry = find_by_key(code_table, token);
+                    if(entry == NULL){
+                        print_error("symbol not found");
+                    }
+                    val = entry->value;
+                }
                 add_table_item(ent_table, token, val);
             }
         }

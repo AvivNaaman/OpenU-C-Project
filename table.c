@@ -27,7 +27,7 @@ void add_table_item(table *tab, char *key, int value) {
 	}
 
 	curr_entry = *tab;
-	while (curr_entry != NULL && curr_entry->value < value) {
+	while (curr_entry != NULL && (curr_entry->value < value||(curr_entry->value == 0 && value == 0))) {
 		prev_entry = curr_entry;
 		curr_entry = curr_entry->next;
 	}

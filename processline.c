@@ -16,7 +16,7 @@
 int
 process_line_fpass(char *line, table *datas, table *codes, table *externals, int *IC, int *DC, machine_word **code_img,
                    machine_data **data_img) {
-    int i;
+    int i,j;
     char symbol[32];
     instruction_type instruction;
     /* TODO: implement */
@@ -58,8 +58,16 @@ process_line_fpass(char *line, table *datas, table *codes, table *externals, int
         else if (instruction == DATA)
             (*DC) += process_data_instruction(line, i, data_img, DC);
             /* if .extern, add to externals symbol table */
-        else if (instruction == EXTERN)
-            add_table_item(externals, symbol, *DC);
+        else if (instruction == EXTERN) {
+        	MOVE_TO_NOT_WHITE(line, i)
+	        /* is symbol detected, start analyzing from it's deceleration end */
+	        for (j=0; line[i] && line[i] != '\n' && line[i] != '\t' && line[i] != ' ' && line[i] != EOF; i++,j++) {
+	        	symbol[j] = line[i];
+	        }
+            symbol[j] = 0;
+            /* TODO: Validate that symbol contains a valid symbol! */
+            add_table_item(externals, symbol, 0); /* Extern value is defaulted to 0 */
+        }
         /* .entry is handled in second pass! */
     } /* end if (instruction != NONE) */
         /* not instruction=>it's a command! */
@@ -82,9 +90,9 @@ process_line_fpass(char *line, table *datas, table *codes, table *externals, int
  */
 int process_line_spass(char *line, table *ent_table, table *code_table, int *ic, table ext_table, table data_table,
                        machine_word **code_img) { /*TODO: DEBUG*/
-    int i;
     char *indexOfColon;
     char *token;
+	int i = 0;
     MOVE_TO_NOT_WHITE(line,i)
     if(line[i]==';') return FALSE;
     indexOfColon = strchr(line, ':');
@@ -101,7 +109,7 @@ int process_line_spass(char *line, table *ent_table, table *code_table, int *ic,
             MOVE_TO_NOT_WHITE(line, i);
             token = strtok(line, " ");
             /*if label is already in table dont add it*/
-            if (find_by_key(&ent_table, token) == NULL) {
+            if (find_by_key(*ent_table, token) == NULL) {
                 int val;
                 token = strtok(NULL, "\n"); /*get name of label*/
                 val = find_by_key(data_table, token)->value;
@@ -110,7 +118,7 @@ int process_line_spass(char *line, table *ent_table, table *code_table, int *ic,
         }
         return FALSE;
     }
-    if (add_symbols_to_code(line, ic, code_img, code_table, data_table,ext_table)) {
+    if (add_symbols_to_code(line, ic, code_img, *code_table, data_table,ext_table)) {
         return TRUE;
     }
     return FALSE;

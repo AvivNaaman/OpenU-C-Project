@@ -1,3 +1,5 @@
+.entry LIST
+.extern W
 MAIN: add r3,LIST
 LOOP: prn #48
 lea W,r6

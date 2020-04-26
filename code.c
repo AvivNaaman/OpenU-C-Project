@@ -131,11 +131,11 @@ int add_symbols_to_code(char *line, int *ic, machine_word **code_img, table code
         }
         if(operand_count>1) {
             if (DIRECT == op2_addr || RELATIVE == op2_addr){
-                table_entry *entry = find_by_key(data_table, operands[0]);
+                table_entry *entry = find_by_key(data_table, operands[1]);
                 if (entry == NULL) {
-                    entry = find_by_key(code_table, operands[0]);
+                    entry = find_by_key(code_table, operands[1]);
                     if (entry == NULL) {
-                        entry = find_by_key(ext_table, operands[0]);
+                        entry = find_by_key(ext_table, operands[1]);
                         if (entry == NULL)/* Symbol not found! */{
                             print_error("Symbol not found.");
                             return TRUE;

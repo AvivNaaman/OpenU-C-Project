@@ -55,6 +55,7 @@ void process_file(char *filename) {
 
 	/* First pass done right. start second pass: */
 	rewind(file_des); /* Reread the file from the beginning */
+	is_error = FALSE;
 	for (curr_line = 1; !feof(file_des); curr_line++)  {
 		fgets(temp_line, MAX_LINE_LENGTH, file_des); /* Get line */
 		is_error = is_error || process_line_spass(temp_line, &ent_table, &code_table, &ic, ext_table, data_table,codeword);
@@ -64,8 +65,8 @@ void process_file(char *filename) {
 		return;
 	}
 	/* Everything was done. Write to *filename.ob/.ext/.ent */
-	if(write_ob(codeword,icf,dcf, filename)){
-        printf("Stopped assembling the file %s. See the above output for more information.\n", filename);
+	if(write_output_files(codeword,icf,dcf, filename, ent_table, ext_table)){
+        printf("Failed to write some of the output files. See the above output for more information.\n", filename);
 	}
 
 }

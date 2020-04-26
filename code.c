@@ -123,7 +123,7 @@ int add_symbols_to_code(char *line, int *ic, machine_word **code_img, table code
 			/* symbol found. build data word and assign: */
 			word_to_write = (machine_word *) malloc_with_check(sizeof(machine_word));
 			word_to_write->length = 0; /* Not Code word! */
-			(word_to_write->word).data = build_data_word(IMMEDIATE, entry->value);
+			(word_to_write->word).data = build_data_word(op1_addr, entry->value);
 			code_img[(*ic)+1-IC_INIT_VALUE] = word_to_write;
 		}
 		if (op2_addr == DIRECT || op2_addr == RELATIVE) {
@@ -139,7 +139,7 @@ int add_symbols_to_code(char *line, int *ic, machine_word **code_img, table code
 			/* symbol found. build data word and assign: */
 			word_to_write = (machine_word *) malloc_with_check(sizeof(machine_word));
 			word_to_write->length = 0; /* Not Code word! */
-			(word_to_write->word).data = build_data_word(IMMEDIATE, entry->value);
+			(word_to_write->word).data = build_data_word(op2_addr, entry->value);
 			code_img[(*ic)+2-IC_INIT_VALUE] = word_to_write;
 		}
 	}
@@ -455,7 +455,7 @@ data_word *build_data_word(addressing_type addressing, int data) {
 	unsigned int ARE = 4, mask_un; /* 4 = 2^2 = 1 << 2 */
 	data_word *dataword = malloc_with_check(sizeof(data_word));
 
-	if (addressing == DIRECT) ARE = 1;
+	if (addressing == DIRECT) ARE = 2;
 	dataword->ARE = ARE; /* Set ARE field value */
 
 	/* Now all left is to encode the data */

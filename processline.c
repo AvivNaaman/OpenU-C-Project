@@ -86,7 +86,7 @@ int process_line_spass(char *line, table *ent_table, table *code_table, int *ic,
 	    i  = indexOfColon-line;
 	    i++;
 	}
-	/* if it's guide line*/
+	/* if it's an instruction line*/
 	if(line[i] == '.'){
 	    /*if it's entry we add it to the symbol table*/
 	    if(strcmp(".entry",line)){

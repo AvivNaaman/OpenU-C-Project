@@ -50,6 +50,11 @@ int process_string_instruction(char *line, int index, machine_data **data_img, i
 			data_img[*dc] = data;
 			(*dc)++;
 		}
+		/* Add end of string ('\0') */
+		data = malloc_with_check(sizeof(machine_data));
+		data->byte0 = data->byte1 = data->byte2 = '\0';
+		data_img[*dc] = data;
+		(*dc)++;
 	}
 	else {
 		/* something like: 'LABEL: .string  hello, world\n' - the string isn't surrounded with "" */

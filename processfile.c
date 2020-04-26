@@ -58,14 +58,15 @@ void process_file(char *filename) {
 	is_error = FALSE;
 	for (curr_line = 1; !feof(file_des); curr_line++)  {
 		fgets(temp_line, MAX_LINE_LENGTH, file_des); /* Get line */
-		is_error = is_error || process_line_spass(temp_line, &ent_table, &code_table, &ic, ext_table, data_table,codeword);
+		if(codeword[ic-100] != NULL)
+		    is_error = is_error || process_line_spass(temp_line, &ent_table, &code_table, &ic, ext_table, data_table,codeword);
 	}
 	if (is_error) {
 		printf("Stopped assembling the file %s. See the above output for more information.\n", filename);
 		return;
 	}
 	/* Everything was done. Write to *filename.ob/.ext/.ent */
-	if(write_output_files(codeword,icf,dcf, filename, ent_table, ext_table)){
+	if(write_output_files(codeword,data_img,icf,dcf, filename, ent_table, ext_table)){
         printf("Failed to write some of the output files. See the above output for more information.\n", filename);
 	}
 

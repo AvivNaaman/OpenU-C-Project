@@ -53,8 +53,9 @@ int process_code(char *line, int i, int *ic, machine_word **code_img) {
 			(*ic)++; /* increase ci */
 			/* if the operand is immediately addressed, we can encode it right now: */
 			if (first_addr == IMMEDIATE) {
-				/* Get value of immediate addressed operand. notice that it starts with #, so we're skipping the # in the call to atoi */
-				int value = atoi(operands[0] + 1);
+			    char * ptr;
+				/* Get value of immediate addressed operand. notice that it starts with #, so we're skipping the # in the call to strtol */
+				int value = strtol(operands[0] + 1,&ptr,10);
 				machine_word *word_to_write = (machine_word *) malloc_with_check(sizeof(machine_word));
 				word_to_write->length = 0; /* Not code word! */
 				(word_to_write->word).data = build_data_word(IMMEDIATE, value);
@@ -66,8 +67,9 @@ int process_code(char *line, int i, int *ic, machine_word **code_img) {
 		if (second_addr != NONE_ADDR && second_addr != REGISTER) {
 			(*ic)++;
 			if (get_addressing_type(operands[1]) == IMMEDIATE) {
-				/* Get value of immediate addressed operand. notice that it starts with #, so we're skipping the # in the call to atoi */
-				int value = atoi(operands[1] + 1);
+			    char *ptr;
+				/* Get value of immediate addressed operand. notice that it starts with #, so we're skipping the # in the call to strtol */
+				int value = strtol(operands[1] + 1,&ptr,10);
 				word_to_write = (machine_word *) malloc_with_check(sizeof(machine_word));
 				word_to_write->length = 0; /* Not Code word! */
 				(word_to_write->word).data = build_data_word(IMMEDIATE, value);
@@ -111,6 +113,8 @@ int add_symbols_to_code(char *line, int *ic, machine_word **code_img, table code
         /* Now check each operand addressing, determine whether we should change anything and if so, change that thing: */
         op1_addr = get_addressing_type(operands[0]);
         op2_addr = get_addressing_type(operands[1]);
+        if(operands[0][0] == '&') operands[0]++;
+        if(operands[1][0] == '&') operands[0]++;
         if(op1_addr == DIRECT || op1_addr == RELATIVE){
             table_entry *entry = find_by_key(data_table, operands[0]);
             if (entry == NULL) {

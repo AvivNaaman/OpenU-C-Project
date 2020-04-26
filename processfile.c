@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include "processfile.h"
 #include "processline.h"
-#include "string.h"
+#include <string.h>
+#include "writefiles.h"
 
 /* Globals because we want to access them only across this file (for get_curr_line/curr_filename, mostly for printing errors) */
 static char *curr_filename;
@@ -9,7 +10,7 @@ static int curr_line;
 
 /* Fully processes the assembly file, and writing all the associated files. Returns whether succeeded. */
 void process_file(char *filename) {
-	int ic, dc, icf, dcf, is_error;
+	int ic, dc, icf, dcf, is_error, val;
 	char *input_filename;
 	char temp_line[MAX_LINE_LENGTH+1]; /* temporary string for storing line, read from file */
 	FILE *file_des; /* Current assembly file descriptor to process */
@@ -63,7 +64,10 @@ void process_file(char *filename) {
 		return;
 	}
 	/* Everything was done. Write to *filename.ob/.ext/.ent */
-    printf("%x",codeword[0]->word);
+	if(write_ob(codeword,icf,dcf, filename)){
+        printf("Stopped assembling the file %s. See the above output for more information.\n", filename);
+	}
+
 }
 
 int get_curr_line() {

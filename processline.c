@@ -81,10 +81,12 @@ process_line_fpass(char *line, table *datas, table *codes, table *externals, int
  * ic - pointer to IC counter
  */
 int process_line_spass(char *line, table *ent_table, table *code_table, int *ic, table ext_table, table data_table,
-                       machine_word **code_img) {
+                       machine_word **code_img) { /*TODO: DEBUG*/
     int i;
     char *indexOfColon;
     char *token;
+    MOVE_TO_NOT_WHITE(line,i)
+    if(line[i]==';') return FALSE;
     indexOfColon = strchr(line, ':');
     /*check for label */
     if (indexOfColon != NULL) {
@@ -108,7 +110,7 @@ int process_line_spass(char *line, table *ent_table, table *code_table, int *ic,
         }
         return FALSE;
     }
-    if (add_symbols_to_code(line, ic, code_img, code_table, data_table)) {
+    if (add_symbols_to_code(line, ic, code_img, code_table, data_table,ext_table)) {
         return TRUE;
     }
     return FALSE;

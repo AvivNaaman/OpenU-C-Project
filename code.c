@@ -57,7 +57,7 @@ int process_code(char *line, int i, int *ic, machine_word **code_img) {
 				int value = strtol(operands[0] + 1, &ptr, 10);
 				machine_word *word_to_write = (machine_word *) malloc_with_check(sizeof(machine_word));
 				word_to_write->length = 0; /* Not code word! */
-				(word_to_write->word).data = build_data_word(IMMEDIATE, value);
+				(word_to_write->word).data = build_data_word(IMMEDIATE, value, FALSE);
 				code_img[(*ic) - IC_INIT_VALUE] = word_to_write;
 
 			}
@@ -71,7 +71,7 @@ int process_code(char *line, int i, int *ic, machine_word **code_img) {
 				int value = strtol(operands[1] + 1, &ptr, 10);
 				word_to_write = (machine_word *) malloc_with_check(sizeof(machine_word));
 				word_to_write->length = 0; /* Not Code word! */
-				(word_to_write->word).data = build_data_word(IMMEDIATE, value);
+				(word_to_write->word).data = build_data_word(IMMEDIATE, value, FALSE);
 
 				code_img[(*ic) - IC_INIT_VALUE] = word_to_write;
 			}
@@ -98,6 +98,7 @@ add_symbols_to_code(char *line, int *ic, machine_word **code_img, table data_tab
 	if (length > 1) {
 		addressing_type op1_addr, op2_addr;
 		machine_word *word_to_write;
+		bool is_extern_symbol = FALSE;
 		/* Now, we need to skip command, and get the operands themselves: */
 		MOVE_TO_NOT_WHITE(line, i)
 		parse_symbol(line, temp);
@@ -127,6 +128,7 @@ add_symbols_to_code(char *line, int *ic, machine_word **code_img, table data_tab
 						print_error("Symbol not found.");
 						return TRUE;
 					}
+					is_extern_symbol = TRUE;
 				}
 			}
 			/*found symbol*/
@@ -137,10 +139,11 @@ add_symbols_to_code(char *line, int *ic, machine_word **code_img, table data_tab
 			}
 			word_to_write = (machine_word *) malloc_with_check(sizeof(machine_word));
 			word_to_write->length = 0; /* it's a data word */
-			word_to_write->word.data = build_data_word(op1_addr, data_to_add); /* build data word and put it in place: */
+			word_to_write->word.data = build_data_word(op1_addr, data_to_add, is_extern_symbol); /* build data word and put it in place: */
 			code_img[(++(curr_ic)) - IC_INIT_VALUE] = word_to_write;
 		}
 		if (DIRECT == op2_addr || RELATIVE == op2_addr) {
+			is_extern_symbol = FALSE;
 			table_entry *entry = find_by_key(data_table, operands[1]);
 			if (entry == NULL) {
 				entry = find_by_key(code_table, operands[1]);
@@ -150,6 +153,7 @@ add_symbols_to_code(char *line, int *ic, machine_word **code_img, table data_tab
 						print_error("Symbol not found.");
 						return TRUE;
 					}
+					is_extern_symbol = TRUE;
 				}
 			}
 			/*found symbol*/
@@ -161,7 +165,7 @@ add_symbols_to_code(char *line, int *ic, machine_word **code_img, table data_tab
 			/*found symbol*/
 			word_to_write = (machine_word *) malloc_with_check(sizeof(machine_word));
 			word_to_write->length = 0;
-			word_to_write->word.data = build_data_word(op1_addr, data_to_add);
+			word_to_write->word.data = build_data_word(op2_addr, data_to_add, is_extern_symbol);
 			code_img[(++(curr_ic)) - IC_INIT_VALUE] = word_to_write;
 
 		}
@@ -473,12 +477,14 @@ reg get_register_by_name(char *name) {
 	return NONE_REG; /* No match */
 }
 
-data_word *build_data_word(addressing_type addressing, long data) {
+data_word *build_data_word(addressing_type addressing, long data, bool is_extern_symbol) {
 	signed int mask; /* For bitwise operations for data conversion */
 	unsigned int ARE = 4, mask_un; /* 4 = 2^2 = 1 << 2 */
 	data_word *dataword = malloc_with_check(sizeof(data_word));
 
-	if (addressing == DIRECT) ARE = 2;
+	if (addressing == DIRECT) {
+		ARE = is_extern_symbol ? 1 : 2;
+	}
 	dataword->ARE = ARE; /* Set ARE field value */
 
 	/* Now all left is to encode the data */

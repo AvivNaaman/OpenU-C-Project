@@ -140,7 +140,7 @@ bool validate_op_addr(addressing_type op1_addressing, addressing_type op2_addres
 reg get_register_by_name(char *name);
 
 /* builds a data word by the addressing type and the data of it. */
-data_word *build_data_word(addressing_type addressing, long data);
+data_word *build_data_word(addressing_type addressing, long data, bool is_extern_symbol);
 
 /* TODO: Doc better - returns whether an error occurred */
 int analyze_operands(char *line, int i, char *destination[2], int *operand_count);

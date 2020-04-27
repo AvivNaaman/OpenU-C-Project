@@ -127,7 +127,7 @@ int process_line_spass(char *line, table *ent_table, table code_table, int *ic, 
         }
         return FALSE;
     }
-    if (add_symbols_to_code(line, ic, code_img, *code_table, data_table,ext_table)) {
+    if (add_symbols_to_code(line, ic, code_img, data_table, code_table, ext_table)) {
         return TRUE;
     }
     return FALSE;

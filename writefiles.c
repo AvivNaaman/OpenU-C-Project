@@ -2,7 +2,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include "code.h"
-#include "table.h"
 #include "writefiles.h"
 
 int write_ob(machine_word **code_img, machine_data **data_img, long icf, long dcf, char *filename);

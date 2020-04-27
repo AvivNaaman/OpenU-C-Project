@@ -4,7 +4,6 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include "code.h"
-#include "table.h"
 
 
 int process_code(char *line, int i, int *ic, machine_word **code_img) {
@@ -89,7 +88,7 @@ int process_code(char *line, int i, int *ic, machine_word **code_img) {
 
 /* Completes the assembling process  */
 int
-add_symbols_to_code(char *line, int *ic, machine_word **code_img, table code_table, table data_table, table ext_table) {
+add_symbols_to_code(char *line, int *ic, machine_word **code_img, table data_table, table code_table, table ext_table) {
 	char temp[80];
 	char *operands[2];
 	int i = 0, operand_count, curr_ic = *ic;
@@ -134,7 +133,7 @@ add_symbols_to_code(char *line, int *ic, machine_word **code_img, table code_tab
 			long data_to_add = entry->value;
 			/* Calculate the distance to the label from "here" */
 			if (op1_addr == RELATIVE) {
-				data_to_add = *ic - data_to_add;
+				data_to_add =  data_to_add - *ic;
 			}
 			word_to_write = (machine_word *) malloc_with_check(sizeof(machine_word));
 			word_to_write->length = 0; /* it's a data word */

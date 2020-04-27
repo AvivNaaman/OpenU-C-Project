@@ -1,4 +1,6 @@
 #include "utils.h"
+#include "table.h"
+
 /* Represents an allowed addressing type */
 typedef enum addressing_types {
 	/* Immediate addressing (0) */
@@ -142,3 +144,5 @@ data_word *build_data_word(addressing_type addressing, long data);
 
 /* TODO: Doc better - returns whether an error occurred */
 int analyze_operands(char *line, int i, char *destination[2], int *operand_count);
+
+int add_symbols_to_code(char *line, int *ic, machine_word **code_img, table data_table, table code_table, table ext_table);

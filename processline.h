@@ -1,4 +1,4 @@
-#include "table.h"
+
 #include "code.h"
 /*
  * Analyzes a line in first pass: adds to symbol table if needed,

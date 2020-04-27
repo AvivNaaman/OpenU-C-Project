@@ -50,7 +50,7 @@ void process_file(char *filename) {
 	icf = ic;
 	dcf = dc;
 	ic=100;
-	/* Now let's add IC to each DC in data symbol table (step 1.19) */
+	/* Now let's add IC to each DC in data symbols table (step 1.19) */
 	add_to_each_value(data_table, icf);
 
 	/* First pass done right. start second pass: */

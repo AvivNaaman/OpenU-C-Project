@@ -42,7 +42,7 @@ int process_code(char *line, int i, int *ic, machine_word **code_img) {
 	word_to_write = (machine_word *) malloc_with_check(sizeof(machine_word));
 	(word_to_write->word).code = codeword;
 
-	code_img[(*ic)-IC_INIT_VALUE] = word_to_write; /* Avoid "spending" cells of the array */
+	code_img[(*ic) - IC_INIT_VALUE] = word_to_write; /* Avoid "spending" cells of the array */
 
 	{
 		addressing_type first_addr, second_addr;
@@ -53,13 +53,13 @@ int process_code(char *line, int i, int *ic, machine_word **code_img) {
 			(*ic)++; /* increase ci */
 			/* if the operand is immediately addressed, we can encode it right now: */
 			if (first_addr == IMMEDIATE) {
-			    char * ptr;
+				char *ptr;
 				/* Get value of immediate addressed operand. notice that it starts with #, so we're skipping the # in the call to strtol */
-				int value = strtol(operands[0] + 1,&ptr,10);
+				int value = strtol(operands[0] + 1, &ptr, 10);
 				machine_word *word_to_write = (machine_word *) malloc_with_check(sizeof(machine_word));
 				word_to_write->length = 0; /* Not code word! */
 				(word_to_write->word).data = build_data_word(IMMEDIATE, value);
-				code_img[(*ic)-IC_INIT_VALUE] = word_to_write;
+				code_img[(*ic) - IC_INIT_VALUE] = word_to_write;
 
 			}
 		}
@@ -67,14 +67,14 @@ int process_code(char *line, int i, int *ic, machine_word **code_img) {
 		if (second_addr != NONE_ADDR && second_addr != REGISTER) {
 			(*ic)++;
 			if (get_addressing_type(operands[1]) == IMMEDIATE) {
-			    char *ptr;
+				char *ptr;
 				/* Get value of immediate addressed operand. notice that it starts with #, so we're skipping the # in the call to strtol */
-				int value = strtol(operands[1] + 1,&ptr,10);
+				int value = strtol(operands[1] + 1, &ptr, 10);
 				word_to_write = (machine_word *) malloc_with_check(sizeof(machine_word));
 				word_to_write->length = 0; /* Not Code word! */
 				(word_to_write->word).data = build_data_word(IMMEDIATE, value);
 
-				code_img[(*ic)-IC_INIT_VALUE] = word_to_write;
+				code_img[(*ic) - IC_INIT_VALUE] = word_to_write;
 			}
 		}
 	}
@@ -82,82 +82,94 @@ int process_code(char *line, int i, int *ic, machine_word **code_img) {
 	(*ic)++; /* increase ci to point the next cell */
 
 	/* Add the final length (of code word + data words) to the code word struct: */
-	word_to_write->length = (*ic) - ic_before;
+	code_img[ic_before - IC_INIT_VALUE]->length = (*ic) - ic_before;
 
 	return FALSE; /* No errors */
 }
 
 /* Completes the assembling process  */
-int add_symbols_to_code(char *line, int *ic, machine_word **code_img, table code_table, table data_table, table ext_table) {
-    char temp[80];
-    char *operands[2];
-    int i = 0, operand_count;
-    int length = code_img[(*ic)-IC_INIT_VALUE]->length;
-    /* if the length is 1, then there's only the code word, no data. */
-    if (length > 1) {
-        addressing_type op1_addr, op2_addr;
-        machine_word *word_to_write;
-        /* Now, we need to skip command, and get the operands themselves: */
-        MOVE_TO_NOT_WHITE(line,i)
-        parse_symbol(line, temp);
-        if (temp[0] != '\0') { /* if symbol is defined */
-            /* move i right after it's end */
-            for (;line[i] && line[i] != '\n' && line[i] != EOF && line[i] != ' ' && line[i] != '\t'; i++);
-            i++;
-        }
-        MOVE_TO_NOT_WHITE(line,i)
-        /* now skip command */
-        for (;line[i] && line[i] != ' ' && line[i] != '\t' && line[i] != '\n' && line[i] != EOF; i++ ) ;
-        /* now analyze operands */
-        analyze_operands(line, i, operands, &operand_count);
-        /* Now check each operand addressing, determine whether we should change anything and if so, change that thing: */
-        op1_addr = get_addressing_type(operands[0]);
-        op2_addr = get_addressing_type(operands[1]);
-        if(operands[0][0] == '&') operands[0]++;
-        if(operands[1][0] == '&') operands[0]++;
-        if(op1_addr == DIRECT || op1_addr == RELATIVE){
-            table_entry *entry = find_by_key(data_table, operands[0]);
-            if (entry == NULL) {
-                entry = find_by_key(code_table, operands[0]);
-                if (entry == NULL) {
-                    entry = find_by_key(ext_table, operands[0]);
-                    if (entry == NULL)/* Symbol not found! */{
-                        print_error("Symbol not found.");
-                    return TRUE;
-                }
-            }
-        }
-        /*found symbol*/
-        word_to_write = (machine_word *)malloc_with_check(sizeof(machine_word));
-        word_to_write->length = 0;
-        word_to_write->word.data = build_data_word(op1_addr, entry->value);
-        code_img[(*ic)+1-IC_INIT_VALUE] = word_to_write;
-        }
-        if(operand_count>1) {
-            if (DIRECT == op2_addr || RELATIVE == op2_addr){
-                table_entry *entry = find_by_key(data_table, operands[1]);
-                if (entry == NULL) {
-                    entry = find_by_key(code_table, operands[1]);
-                    if (entry == NULL) {
-                        entry = find_by_key(ext_table, operands[1]);
-                        if (entry == NULL)/* Symbol not found! */{
-                            print_error("Symbol not found.");
-                            return TRUE;
-                        }
-                    }
-                }
-                /*found symbol*/
-                word_to_write = (machine_word *)malloc_with_check(sizeof(machine_word));
-                word_to_write->length = 0;
-                word_to_write->word.data = build_data_word(op1_addr, entry->value);
-                if(!(op1_addr == DIRECT || op1_addr == RELATIVE)) code_img[(*ic)+1-IC_INIT_VALUE] = word_to_write;
-                else code_img[(*ic)+1-IC_INIT_VALUE] = word_to_write;
+int
+add_symbols_to_code(char *line, int *ic, machine_word **code_img, table code_table, table data_table, table ext_table) {
+	char temp[80];
+	char *operands[2];
+	int i = 0, operand_count, curr_ic = *ic;
+	/* Get the total word length of current code text line in code binary image */
+	int length = code_img[(*ic) - IC_INIT_VALUE]->length;
+	/* if the length is 1, then there's only the code word, no data. */
+	if (length > 1) {
+		addressing_type op1_addr, op2_addr;
+		machine_word *word_to_write;
+		/* Now, we need to skip command, and get the operands themselves: */
+		MOVE_TO_NOT_WHITE(line, i)
+		parse_symbol(line, temp);
+		if (temp[0] != '\0') { /* if symbol is defined */
+			/* move i right after it's end */
+			for (; line[i] && line[i] != '\n' && line[i] != EOF && line[i] != ' ' && line[i] != '\t'; i++);
+			i++;
+		}
+		MOVE_TO_NOT_WHITE(line, i)
+		/* now skip command */
+		for (; line[i] && line[i] != ' ' && line[i] != '\t' && line[i] != '\n' && line[i] != EOF; i++);
+		/* now analyze operands */
+		analyze_operands(line, i, operands, &operand_count);
+		/* Now check each operand addressing, determine whether we should change anything and if so, change that thing: */
+		op1_addr = get_addressing_type(operands[0]);
+		op2_addr = get_addressing_type(operands[1]);
+		/* if relative, move the pointer to 2nd char (the cymbol itself) */
+		if (operands[0][0] == '&') operands[0]++;
+		if (operands[1][0] == '&') operands[0]++;
+		if (op1_addr == DIRECT || op1_addr == RELATIVE) {
+			table_entry *entry = find_by_key(data_table, operands[0]);
+			if (entry == NULL) {
+				entry = find_by_key(code_table, operands[0]);
+				if (entry == NULL) {
+					entry = find_by_key(ext_table, operands[0]);
+					if (entry == NULL)/* Symbol not found! */{
+						print_error("Symbol not found.");
+						return TRUE;
+					}
+				}
+			}
+			/*found symbol*/
+			long data_to_add = entry->value;
+			/* Calculate the distance to the label from "here" */
+			if (op1_addr == RELATIVE) {
+				data_to_add = *ic - data_to_add;
+			}
+			word_to_write = (machine_word *) malloc_with_check(sizeof(machine_word));
+			word_to_write->length = 0; /* it's a data word */
+			word_to_write->word.data = build_data_word(op1_addr, data_to_add); /* build data word and put it in place: */
+			code_img[(++(curr_ic)) - IC_INIT_VALUE] = word_to_write;
+		}
+		if (DIRECT == op2_addr || RELATIVE == op2_addr) {
+			table_entry *entry = find_by_key(data_table, operands[1]);
+			if (entry == NULL) {
+				entry = find_by_key(code_table, operands[1]);
+				if (entry == NULL) {
+					entry = find_by_key(ext_table, operands[1]);
+					if (entry == NULL)/* Symbol not found! */{
+						print_error("Symbol not found.");
+						return TRUE;
+					}
+				}
+			}
+			/*found symbol*/
+			long data_to_add = entry->value;
+			/* Calculate the distance to the label from "here" */
+			if (op1_addr == RELATIVE) {
+				data_to_add = *ic - data_to_add;
+			}
+			/*found symbol*/
+			word_to_write = (machine_word *) malloc_with_check(sizeof(machine_word));
+			word_to_write->length = 0;
+			word_to_write->word.data = build_data_word(op1_addr, data_to_add);
+			code_img[(++(curr_ic)) - IC_INIT_VALUE] = word_to_write;
 
-            }
-            }
-        }
-    (*ic) = (*ic) + length;
-    return FALSE;
+		}
+	}
+	/* Make the current pass IC as the next line ic */
+	(*ic) = (*ic)+length;
+	return FALSE;
 }
 
 
@@ -462,7 +474,7 @@ reg get_register_by_name(char *name) {
 	return NONE_REG; /* No match */
 }
 
-data_word *build_data_word(addressing_type addressing, int data) {
+data_word *build_data_word(addressing_type addressing, long data) {
 	signed int mask; /* For bitwise operations for data conversion */
 	unsigned int ARE = 4, mask_un; /* 4 = 2^2 = 1 << 2 */
 	data_word *dataword = malloc_with_check(sizeof(data_word));

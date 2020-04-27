@@ -1,6 +1,6 @@
 # final executable compilation & linkage
-assembler: assembler.o processfile.o instructions.o table.o processline.o utils.o code.o
-	gcc -g assembler.o processfile.o instructions.o table.o processline.o utils.o code.o -ansi -Wall -pedantic -o assembler
+assembler: assembler.o processfile.o instructions.o table.o processline.o utils.o code.o writefiles.o
+	gcc -g assembler.o processfile.o instructions.o table.o processline.o utils.o code.o writefiles.o -ansi -Wall -pedantic -o assembler
 
 
 # modules (sorted by importancy):
@@ -32,4 +32,6 @@ code.o: code.c code.h
 utils.o: utils.c utils.h
 	gcc -c utils.c -ansi -Wall -pedantic -o utils.o
 
-
+## output files-related functions
+writefiles.o: writefiles.c writefiles.h
+	gcc -c writefiles.c -ansi -Wall -pedantic -o writefiles.o

@@ -15,7 +15,7 @@ void process_file(char *filename) {
 	char temp_line[MAX_LINE_LENGTH+1]; /* temporary string for storing line, read from file */
 	FILE *file_des; /* Current assembly file descriptor to process */
 	machine_data *data_img[CODE_ARR_IMG_LENGTH]; /* Contains an image of the machine code */
-	machine_word *codeword [CODE_ARR_IMG_LENGTH];
+	machine_word *code_img [CODE_ARR_IMG_LENGTH];
 	/* We'll use multiple symbol tables, for each symbol type: .data, .code, .ext, .ent */
 	table data_table, code_table, ext_table, ent_table;
 
@@ -40,7 +40,7 @@ void process_file(char *filename) {
 	/* File opened successfully, start first pass: */
 	/* Read line - stop if read failed (when NULL returned) - usually when EOF. increase line counter for error printing. */
 	for (curr_line = 1; fgets(temp_line, MAX_LINE_LENGTH, file_des) != NULL; curr_line++) {
-		is_error = is_error || process_line_fpass(temp_line, &data_table, &code_table, &ext_table, &ic, &dc, codeword, data_img);
+		is_error = is_error || process_line_fpass(temp_line, &data_table, &code_table, &ext_table, &ic, &dc, code_img, data_img);
 	}
 	if (is_error) {
 		printf("Stopped assembling the file %s. See the above output for more information.\n", filename);
@@ -58,18 +58,24 @@ void process_file(char *filename) {
 	is_error = FALSE;
 	for (curr_line = 1; !feof(file_des); curr_line++)  {
 		fgets(temp_line, MAX_LINE_LENGTH, file_des); /* Get line */
-		if(codeword[ic-100] != NULL)
-		    is_error = is_error || process_line_spass(temp_line, &ent_table, &code_table, &ic, ext_table, data_table,codeword);
+		if(code_img[ic - 100] != NULL)
+		    is_error = is_error || process_line_spass(temp_line, &ent_table, code_table, &ic, ext_table, data_table, code_img);
 	}
 	if (is_error) {
 		printf("Stopped assembling the file %s. See the above output for more information.\n", filename);
 		return;
 	}
 	/* Everything was done. Write to *filename.ob/.ext/.ent */
-	if(write_output_files(codeword,data_img,icf,dcf, filename, ent_table, ext_table)){
+	if(write_output_files(code_img, data_img, icf, dcf, filename, ent_table, ext_table)){
         printf("Failed to write some of the output files. See the above output for more information.\n", filename);
 	}
-
+	/* Now let's free some pointer: */
+	/* Free symbol tables */
+	free_table(code_table);
+	free_table(ext_table);
+	free_table(data_table);
+	free_table(ent_table);
+	/* Free code & data buffer contents */
 }
 
 int get_curr_line() {

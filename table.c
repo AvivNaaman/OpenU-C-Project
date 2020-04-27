@@ -6,7 +6,7 @@
 #include <string.h>
 
 /* Adds a new entry to the table. the value argument is converted to char[3], which is 24bit word. */
-void add_table_item(table *tab, char *key, int value) {
+void add_table_item(table *tab, char *key, long value) {
 	char *temp;
 	table prev_entry, curr_entry, new_entry;
 	new_entry = (table)malloc(sizeof(table_entry));
@@ -46,7 +46,7 @@ table_entry *find_by_key(table tab, char *key) {
 	return NULL;
 }
 
-table_entry *find_by_value(table  tab, int value){
+table_entry *find_by_value(table  tab, long value){
 	while (tab != NULL) {
 		if (tab->value == value) return tab;
 		tab = tab->next;
@@ -64,7 +64,7 @@ void free_table(table tab) {
 	}
 }
 
-void add_to_each_value(table tab, int to_add) {
+void add_to_each_value(table tab, long to_add) {
 	table curr_entry;
 	/* for each entry, increase value by to_add */
 	for (curr_entry = tab; curr_entry != NULL; curr_entry = curr_entry->next) {

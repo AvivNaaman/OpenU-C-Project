@@ -88,7 +88,7 @@ process_line_fpass(char *line, table *datas, table *codes, table *externals, int
  * tables - all symbol tables that are needed
  * ic - pointer to IC counter
  */
-int process_line_spass(char *line, table *ent_table, table *code_table, int *ic, table ext_table, table data_table,
+int process_line_spass(char *line, table *ent_table, table code_table, int *ic, table ext_table, table data_table,
                        machine_word **code_img) { /*TODO: DEBUG*/
     char *indexOfColon;
     char *token;

@@ -1,7 +1,3 @@
-//
-// Created by yotam on 26/04/2020.
-//
-
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -9,7 +5,7 @@
 #include "table.h"
 #include "writefiles.h"
 
-int write_ob(machine_word **code_img, machine_data **data_img, int icf, int dcf, char *filename);
+int write_ob(machine_word **code_img, machine_data **data_img, long icf, long dcf, char *filename);
 int write_table_to_file(table tab, char *filename, char *file_extension);
 
 int write_output_files(machine_word **code_img,  machine_data **data_img, int icf, int dcf, char *filename, table ent_table, table ext_table) {
@@ -18,8 +14,9 @@ int write_output_files(machine_word **code_img,  machine_data **data_img, int ic
 	write_table_to_file(ent_table, filename, "ent");
 }
 
-int write_ob(machine_word **code_img, machine_data **data_img, int icf, int dcf, char *filename){
-    int val,i,j;
+int write_ob(machine_word **code_img, machine_data **data_img, long icf, long dcf, char *filename){
+     int i,j;
+     long val;
     FILE *file_desc;
     char *output_filename = malloc_with_check(strlen(filename) + 4);
     strcpy(output_filename,filename);
@@ -31,7 +28,7 @@ int write_ob(machine_word **code_img, machine_data **data_img, int icf, int dcf,
         printf("Can't create or rewrite to file %s.", filename);
         return TRUE;
     }
-    fprintf(file_desc, "%d %d\n", icf - 100, dcf);
+    fprintf(file_desc, "%ld %ld", icf - 100, dcf);
     for(i=0;code_img[i] != NULL;i++) {
         /*for(j=0;i<icf,i<11;i++,j++){*/
         	/* TODO: Check if it's possible to do it using pointer cast or something - it'll be much better! */
@@ -49,16 +46,17 @@ int write_ob(machine_word **code_img, machine_data **data_img, int icf, int dcf,
                 val = (code_img[i]->word.data->data<<3)|(code_img[i]->word.data->ARE);
             }
             /* Write the value to the file - first */
-            fprintf(file_desc, "%.7d %.6x\n", i + 100, val);
+            fprintf(file_desc, "\n%.7d %.6lx", i + 100, val);
         /*}*/
     }
     /* Write data image */
     for(j=0;data_img[j] != NULL;j++){
-        unsigned int val;
+        unsigned long val;
         val = (data_img[j]->byte0<<17)|(data_img[j]->byte1<<9)|(data_img[j]->byte2);
-        fprintf(file_desc, "%.7d %.6x\n", j + icf, val & 0xffffff);
+        fprintf(file_desc, "\n%.7ld %.6lx", icf + j, val & 0xffffff);
     }
     fclose(file_desc);
+    return FALSE;
 }
 
 /* Writes a table to a file. Each line has key and value, separated by a single space */
@@ -70,9 +68,11 @@ int write_table_to_file(table tab, char *filename, char *file_extension) {
 	strcat(full_filename, file_extension);
 	file_desc = fopen(full_filename, "w");
 	free(full_filename);
-	while (tab != NULL) {
-		fprintf(file_desc, "%s %.7d\n", tab->key, tab->value);
-		tab = tab->next;
+	/* Write first line without \n to avoid extraneous line breaks */
+	fprintf(file_desc, "%s %.7ld", tab->key, tab->value);
+	while ((tab = tab->next) != NULL) {
+		fprintf(file_desc, "\n%s %.7ld", tab->key, tab->value);
 	}
 	fclose(file_desc);
+	return FALSE;
 }

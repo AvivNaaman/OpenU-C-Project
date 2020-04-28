@@ -22,7 +22,7 @@ bool process_line_spass(char *line, table *ent_table, table *ext_references, tab
 	char *token;
 	int i = 0;
 	MOVE_TO_NOT_WHITE(line,i)
-	if(line[i]==';') return TRUE;
+	if(line[i]==';'||strcmp("\n",line)==0) return TRUE;
 	indexOfColon = strchr(line, ':');
 	/*check for label */
 	if (indexOfColon != NULL) {

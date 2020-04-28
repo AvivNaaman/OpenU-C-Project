@@ -86,8 +86,10 @@ void process_file(char *filename) {
 	/* First pass done right. start second pass: */
 	rewind(file_des); /* Reread the file from the beginning */
 	for (curr_line = 1; !feof(file_des); curr_line++) {
+	    int i;
 		fgets(temp_line, MAX_LINE_LENGTH, file_des); /* Get line */
-		if (code_img[ic - 100] != NULL)
+		MOVE_TO_NOT_WHITE(temp_line,i)
+		if (code_img[ic - 100] != NULL||temp_line[i]=='.')
 			is_success &= process_line_spass(temp_line, &ent_table, &ext_references, code_table, &ic, ext_table,
 			                                 data_table, code_img);
 	}

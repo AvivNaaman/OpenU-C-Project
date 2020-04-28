@@ -49,9 +49,8 @@ bool process_line_spass(char *line, table *ent_table, table *ext_references, tab
 						print_error("symbol not found");
 						return FALSE;
 					}
-					val = entry->value;
 				}
-				add_table_item(ent_table, token, val);
+				add_table_item(ent_table, token, entry->value);
 			}
 		}
 		return TRUE;

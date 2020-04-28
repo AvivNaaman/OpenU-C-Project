@@ -1,37 +1,34 @@
-# final executable compilation & linkage
-assembler: assembler.o processfile.o instructions.o table.o processline.o utils.o code.o writefiles.o
-	gcc -g assembler.o processfile.o instructions.o table.o processline.o utils.o code.o writefiles.o -ansi -Wall -pedantic -o assembler
+assembler: assembler.o code.o fpass.o spass.o instructions.o table.o utils.o writefiles.o globals.h 
+	gcc -g assembler.o code.o fpass.o spass.o instructions.o table.o utils.o writefiles.o -ansi -Wall -pedantic -o assembler
 
-
-# modules (sorted by importancy):
-## main module
-assembler.o: assembler.c processfile.h
+## Main:
+assembler.o: assembler.c assembler.h globals.h
 	gcc -c assembler.c -ansi -Wall -pedantic -o assembler.o
 
-## single file process module
-processfile.o: processfile.c processfile.h
-	gcc -c processfile.c -ansi -Wall -pedantic -o processfile.o
-
-
-## first pass module
-processline.o: processline.c processline.h instructions.h code.h
-	gcc -c processline.c -ansi -Wall -pedantic -o processline.o
-
-## symbol table module
-table.o: table.c table.h
-	gcc -c table.c -ansi -Wall -pedantic -o table.o
-
-## instructions helper function module
-instructions.o: instructions.c instructions.h utils.h
-	gcc -c instructions.c -ansi -Wall -pedantic -o instructions.o
-
-code.o: code.c code.h
+## Code helper functions:
+code.o: code.c code.h globals.h
 	gcc -c code.c -ansi -Wall -pedantic -o code.o
 
-## common function & definitions module
-utils.o: utils.c utils.h
+## First Pass:
+fpass.o: first_pass.c first_pass.h globals.h
+	gcc -c first_pass.c -ansi -Wall -pedantic -o fpass.o
+
+## Second Pass:
+spass.o: second_pass.c second_pass.h globals.h
+	gcc -c second_pass.c -ansi -Wall -pedantic -o spass.o
+
+## Instructions helper functions:
+instructions.o: instructions.c instructions.h globals.h
+	gcc -c instructions.c -ansi -Wall -pedantic -o instructions.o
+
+## Table:
+table.o: table.c table.h globals.h
+	gcc -c table.c -ansi -Wall -pedantic -o table.o
+
+## Useful functions:
+utils.o: utils.c instructions.h globals.h
 	gcc -c utils.c -ansi -Wall -pedantic -o utils.o
 
-## output files-related functions
-writefiles.o: writefiles.c writefiles.h
+## Output Files:
+writefiles.o: writefiles.c writefiles.h globals.h
 	gcc -c writefiles.c -ansi -Wall -pedantic -o writefiles.o

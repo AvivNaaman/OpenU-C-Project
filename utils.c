@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "utils.h"
-#include "processfile.h" /* For getting line number and file names */
+#include "assembler.h"
 
 /* Returns whether an error ocurred during the try of parsing the symbol. puts the symbol into the second buffer. */
 bool parse_symbol(char *line, char *symbol_dest) {
@@ -44,27 +44,20 @@ bool parse_symbol(char *line, char *symbol_dest) {
 }
 
 
-/* Writes a 24-bit word to a buffer in the specified index */
-void write_word(char *buffer, int dc, char byte0, char byte1, char byte2) {
-	dc *= 3; /* TODO explain! */
-	buffer[dc++] = byte0;
-	buffer[dc++] = byte1;
-	buffer[dc] = byte2;
-}
 
-
-int is_int(char *string) {
+bool is_int(char *string) {
 	int i = 0;
-	if (string[0] == '-' || string[0] == '+') i++; /* if string starts with +/-, it's OK */
+	if (string[0] == '-' || string[0] == '+') string++; /* if string starts with +/-, it's OK */
 	for (; string[i]; i++) { /* Just make sure that everything is a digit until the end */
 		if (!isdigit(string[i])) {
 			return FALSE;
 		}
 	}
+	/* TODO: Check if it's a 21-bit signed integer */
 	return i > 0; /* if i==0 then it was an empty string! */
 }
 
-char *int_to_word(int num) {
+char *int_to_word(long num) {
 	char *word = (char *) malloc_with_check(3* sizeof(char));
 	/* Shift bits if needed and keep only eight (2bytes) */
 	word[0] = (num >> 16) & 0xFF;
@@ -82,7 +75,7 @@ void *malloc_with_check(long size) {
 	return ptr;
 }
 
-int is_legal_label(char *string) {
+bool is_legal_label_name(char *string) {
 	/*if the length of the label is more than 31 characters it's illegal name*/
 	if (strlen(string) > 31) return FALSE;
 		/*if the string doesn't start with a letter it's illegal name*/
@@ -96,7 +89,7 @@ int is_legal_label(char *string) {
 
 }
 
-int is_contain_non_alphanumeric(char *string) {
+bool is_contain_non_alphanumeric(char *string) {
 	int i;
 	/*check for every char in string if it is non alphanumeric char if it is function returns true*/
 	for (i = 0; string[i]; i++) {
@@ -105,7 +98,7 @@ int is_contain_non_alphanumeric(char *string) {
 	return FALSE;
 }
 
-int is_saved_word(char *string) {
+bool is_saved_word(char *string) {
 	/*compare to every saved word*/
 	if (strcmp(string, "mov") == 0) {
 		return TRUE;
@@ -158,5 +151,31 @@ int is_saved_word(char *string) {
 
 /* Prints a detailed error message to the user, including file, line, and message. */
 void print_error(char *message) {
-	printf("Error: In file %s:%d: %s\n",get_curr_filename(),get_curr_line(),message);
+	printf("Error: In file %s:%ld: %s\n",get_curr_filename(),get_curr_line(),message);
+}
+
+void free_code_image(machine_word **code_image, long fic) {
+	long i;
+	for (i = 0; i < fic; i++) {
+		machine_word *curr_word = code_image[i];
+		if (curr_word != NULL) {
+			if (curr_word->length > 0) {
+				free(curr_word->word.code);
+			} else {
+				free(curr_word->word.data);
+			}
+			free(curr_word);
+			code_image[i] = NULL;
+		}
+	}
+}
+
+void free_data_image(machine_data ** data_image, long fdc) {
+	long i;
+	for (i = 0; i < fdc; i++) {
+		if (data_image[i] != NULL) {
+			free(data_image[i]);
+			data_image[i] = NULL;
+		}
+	}
 }

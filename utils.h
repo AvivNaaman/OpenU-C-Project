@@ -1,45 +1,43 @@
-/* Booleans */
-typedef enum booleans {
-	FALSE = 0, TRUE =1
-} bool;
+#include "globals.h"
 
-/* Maximum size of machine code array - provides at least 200 code lines in *.as file */
-#define CODE_ARR_IMG_LENGTH 1200
-#define MAX_LINE_LENGTH 80
-
-#define IC_INIT_VALUE 100 /* Initial value of IC */
-
-/* moves the index to the next place in string where the char isn't white */
-#define MOVE_TO_NOT_WHITE(string, index) \
-		for (;string[(index)] && (string[(index)] == '\t' || string[(index)] == ' '); (++(index)))\
-		;
-
-#define MOVE_UNTIL_CHAR_OR_WHITE(string, index, char)\
-		for (;!string[index] || string[index] == '\t' || string[index] == ' ' || string[index] == char; ++(index)) ;
-
-/* Returns whether an error ocurred during the try of parsing the symbol. puts the symbol into the second buffer. */
+/* TODO: Refactor */
 bool parse_symbol(char *line, char *symbol_dest);
 
-/* Writes 2 bytes in order to buffer from index */
-void write_word(char* buffer, int index, char byte0, char byte1, char byte2);
+/**
+ * Returns whether the string is a valid 21-bit integer
+ * @param string The number string
+ * @return Whether a valid 21-bit signed integer.
+ */
+bool is_int(char* string);
 
-/* Returns TRUE if the string is int */
-int is_int(char* string);
+/* TODO: Remove this function and migrate to the one used in code.c! */
+/**
+ * Converts a 21-bit signed integer into
+ * @return A pointer to 3-byte char array which holds the bytes from high to low.
+ */
+char *int_to_word(long);
 
-/* Returns a 3-byte array that contains the lower 24byte content of the argument. */
-char *int_to_word(int);
-
-/* allocates a memory block in length of size argument. returns NULL if failed, and prints error if failed. */
+/**
+ * Allocates memory in the required size. Exits the program if failed.
+ * @param size The size to allocate in bytes
+ * @return A generic pointer to the allocated memory if succeeded
+ */
 void *malloc_with_check(long size);
 
-/*Returns true if the string is legal label name*/
-int is_legal_label(char* string);
+
+bool is_legal_label_name(char* string);
 
 /*Returns TRUE if string contains non alphanumeric chars*/
-int is_contain_non_alphanumeric(char *string);
+bool is_contain_non_alphanumeric(char *string);
 
 /*Returns TRUE if string is saved word*/
-int is_saved_word(char *string);
+bool is_saved_word(char *string);
 
 /* Prints a detailed error message to the user, including file, line, and message. */
 void print_error(char *message);
+
+/* Frees all the allocated memory inside the code image */
+void free_code_image(machine_word **code_image, long fic);
+
+/* Frees all the allocated memory inside the data image */
+void free_data_image(machine_data ** data_image, long fdc);

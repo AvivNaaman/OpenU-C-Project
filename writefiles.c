@@ -1,15 +1,15 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "code.h"
-#include "writefiles.h"
+#include "utils.h"
+#include "table.h"
 
 int write_ob(machine_word **code_img, machine_data **data_img, long icf, long dcf, char *filename);
 int write_table_to_file(table tab, char *filename, char *file_extension);
 
-int write_output_files(machine_word **code_img,  machine_data **data_img, int icf, int dcf, char *filename, table ent_table, table ext_table) {
-	return write_ob(code_img, data_img, icf, dcf, filename) ||
-	write_table_to_file(ext_table, filename, "ext") ||
+int write_output_files(machine_word **code_img, machine_data **data_img, long icf, long dcf, char *filename, table ent_table, table ext_table) {
+	return write_ob(code_img, data_img, icf, dcf, filename) &&
+	write_table_to_file(ext_table, filename, "ext") &&
 	write_table_to_file(ent_table, filename, "ent");
 }
 
@@ -24,8 +24,8 @@ int write_ob(machine_word **code_img, machine_data **data_img, long icf, long dc
     file_desc = fopen(output_filename, "w");
 	free(output_filename);
     if (file_desc == NULL ){
-        printf("Can't create or rewrite to file %s.", filename);
-        return TRUE;
+        printf("Can't create or rewrite to file %s.", output_filename);
+        return FALSE;
     }
     fprintf(file_desc, "%ld %ld", icf - 100, dcf);
     for(i=0;code_img[i] != NULL;i++) {
@@ -55,7 +55,7 @@ int write_ob(machine_word **code_img, machine_data **data_img, long icf, long dc
         fprintf(file_desc, "\n%.7ld %.6lx", icf + j, val & 0xffffff);
     }
     fclose(file_desc);
-    return FALSE;
+    return TRUE;
 }
 
 /* Writes a table to a file. Each line has key and value, separated by a single space */
@@ -67,11 +67,15 @@ int write_table_to_file(table tab, char *filename, char *file_extension) {
 	strcat(full_filename, file_extension);
 	file_desc = fopen(full_filename, "w");
 	free(full_filename);
+	if (file_desc == NULL) {
+		printf("Can't create or rewrite to file %s.", full_filename);
+		return FALSE;
+	}
 	/* Write first line without \n to avoid extraneous line breaks */
 	fprintf(file_desc, "%s %.7ld", tab->key, tab->value);
 	while ((tab = tab->next) != NULL) {
 		fprintf(file_desc, "\n%s %.7ld", tab->key, tab->value);
 	}
 	fclose(file_desc);
-	return FALSE;
+	return TRUE;
 }

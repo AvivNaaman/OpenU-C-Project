@@ -36,7 +36,7 @@ instruction_type find_instruction_from_index(char *string, int *index){
  * Processes a string instruction from index. encode into data image and change dc.
  * Returns whether encountered an error.
  */
-int process_string_instruction(char *line, int index, machine_data **data_img, int *dc) {
+bool process_string_instruction(char *line, int index, machine_data **data_img, long *dc) {
 	machine_data *data;
 	int dc_at_start = *dc;
 	MOVE_TO_NOT_WHITE(line, index)
@@ -59,24 +59,24 @@ int process_string_instruction(char *line, int index, machine_data **data_img, i
 	else {
 		/* something like: 'LABEL: .string  hello, world\n' - the string isn't surrounded with "" */
 		print_error("String must be defined between quotation marks");
-		return TRUE;
+		return FALSE;
 	}
 	if (line[index] != '"') {
 		print_error("String must be defined between quotation marks");
-		return TRUE;
+		return FALSE;
 	}
 	if (*dc == dc_at_start) { /* Nothing was added */
 		print_error("Error: Empty string definition");
-		return TRUE;
+		return FALSE;
 	}
 	/* Return processed chars count */
-	return FALSE;
+	return TRUE;
 }
 
 /*
  * Parses a .data instruction. copies each number value to data_img by dc position, and returns the amount of processed data.
  */
-int process_data_instruction(char *line, int index, machine_data **data_img, int *dc) {
+bool process_data_instruction(char *line, int index, machine_data **data_img, long *dc) {
 	char temp[80], *temp_ptr;
 	machine_data *data;
 	int i;
@@ -88,7 +88,7 @@ int process_data_instruction(char *line, int index, machine_data **data_img, int
 		temp[i] = '\0'; /* End of string */
 		if (!is_int(temp)) {
 			print_error("Expected a number after .data instruction");
-			return TRUE;
+			return FALSE;
 		}
 		/* Now let's write to data buffer */
 		temp_ptr = int_to_word(atoi(temp));
@@ -106,33 +106,5 @@ int process_data_instruction(char *line, int index, machine_data **data_img, int
 		if (line[index] == ',') index++;
 		else if (!line[index] || line[index] == '\n' || line[index] == EOF) break; /* End of line/file/string => nothing to process anymore */
 	} while (line[index] != '\n' && line[index] != EOF);
-	return FALSE;
-}
-
-int process_entry_instruction(char *line, int i, table *ent_table, table code_table, table data_table) {
-	int j;
-	char ent_symbol[80];
-	table_entry *entry;
-	MOVE_TO_NOT_WHITE(line, i)
-	for (j = 0; line[i] && line[i] != '\n' && line[i] != EOF && line[i] != ' ' && line[i] != '\t' && line[i] != ':';i++,j++)
-		ent_symbol[j] = line[i];
-	ent_symbol[j] = '\0';
-
-	MOVE_TO_NOT_WHITE(line,i)
-	if (line[i] != '\n' && line[i] != EOF && !line[i]) {
-		print_error(".entry instruction accepts only 1 parameter.");
-		return TRUE;
-	}
-
-	if ((entry = find_by_key(code_table, ent_symbol)) == NULL) {
-		if ((entry = find_by_key(data_table, ent_symbol)) == NULL) {
-			print_error("Symbol for entry instruction not found");
-			return TRUE;
-		}
-	}
-
-	/* Add to entries table */
-	add_table_item(ent_table, entry->key, entry->value);
-
-	return FALSE;
+	return TRUE;
 }

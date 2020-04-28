@@ -1,9 +1,9 @@
 /* Implements a basic table ("dictionary") data structure. sorted by value, ascending. */
 #include <stdlib.h>
 #include <stdio.h>
-#include "table.h"
 #include "utils.h"
 #include <string.h>
+#include "table.h"
 
 /* Adds a new entry to the table. the value argument is converted to char[3], which is 24bit word. */
 void add_table_item(table *tab, char *key, long value) {

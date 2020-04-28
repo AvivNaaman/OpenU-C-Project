@@ -4,201 +4,39 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include "code.h"
+#include "utils.h"
 
-
-int process_code(char *line, int i, int *ic, machine_word **code_img) {
-	char operation[8]; /* stores the string of the current code operation */
-	char *operands[2]; /* 2 strings, each for operand */
-	opcode curr_opcode; /* the current opcode and funct values */
-	funct curr_funct;
-	code_word *codeword; /* The current code word */
-	int j, operand_count, ic_before;
-	machine_word *word_to_write;
-	/* Skip white chars */
-	MOVE_TO_NOT_WHITE(line, i)
-
-	/* Until white char, end of line, or too big op */
-	for (j = 0; line[i] && line[i] != '\t' && line[i] != ' ' && line[i] != '\n' && line[i] != EOF && j < 6; i++, j++) {
-		operation[j] = line[i];
-	}
-	operation[j] = '\0'; /* End of string */
-	/* Get opcode & funct by command name into curr_opcode/curr_funct */
-	get_opcode_func(operation, &curr_opcode, &curr_funct);
-	/* If invalid operation, print and skip processing the line. */
-	if (curr_opcode == NONE_OP) {
-		print_error("Unrecognized command.");
-		return TRUE; /* an error occurred */
-	}
-	/* Analyze operands */
-
-	if (analyze_operands(line, i, operands, &operand_count)) return TRUE; /* if error, return error */
-
-	/* Build code word (returns null if validation failed) */
-	if ((codeword = get_code_word(curr_opcode, curr_funct, operand_count, operands)) == NULL) return TRUE;
-
-	ic_before = *ic;
-
-	word_to_write = (machine_word *) malloc_with_check(sizeof(machine_word));
-	(word_to_write->word).code = codeword;
-
-	code_img[(*ic) - IC_INIT_VALUE] = word_to_write; /* Avoid "spending" cells of the array */
-
-	{
-		addressing_type first_addr, second_addr;
-		first_addr = get_addressing_type(operands[0]);
-		second_addr = get_addressing_type(operands[1]);
-		/* if an additional data word is required */
-		if (first_addr != NONE_ADDR && first_addr != REGISTER) {
-			(*ic)++; /* increase ci */
-			/* if the operand is immediately addressed, we can encode it right now: */
-			if (first_addr == IMMEDIATE) {
-				char *ptr;
-				/* Get value of immediate addressed operand. notice that it starts with #, so we're skipping the # in the call to strtol */
-				int value = strtol(operands[0] + 1, &ptr, 10);
-				machine_word *word_to_write = (machine_word *) malloc_with_check(sizeof(machine_word));
-				word_to_write->length = 0; /* Not code word! */
-				(word_to_write->word).data = build_data_word(IMMEDIATE, value, FALSE);
-				code_img[(*ic) - IC_INIT_VALUE] = word_to_write;
-
-			}
-		}
-		/* And again - if another data word is required, increase CI. if it's an immediate addressing, encode it. */
-		if (second_addr != NONE_ADDR && second_addr != REGISTER) {
-			(*ic)++;
-			if (get_addressing_type(operands[1]) == IMMEDIATE) {
-				char *ptr;
-				/* Get value of immediate addressed operand. notice that it starts with #, so we're skipping the # in the call to strtol */
-				int value = strtol(operands[1] + 1, &ptr, 10);
-				word_to_write = (machine_word *) malloc_with_check(sizeof(machine_word));
-				word_to_write->length = 0; /* Not Code word! */
-				(word_to_write->word).data = build_data_word(IMMEDIATE, value, FALSE);
-
-				code_img[(*ic) - IC_INIT_VALUE] = word_to_write;
-			}
-		}
-	}
-
-	(*ic)++; /* increase ci to point the next cell */
-
-	/* Add the final length (of code word + data words) to the code word struct: */
-	code_img[ic_before - IC_INIT_VALUE]->length = (*ic) - ic_before;
-
-	return FALSE; /* No errors */
-}
-
-/* Completes the assembling process  */
-int
-add_symbols_to_code(char *line, int *ic, machine_word **code_img, table data_table, table code_table, table ext_table) {
-	char temp[80];
-	char *operands[2];
-	int i = 0, operand_count, curr_ic = *ic;
-	/* Get the total word length of current code text line in code binary image */
-	int length = code_img[(*ic) - IC_INIT_VALUE]->length;
-	/* if the length is 1, then there's only the code word, no data. */
-	if (length > 1) {
-		addressing_type op1_addr, op2_addr;
-		machine_word *word_to_write;
-		bool is_extern_symbol = FALSE;
-		/* Now, we need to skip command, and get the operands themselves: */
-		MOVE_TO_NOT_WHITE(line, i)
-		parse_symbol(line, temp);
-		if (temp[0] != '\0') { /* if symbol is defined */
-			/* move i right after it's end */
-			for (; line[i] && line[i] != '\n' && line[i] != EOF && line[i] != ' ' && line[i] != '\t'; i++);
-			i++;
-		}
-		MOVE_TO_NOT_WHITE(line, i)
-		/* now skip command */
-		for (; line[i] && line[i] != ' ' && line[i] != '\t' && line[i] != '\n' && line[i] != EOF; i++);
-		/* now analyze operands */
-		analyze_operands(line, i, operands, &operand_count);
-		/* Now check each operand addressing, determine whether we should change anything and if so, change that thing: */
-		op1_addr = get_addressing_type(operands[0]);
-		op2_addr = get_addressing_type(operands[1]);
-		/* if relative, move the pointer to 2nd char (the cymbol itself) */
-		if (operands[0][0] == '&') operands[0]++;
-		if (operands[1][0] == '&') operands[0]++;
-		if (op1_addr == DIRECT || op1_addr == RELATIVE) {
-			table_entry *entry = find_by_key(data_table, operands[0]);
-			if (entry == NULL) {
-				entry = find_by_key(code_table, operands[0]);
-				if (entry == NULL) {
-					entry = find_by_key(ext_table, operands[0]);
-					if (entry == NULL)/* Symbol not found! */{
-						print_error("Symbol not found.");
-						return TRUE;
-					}
-					is_extern_symbol = TRUE;
-				}
-			}
-			/*found symbol*/
-			long data_to_add = entry->value;
-			/* Calculate the distance to the label from "here" */
-			if (op1_addr == RELATIVE) {
-				data_to_add =  data_to_add - *ic;
-			}
-			word_to_write = (machine_word *) malloc_with_check(sizeof(machine_word));
-			word_to_write->length = 0; /* it's a data word */
-			word_to_write->word.data = build_data_word(op1_addr, data_to_add, is_extern_symbol); /* build data word and put it in place: */
-			code_img[(++(curr_ic)) - IC_INIT_VALUE] = word_to_write;
-		}
-		if (DIRECT == op2_addr || RELATIVE == op2_addr) {
-			is_extern_symbol = FALSE;
-			table_entry *entry = find_by_key(data_table, operands[1]);
-			if (entry == NULL) {
-				entry = find_by_key(code_table, operands[1]);
-				if (entry == NULL) {
-					entry = find_by_key(ext_table, operands[1]);
-					if (entry == NULL)/* Symbol not found! */{
-						print_error("Symbol not found.");
-						return TRUE;
-					}
-					is_extern_symbol = TRUE;
-				}
-			}
-			/*found symbol*/
-			long data_to_add = entry->value;
-			/* Calculate the distance to the label from "here" */
-			if (op1_addr == RELATIVE) {
-				data_to_add = *ic - data_to_add;
-			}
-			/*found symbol*/
-			word_to_write = (machine_word *) malloc_with_check(sizeof(machine_word));
-			word_to_write->length = 0;
-			word_to_write->word.data = build_data_word(op2_addr, data_to_add, is_extern_symbol);
-			code_img[(++(curr_ic)) - IC_INIT_VALUE] = word_to_write;
-
-		}
-	}
-	/* Make the current pass IC as the next line ic */
-	(*ic) = (*ic)+length;
-	return FALSE;
-}
-
-
-int analyze_operands(char *line, int i, char *operands[2], int *operand_count) {
+/**
+ * Analyzes command's operand by their string from a certain index, and return whether succeeded.
+ * @param line The command text
+ * @param i The index to start analyzing from
+ * @param destination At least a 2-cell buffer of strings for the extracted operand strings
+ * @param operand_count The destination of the detected operands count
+ * @return Whether analyzing succeeded
+ */
+bool analyze_operands(char *line, int i, char **destination, int *operand_count) {
 /* Make some space to the operand strings */
 	int j;
 	*operand_count = 0;
 	MOVE_TO_NOT_WHITE(line, i)
 	if (line[i] == ',') {
 		print_error("Unexpected comma after command.");
-		return TRUE; /* an error occurred */
+		return FALSE; /* an error occurred */
 	}
-	operands[0] = malloc_with_check(MAX_LINE_LENGTH);
-	operands[1] = malloc_with_check(MAX_LINE_LENGTH);
+	destination[0] = malloc_with_check(MAX_LINE_LENGTH);
+	destination[1] = malloc_with_check(MAX_LINE_LENGTH);
 	/* until no too many operands (max of 2) and it's not the end of the line */
 	for (*operand_count = 0; line[i] != EOF && line[i] != '\n' && line[i];) {
 		if (*operand_count == 2) /* =We already got 2 operands in, We're going ot get the third! */ {
 			print_error("Too many operands for command.");
-			return TRUE; /* an error occurred */
+			return FALSE; /* an error occurred */
 		}
 		/* as long we're still on same operand */
 		for (j = 0; line[i] && line[i] != '\t' && line[i] != ' ' && line[i] != '\n' && line[i] != EOF &&
 		            line[i] != ','; i++, j++) {
-			operands[*operand_count][j] = line[i];
+			destination[*operand_count][j] = line[i];
 		}
-		operands[*operand_count][j] = '\0';
+		destination[*operand_count][j] = '\0';
 		(*operand_count)++; /* We've just saved another operand! */
 		MOVE_TO_NOT_WHITE(line, i)
 		if (line[i] == '\n' || line[i] == EOF || !line[i]) break;
@@ -206,9 +44,9 @@ int analyze_operands(char *line, int i, char *operands[2], int *operand_count) {
 			/* After operand & after white chars there's something that isn't ',' or end of line.. */
 			print_error("Expecting ',' between operands");
 			/* Release operands dynamically allocated memory */
-			free(operands[0]);
-			free(operands[1]);
-			return TRUE;
+			free(destination[0]);
+			free(destination[1]);
+			return FALSE;
 		}
 		i++;
 		MOVE_TO_NOT_WHITE(line, i);
@@ -218,14 +56,20 @@ int analyze_operands(char *line, int i, char *operands[2], int *operand_count) {
 		else continue; /* No errors, continue */
 		{ /* Error found */
 			/* No one forgot you two! */
-			free(operands[0]);
-			free(operands[1]);
-			return TRUE;
+			free(destination[0]);
+			free(destination[1]);
+			return FALSE;
 		}
 	}
-	return FALSE;
+	return TRUE;
 }
 
+/**
+ * Detects the opcode and the funct of a command by it's name
+ * @param cmd The command name (string)
+ * @param opcode_out The opcode value destination
+ * @param funct_out The funct value destination
+ */
 void get_opcode_func(char *cmd, opcode *opcode_out, funct *funct_out) {
 	*funct_out = NONE_FUNCT;
 	if (strcmp(cmd, "mov") == 0) {
@@ -272,55 +116,32 @@ void get_opcode_func(char *cmd, opcode *opcode_out, funct *funct_out) {
 	} else *opcode_out = NONE_OP; /* Not found! */
 }
 
+/**
+ * Return the addressing type of an operand
+ * @param operand The operand's string
+ * @return The addressing type of the operand
+ */
 addressing_type get_addressing_type(char *operand) {
 	if (operand[0] == '\0') return NONE_ADDR;
-	if (is_register(operand)) return REGISTER;
-	else if (is_immediate(operand)) return IMMEDIATE;
-	else if (is_direct(operand)) return DIRECT;
-	else if (is_relative(operand)) return RELATIVE;
+	if (operand[0] == 'r' && operand[1] >= '0' && operand[1] <= '7') return REGISTER;
+	else if (operand[0] == '#' && is_int(operand + 1)) return IMMEDIATE;
+	else if (is_legal_label_name(operand)) return DIRECT;
+	else if (operand[0] && operand[0] == '&' && is_legal_label_name(operand + 1)) return RELATIVE;
 	else return NONE_ADDR;
 }
 
-bool is_register(char *operand) {
-	/*check if operand is register*/
-	if ((strcmp(operand, "r0") == 0) || (strcmp(operand, "r1") == 0) || (strcmp(operand, "r2") == 0) ||
-	    (strcmp(operand, "r3") == 0) ||
-	    (strcmp(operand, "r4") == 0) || (strcmp(operand, "r5") == 0) || (strcmp(operand, "r6") == 0) ||
-	    (strcmp(operand, "r7") == 0)) {
-		return TRUE;
-	}
-	return FALSE;
-}
-
-bool is_immediate(char *operand) {
-	/*in immediate addressing first char is #*/
-	return (operand[0] == '#' && is_int(operand + 1));
-}
-
-bool is_direct(char *operand) {
-	/*if the operand is legal name of label it is direct addressing*/
-	if (is_legal_label(operand)) return TRUE;
-	return FALSE;
-}
-
-bool is_relative(char *operand) {
-	/* in relative addressing first char is &*/
-	if (operand[0] == '&') {
-		operand++;
-		/*after the & the relative addressing is just like direct addressing*/
-		if (is_direct(operand)) {
-			return TRUE;
-		}
-	}
-	return FALSE;
-}
-
-/* Assembles a code word by the  */
+/**
+ * Validates and Builds a code word by the opcode, funct, operand count and operand strings
+ * @param curr_opcode The current opcode
+ * @param curr_funct The current funct
+ * @param op_count The operands count
+ * @param operands a 2-cell array of pointers to first and second operands.
+ * @return A pointer to code word struct, which represents the code. if validation fails, returns NULL.
+ */
 code_word *get_code_word(opcode curr_opcode, funct curr_funct, int op_count, char *operands[2]) {
 	addressing_type first_addressing, second_addressing;
 	bool is_valid = TRUE;
 	code_word *codeword;
-	/* TODO: Check for none and print message \/ */
 	first_addressing = get_addressing_type(operands[0]);
 	second_addressing = get_addressing_type(operands[1]);
 	/* Validate the operand types and count */
@@ -399,9 +220,14 @@ code_word *get_code_word(opcode curr_opcode, funct curr_funct, int op_count, cha
 	return codeword;
 }
 
-/*
- * Returns whether addressing type is valid for the operands by the current addressing of each operand,
- * the count of valid addressing type given as argument for both operands and the valid addressing types for both operands
+/**
+ * Returns whether the current addressing types of the operand are valid by the valid types, defined as the unlimited parameters
+ * @param op1_addressing The addressing type of the first operand
+ * @param op2_addressing The addressing type of the second operand
+ * @param op1_valid_addr_count The count of the valid addressing types for the first operand, specified afterwards.
+ * @param op2_valid_addr_count The count of the valid addressing types for the second operand, specified afterwards.
+ * @param ... The valid addressing types (as enum addressing_type) for the operands. The valid for the first, followed by the valid for the second.
+ * @return Whether the addressing types are valid as specified
  */
 bool validate_op_addr(addressing_type op1_addressing, addressing_type op2_addressing, int op1_valid_addr_count,
                       int op2_valid_addr_count, ...) {
@@ -468,7 +294,11 @@ bool validate_op_addr(addressing_type op1_addressing, addressing_type op2_addres
 	return is_valid;
 }
 
-/* Returns an enu register by the register's name */
+/**
+ * Returns the register enum value by it's name
+ * @param name The name of the register
+ * @return The enum value of the register if found. otherwise, returns NONE_REG
+ */
 reg get_register_by_name(char *name) {
 	if (name[0] == 'r' && isdigit(name[1]) && name[2] == '\0') {
 		int digit = name[1] - '0';
@@ -477,6 +307,13 @@ reg get_register_by_name(char *name) {
 	return NONE_REG; /* No match */
 }
 
+/**
+ * Builds a data word by the operand's addressing type, value and whether the symbol (if it is one) is external.
+ * @param addressing The addressing type of the value
+ * @param data The value
+ * @param is_extern_symbol If the symbol is a label, and it's external
+ * @return A pointer to the constructed data word for the data by the specified properties.
+ */
 data_word *build_data_word(addressing_type addressing, long data, bool is_extern_symbol) {
 	signed int mask; /* For bitwise operations for data conversion */
 	unsigned int ARE = 4, mask_un; /* 4 = 2^2 = 1 << 2 */

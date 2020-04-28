@@ -1,6 +1,5 @@
-
-#include "instructions.h"
-
+#ifndef TABLE_H
+#define TABLE_H
 /* pointer to table  */
 typedef struct entry* table;
 /* Single table entry */
@@ -22,7 +21,9 @@ table_entry *find_by_key(table tab, char *key);
 /* Returns a pointer to the entry where the value is the same as the argument. if no such one, returns null */
 table_entry *find_by_value(table tab, long value);
 
-void free_table(table tab); /* TODO: DOC */
+/* Frees all the allocated data in the table. */
+void free_table(table tab);
 
 /* Add the to_add argument to each value of entry in the table */
 void add_to_each_value(table tab, long to_add);
+#endif

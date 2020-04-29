@@ -50,15 +50,15 @@ void process_file(char *filename) {
 
 	file_des = fopen(input_filename, "r");
 	free(input_filename); /* Release dynamically allocated memory for string */
+	/* Put filename in static variables for error messaging */
+	curr_filename = input_filename;
 	/* Make sure opening the file succeeded */
 	if (file_des == NULL) {
 		/* if file couldn't be opened, write to stderr. */
-		printf("Error: file \"%s\" is inaccessible for reading.", filename);
+		printf("Error: file \"%s.as\" is inaccessible for reading.", filename);
 		return;
 	}
 
-	/* Put filename in static variables for error messaging */
-	curr_filename = input_filename;
 
 	/* Initialize  */
 	data_table = code_table = ext_table = NULL;

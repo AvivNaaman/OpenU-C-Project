@@ -80,14 +80,14 @@ bool process_data_instruction(char *line, int index, machine_data **data_img, lo
 	char temp[80], *temp_ptr;
 	machine_data *data;
 	int i;
+	MOVE_TO_NOT_WHITE(line, index)
 	do {
-		MOVE_TO_NOT_WHITE(line, index)
 		for (i = 0; line[index] && line[index] != EOF && line[index] != '\t' && line[index] != ' ' && line[index] != ',' && line[index] != '\n' ; index++,i++) {
 			temp[i] = line[index];
 		}
 		temp[i] = '\0'; /* End of string */
 		if (!is_int(temp)) {
-			print_error("Expected a number after .data instruction");
+			print_error("Expected a number as operand for .data instruction");
 			return FALSE;
 		}
 		/* Now let's write to data buffer */
@@ -105,6 +105,15 @@ bool process_data_instruction(char *line, int index, machine_data **data_img, lo
 		/* TODO: Some error if something (Think!) */
 		if (line[index] == ',') index++;
 		else if (!line[index] || line[index] == '\n' || line[index] == EOF) break; /* End of line/file/string => nothing to process anymore */
+		/* Got comma. Skip white chars and check if end of line (if so, there's extraneous comma!) */
+		MOVE_TO_NOT_WHITE(line, index)
+		if (line[index] == ',') {
+			print_error("Multiple consecutive commas.");
+			return FALSE;
+		} else if (line[index] == EOF || line[index] == '\n' || !line[index]) {
+			print_error("Missing data after comma");
+			return FALSE;
+		}
 	} while (line[index] != '\n' && line[index] != EOF);
 	return TRUE;
 }

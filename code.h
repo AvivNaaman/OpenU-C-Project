@@ -5,14 +5,6 @@
 void get_opcode_func(char* cmd, opcode *opcode_out, funct *funct_out);
 /* Returns the addressing type enum value of the operand's addressing type */
 addressing_type get_addressing_type(char *operand);
-/* Returns whether an operand is a register. */
-bool is_register(char *operand);
-/* Returns whether an operand is directly addressed. */
-bool is_direct(char *operand);
-/* Returns whether an operand is immediately addressed. */
-bool is_immediate(char  *operand);
-/* Returns whether an operand is relatively addressed. */
-bool is_relative(char *operand);
 
 /*
  * builds a code binary word by the opcode, funct, operand count and operands. validates that the operands are in the correct form.

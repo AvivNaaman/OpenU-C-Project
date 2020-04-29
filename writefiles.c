@@ -71,6 +71,7 @@ int write_table_to_file(table tab, char *filename, char *file_extension) {
 		printf("Can't create or rewrite to file %s.", full_filename);
 		return FALSE;
 	}
+	if(tab==NULL) return TRUE;
 	/* Write first line without \n to avoid extraneous line breaks */
 	fprintf(file_desc, "%s %.7ld", tab->key, tab->value);
 	while ((tab = tab->next) != NULL) {

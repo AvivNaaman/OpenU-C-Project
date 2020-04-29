@@ -5,6 +5,7 @@
 #include "instructions.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "first_pass.h"
 
 
@@ -23,7 +24,7 @@
 bool process_line_fpass(char *line, table *datas, table *codes, table *externals, long *IC, long *DC, machine_word **code_img,
                    machine_data **data_img) {
 	int i,j;
-	char symbol[32];
+	char symbol[50];
 	instruction_type instruction;
 	/* TODO: implement */
 
@@ -38,14 +39,16 @@ bool process_line_fpass(char *line, table *datas, table *codes, table *externals
 	if (parse_symbol(line, symbol)) {
 		return FALSE;
 	}
-
-	if (symbol[0] != '\0') {
-		for (; line[i] != ':'; i++); /* is symbol detected, start analyzing from it's deceleration end */
-		i++;
+	if(!is_legal_label_name(symbol)&&symbol[0]){
+	    print_error("Illegal label name");
 	}
 
+	if (symbol[0] != '\0') {
+        for (; line[i] != ':'; i++); /* is symbol detected, start analyzing from it's deceleration end */
+        i++;
+    }
 	MOVE_TO_NOT_WHITE(line, i) /* Move to next not-white char */
-
+	if(line[i]=='\n') return TRUE; /*TODO: find out what should we do with the label*/
 	/* Check if it's an instruction (starting with '.') */
 	instruction = find_instruction_from_index(line, &i);
 

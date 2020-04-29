@@ -20,8 +20,12 @@ bool parse_symbol(char *line, char *symbol_dest) {
 		isvalid = FALSE;
 	}
 	/* Let's allocate some memory to the string needed to be returned */
-	for (; line[i] && line[i] != ':' && i <= 31; i++, j++) {
+	for (; line[i] && line[i] != ':' && i <= 100; i++, j++) {
 		symbol_dest[j] = line[i]; /* Go on until empty char OR symbol */
+		/*max length of label is 32 characters*/
+		if(j==31){
+		    isvalid = FALSE;
+		}
 		/* Label must be alphanumeric! */
 		if (!isalnum(line[i])) {
 			isvalid = FALSE;
@@ -33,7 +37,7 @@ bool parse_symbol(char *line, char *symbol_dest) {
 	if (line[i] == ':')
 	{
 		if (!isvalid) {
-			print_error("Label must start with a letter, contain letters and digits only and end with ':'.");
+			print_error("Label must start with a letter, contain letters and digits only, do not exceed thirty-two characters long and end with ':'.");
 			symbol_dest[0] = '\0';
 			return TRUE; /* No valid symbol, and no try to define one */
 		}

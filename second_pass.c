@@ -22,6 +22,7 @@ bool process_line_spass(char *line, table *ent_table, table *ext_references, tab
 	char *token;
 	int i = 0;
 	MOVE_TO_NOT_WHITE(line,i)
+	/* TODO: @AvivNaaman: This code is nice for the first pass. use it! */
 	if(line[i]==';'||strcmp("\n",line)==0) return TRUE;
 	indexOfColon = strchr(line, ':');
 	/*check for label */
@@ -29,7 +30,8 @@ bool process_line_spass(char *line, table *ent_table, table *ext_references, tab
 		i = indexOfColon - line;
 		i++;
 	}
-	/* if it's guide line*/
+	MOVE_TO_NOT_WHITE(line, i)
+	/* .instruction */
 	if (line[i] == '.') {
 		/*if it's entry we add it to the symbol table*/
 		if (strncmp(".entry", line, 6) == 0) {
@@ -100,7 +102,10 @@ bool add_symbols_to_code(char *line, long *ic, machine_word **code_img,
 		/* if relative, move the pointer to 2nd char (the cymbol itself) */
 		if (operands[0][0] == '&') operands[0]++;
 		if (operands[1][0] == '&') operands[0]++;
-		if (op1_addr == DIRECT || op1_addr == RELATIVE) {
+		/* if the word on *IC has the immediately addressed value (done in first pass), go to next cell (increase ic) */
+		if (op1_addr == IMMEDIATE) (curr_ic)++;
+		/* if operand is label that has to be replaced */
+		else if (op1_addr == DIRECT || op1_addr == RELATIVE) {
 			table_entry *entry = find_by_key(data_table, operands[0]);
 			if (entry == NULL) {
 				entry = find_by_key(code_table, operands[0]);
@@ -130,6 +135,9 @@ bool add_symbols_to_code(char *line, long *ic, machine_word **code_img,
 			word_to_write->word.data = build_data_word(op1_addr, data_to_add, is_extern_symbol); /* build data word and put it in place: */
 			code_img[(++(curr_ic)) - IC_INIT_VALUE] = word_to_write;
 		}
+		/* if the word on *IC has the immediately addressed value (done in first pass), go to next cell (increase ic) */
+		if (op2_addr == IMMEDIATE) curr_ic++;
+		/* if operand is label that has to be replaced */
 		if (DIRECT == op2_addr || RELATIVE == op2_addr) {
 			is_extern_symbol = FALSE;
 			table_entry *entry = find_by_key(data_table, operands[1]);

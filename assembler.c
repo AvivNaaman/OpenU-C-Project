@@ -49,7 +49,6 @@ void process_file(char *filename) {
 	strcat(input_filename, ".as"); /* add extension */
 
 	file_des = fopen(input_filename, "r");
-	free(input_filename); /* Release dynamically allocated memory for string */
 	/* Put filename in static variables for error messaging */
 	curr_filename = input_filename;
 	/* Make sure opening the file succeeded */
@@ -105,6 +104,7 @@ void process_file(char *filename) {
 
 	/* TODO: Free these pointers on errors above! */
 	/* Now let's free some pointer: */
+	free(input_filename);
 	/* Free symbol tables */
 	free_table(code_table);
 	free_table(ext_table);

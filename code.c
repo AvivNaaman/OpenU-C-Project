@@ -6,6 +6,7 @@
 #include "code.h"
 #include "utils.h"
 
+/* TODO: Check if possible to make it nicer to read */
 bool analyze_operands(char *line, int i, char **destination, int *operand_count) {
 /* Make some space to the operand strings */
 	int j;
@@ -41,7 +42,7 @@ bool analyze_operands(char *line, int i, char **destination, int *operand_count)
 			return FALSE;
 		}
 		i++;
-		MOVE_TO_NOT_WHITE(line, i);
+		MOVE_TO_NOT_WHITE(line, i)
 		/* if there was just a comma, then (optionally) white char(s) and then end of line */
 		if (line[i] == '\n' || line[i] == EOF || !line[i]) print_error("Missing operand after comma.");
 		else if (line[i] == ',') print_error("Multiple consecutive commas.");
@@ -139,7 +140,6 @@ code_word *get_code_word(opcode curr_opcode, funct curr_funct, int op_count, cha
 			                            DIRECT, REGISTER);
 		}
 	} else if (curr_opcode >= CLR_OP && curr_opcode <= PRN_OP) {
-		addressing_type first_addressing;
 		/*if operand number is not 1 there are either Too many operands or to few*/
 		if (op_count != 1) {
 			if (op_count < 1) print_error("Missing operands");
@@ -202,43 +202,35 @@ bool validate_op_addr(addressing_type op1_addressing, addressing_type op2_addres
 	va_start(list, op2_valid_addr_count);
 	/* Put the valid addressing types in the op[1|2]_[0|1|2] varriables, using va_arg (we user the count operand to determine how many arguments are sent */
 	if (op1_valid_addr_count >= 1) {
-		op1_0 = va_arg(list,
-		               int);
+		op1_0 = va_arg(list, int);
 	}
 	if (op1_valid_addr_count >= 2) {
-		op1_1 = va_arg(list,
-		               int);
+		op1_1 = va_arg(list, int);
 	}
 	if (op1_valid_addr_count >= 3) {
-		op1_2 = va_arg(list,
-		               int);
+		op1_2 = va_arg(list, int);
 	}
 	if (op1_valid_addr_count >= 4) {
-		op1_3 = va_arg(list,
-		               int);
+		op1_3 = va_arg(list, int);
 	}
-	for (; op1_valid_addr_count > 5; va_arg(list,
-	                                        int), op1_valid_addr_count--); /* Go on with stack until got all (even above limitation of 4) */
+	for (; op1_valid_addr_count > 5; va_arg(list, int), op1_valid_addr_count--); /* Go on with stack until got all (even above limitation of 4) */
 	/* Again for second operand by the count */
 	if (op2_valid_addr_count >= 1) {
-		op2_0 = va_arg(list,
-		               int);
+		op2_0 = va_arg(list, int);
 	}
 	if (op2_valid_addr_count >= 2) {
-		op2_1 = va_arg(list,
-		               int);
+		op2_1 = va_arg(list, int);
 	}
 	if (op2_valid_addr_count >= 3) {
-		op2_2 = va_arg(list,
-		               int);
+		op2_2 = va_arg(list, int);
 	}
 	if (op2_valid_addr_count >= 4) {
-		op2_3 = va_arg(list,
-		               int);
+		op2_3 = va_arg(list, int);
 	}
 	va_end(list);  /* We got all the arguments we wanted */
 	is_valid = TRUE;
 	/* if operand addressing is not valid, print error */
+	/* A little bit complex, but basically: if there's something to check, find out what to check by the count params and check if any of those. */
 	if (!((op1_valid_addr_count == 0 && op1_addressing == NONE_ADDR) ||
 	      (op1_valid_addr_count > 0 && op1_0 == op1_addressing) ||
 	      (op1_valid_addr_count > 1 && op1_1 == op1_addressing) ||
@@ -247,6 +239,7 @@ bool validate_op_addr(addressing_type op1_addressing, addressing_type op2_addres
 		print_error("Invalid addressing mode for first operand.");
 		is_valid = FALSE;
 	}
+	/* Again for second addressing */
 	if (!((op2_valid_addr_count == 0 && op2_addressing == NONE_ADDR) ||
 	      (op2_valid_addr_count > 0 && op2_0 == op2_addressing) ||
 	      (op2_valid_addr_count > 1 && op2_1 == op2_addressing) ||
@@ -267,8 +260,8 @@ reg get_register_by_name(char *name) {
 }
 
 data_word *build_data_word(addressing_type addressing, long data, bool is_extern_symbol) {
-	signed int mask; /* For bitwise operations for data conversion */
-	unsigned int ARE = 4, mask_un; /* 4 = 2^2 = 1 << 2 */
+	signed long mask; /* For bitwise operations for data conversion */
+	unsigned long ARE = 4, mask_un; /* 4 = 2^2 = 1 << 2 */
 	data_word *dataword = malloc_with_check(sizeof(data_word));
 
 	if (addressing == DIRECT) {

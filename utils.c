@@ -13,7 +13,7 @@ bool parse_symbol(char *line, char *symbol_dest) {
 
 	isvalid = TRUE;
 	/* Skip white chars at the beginning TODO: Check if necessary */
-	MOVE_TO_NOT_WHITE(line, i);
+	MOVE_TO_NOT_WHITE(line, i)
 
 	/* Label should start with alpha char */
 	if (!isalpha(line[i])) {
@@ -64,9 +64,9 @@ bool is_int(char *string) {
 char *int_to_word(long num) {
 	char *word = (char *) malloc_with_check(3* sizeof(char));
 	/* Shift bits if needed and keep only eight (2bytes) */
-	word[0] = (num >> 16) & 0xFF;
-	word[1] = (num >> 8) & 0xFF;
-	word[2] = num & 0xFF;
+	word[0] = ((num >> 16) & 0xFF);
+	word[1] = ((num >> 8) & 0xFF);
+	word[2] = (num & 0xFF);
 	return word;
 }
 

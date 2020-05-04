@@ -20,10 +20,6 @@ typedef enum booleans {
         for (;string[(index)] && (string[(index)] == '\t' || string[(index)] == ' '); (++(index)))\
         ;
 
-#define MOVE_UNTIL_CHAR_OR_WHITE(string, index, char)\
-        for (;!string[index] || string[index] == '\t' || string[index] == ' ' || string[index] == char; ++(index)) ;
-
-
 /* Represents an allowed addressing type */
 typedef enum addressing_types {
 	/**

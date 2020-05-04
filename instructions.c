@@ -1,4 +1,3 @@
-#include "table.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -38,7 +37,7 @@ instruction_type find_instruction_from_index(char *string, int *index){
  */
 bool process_string_instruction(char *line, int index, machine_data **data_img, long *dc) {
 	machine_data *data;
-	int dc_at_start = *dc;
+	long dc_at_start = *dc;
 	MOVE_TO_NOT_WHITE(line, index)
 	if (line[index] == '"') {
 		index++;

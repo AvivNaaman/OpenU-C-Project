@@ -38,7 +38,6 @@ int write_ob(machine_word **code_img, machine_data **data_img, long icf, long dc
 	/* starting from index 0, not IC_INIT_VALUE as icf, so we have to subtract it. */
 	for (i = 0; i < icf - IC_INIT_VALUE; i++) {
 		if (code_img[i]->length != 0) {
-			val = 0;
 			val = (code_img[i]->word.code->opcode << 18) | (code_img[i]->word.code->src_addressing << 16) |
 			      (code_img[i]->word.code->src_register << 13) | (code_img[i]->word.code->dest_addressing << 11) |
 			      (code_img[i]->word.code->dest_register << 8) | (code_img[i]->word.code->funct) << 3 |
@@ -46,7 +45,6 @@ int write_ob(machine_word **code_img, machine_data **data_img, long icf, long dc
 		}
 			/* if it's a data word, build the binary data:  */
 		else {
-			val = 0;
 			val = (code_img[i]->word.data->data << 3) | (code_img[i]->word.data->ARE);
 		}
 		/* Write the value to the file - first */
@@ -54,7 +52,6 @@ int write_ob(machine_word **code_img, machine_data **data_img, long icf, long dc
 	}
 	/* Write data image. dcf starts at 0 so it's fine */
 	for (i = 0; i < dcf; i++) {
-		unsigned long val;
 		/* build data to write from bytes */
 		val = (data_img[i]->byte0 << 17) | (data_img[i]->byte1 << 9) | (data_img[i]->byte2);
 		/* Write data to file */

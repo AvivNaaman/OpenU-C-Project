@@ -33,7 +33,7 @@ bool process_line_spass(char *line, long *ic, machine_word **code_img, table *sy
 		/*if it's entry we add it to the symbol table*/
 		if (strncmp(".entry", line, 6) == 0) {
 			i += 6;
-			MOVE_TO_NOT_WHITE(line, i);
+			MOVE_TO_NOT_WHITE(line, i)
 			token = strtok(line+i, " \n\t");
 			/* if label is already marked as entry, ignore. */
 			if (find_by_types(*symbol_table, token, 1, ENTRY_SYMBOL) == NULL) {
@@ -105,7 +105,7 @@ bool add_symbols_to_code(char *line, long *ic, machine_word **code_img, table *s
  * @return Whether succeeded
  */
 int process_spass_operand(long *curr_ic, long *ic, char *operand, machine_word **code_img, table *symbol_table) {
-	bool is_extern_symbol = FALSE;
+	bool is_extern_symbol;
 	addressing_type addr = get_addressing_type(operand);
 	machine_word *word_to_write;
 	/* if the word on *IC has the immediately addressed value (done in first pass), go to next cell (increase ic) */

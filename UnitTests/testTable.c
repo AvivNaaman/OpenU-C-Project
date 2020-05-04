@@ -10,11 +10,11 @@ TEST(Table) {
 	t = NULL;
 	/* END Initialize */
 
-	add_table_item(&t, "test129", 129);
-	add_table_item(&t, "test101", 101);
-	add_table_item(&t, "test274", 274);
-	add_table_item(&t, "test311", 311);
-	add_table_item(&t, "test107", 107);
+	add_table_item(&t, "test129", 129, ENTRY_SYMBOL);
+	add_table_item(&t, "test101", 101, ENTRY_SYMBOL);
+	add_table_item(&t, "test274", 274, ENTRY_SYMBOL);
+	add_table_item(&t, "test311", 311, ENTRY_SYMBOL);
+	add_table_item(&t, "test107", 107, ENTRY_SYMBOL);
 
 	/* Make sure the table is sorted */
 	temp = t;

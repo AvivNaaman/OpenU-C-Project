@@ -17,7 +17,7 @@ static int curr_line;
  * Fully processes the assembly file, and writing all the associated files. Returns whether succeeded.
  * Accessible for the main only.
  */
-void process_file(char *filename);
+static void process_file(char *filename);
 
 /* Entry Point */
 int main(int argc, char *argv[]) {
@@ -30,8 +30,8 @@ int main(int argc, char *argv[]) {
 	return 0;
 }
 
-/* Fully processes a single assembly file, and writing all the associated output files. */
-void process_file(char *filename) {
+
+static void process_file(char *filename) {
 	/* Memory address counters */
 	long ic, dc, icf, dcf;
 	bool is_success; /* is succeeded so far */
@@ -40,8 +40,8 @@ void process_file(char *filename) {
 	FILE *file_des; /* Current assembly file descriptor to process */
 	machine_data *data_img[CODE_ARR_IMG_LENGTH]; /* Contains an image of the machine code */
 	machine_word *code_img[CODE_ARR_IMG_LENGTH];
-	/* We'll use multiple symbol tables, for each symbol type: .data, .code, .ext, .ent and for external labels references */
-	table data_table, code_table, ext_table, ent_table, ext_references;
+	/* Out symbol table */
+	table symbol_table = NULL;
 
 	/* We get just the name, without the extension, so we have to add it (.as+'\0'): */
 	input_filename = malloc_with_check(strlen(filename) + (4 * sizeof(char)));
@@ -60,7 +60,6 @@ void process_file(char *filename) {
 
 
 	/* Initialize  */
-	data_table = code_table = ext_table = NULL;
 	is_success = TRUE;
 	ic = IC_INIT_VALUE;
 	dc = 0;
@@ -68,7 +67,7 @@ void process_file(char *filename) {
 	/* start first pass: */
 	/* Read line - stop if read failed (when NULL returned) - usually when EOF. increase line counter for error printing. */
 	for (curr_line = 1; fgets(temp_line, MAX_LINE_LENGTH, file_des) != NULL; curr_line++) {
-		is_success &= process_line_fpass(temp_line, &data_table, &code_table, &ext_table, &ic, &dc, code_img, data_img);
+		is_success &= process_line_fpass(temp_line, &ic, &dc, code_img, data_img, &symbol_table);
 	}
 	if (!is_success) {
 		printf("Stopped assembling the file %s.as. See the above output for more information.\n", filename);
@@ -79,8 +78,8 @@ void process_file(char *filename) {
 	icf = ic;
 	dcf = dc;
 	ic = 100;
-	/* Now let's add IC to each DC in data symbols table (step 1.19) */
-	add_to_each_value(data_table, icf);
+	/* Now let's add IC to each DC for data symbols in table (step 1.19) */
+	add_value_to_type(symbol_table, icf, DATA_SYMBOL);
 
 	/* First pass done right. start second pass: */
 	rewind(file_des); /* Reread the file from the beginning */
@@ -89,8 +88,7 @@ void process_file(char *filename) {
 		fgets(temp_line, MAX_LINE_LENGTH, file_des); /* Get line */
 		MOVE_TO_NOT_WHITE(temp_line,i)
 		if (code_img[ic - 100] != NULL||temp_line[i]=='.')
-			is_success &= process_line_spass(temp_line, &ent_table, &ext_references, code_table, &ic, ext_table,
-			                                 data_table, code_img);
+			is_success &= process_line_spass(temp_line, &ic, code_img, &symbol_table);
 	}
 	if (!is_success) {
 		printf("Stopped assembling the file %s.as. See the above output for more information.\n", filename);
@@ -98,20 +96,15 @@ void process_file(char *filename) {
 	}
 
 	/* Everything was done. Write to *filename.ob/.ext/.ent */
-	if (!write_output_files(code_img, data_img, icf, dcf, filename, ent_table, ext_references)) {
+	if (!write_output_files(code_img, data_img, icf, dcf, filename, symbol_table)) {
 		printf("Failed to write some of the output files. See the above output for more information.\n");
 	}
 
-	/* TODO: Free these pointers on errors above! */
 	/* Now let's free some pointer: */
 	/* current file name */
 	free(input_filename);
-	/* Free symbol tables */
-	free_table(code_table);
-	free_table(ext_table);
-	free_table(data_table);
-	free_table(ent_table);
-	free_table(ext_references);
+	/* Free symbol table */
+	free_table(symbol_table);
 	/* Free code & data buffer contents */
 	free_code_image(code_img, icf);
 	free_data_image(data_img, dcf);

@@ -1,29 +1,82 @@
+/* Implements a dynamically-allocated symbol table */
 #ifndef TABLE_H
 #define TABLE_H
+
+/**
+ * A symbol type
+ */
+typedef enum symbol_type {
+	CODE_SYMBOL,
+	DATA_SYMBOL,
+	EXTERNAL_SYMBOL,
+	/**
+	 * Address that contains a reference to external symbol
+	 */
+	EXTERNAL_REFERENCE,
+	ENTRY_SYMBOL
+} symbol_type;
+
 /* pointer to table  */
 typedef struct entry* table;
-/* Single table entry */
+
+/**
+ * A single table entry
+ */
 typedef struct entry {
-	/* Next table entry */
+	/**
+	 * Next entry in table
+	 */
 	table next;
-	/* one-word sized value (24bit=3byte) */
+	/**
+	 * Address of the symbol
+	 */
 	long value;
-	/* string key */
+	/**
+	 * Key (aka symbol name) is a string (aka char*)
+	 */
 	char *key;
+	/**
+	 * Symbol type
+	 */
+	symbol_type type;
 } table_entry;
 
-/* Adds a new entry to the table. */
-void add_table_item(table *tab, char *key, long value);
+/**
+ * Adds an item to the table, keeping it sorted.
+ * @param tab A pointer to the table
+ * @param key The key of the entry to insert
+ * @param value The value of the entry to insert
+ * @param type The type of the entry to insert
+ */
+void add_table_item(table *tab, char *key, long value, symbol_type type);
 
-/* Returns a pointer to the entry where the key is the same as the argument. if no such one, returns null */
-table_entry *find_by_key(table tab, char *key);
-
-/* Returns a pointer to the entry where the value is the same as the argument. if no such one, returns null */
-table_entry *find_by_value(table tab, long value);
-
-/* Frees all the allocated data in the table. */
+/**
+ * Deallocates all the memory required by the table.
+ * @param tab The table to deallocate
+ */
 void free_table(table tab);
 
-/* Add the to_add argument to each value of entry in the table */
-void add_to_each_value(table tab, long to_add);
+/**
+ * Adds the value to add into the value of each entry
+ * @param tab The table, containing the entries
+ * @param to_add The value to add
+ * @param type The type of symbols to add the value to
+ */
+void add_value_to_type(table tab, long to_add, symbol_type type);
+/**
+ * Returns all the entries by their type in a new table
+ * @param tab The table
+ * @param type The type to look for
+ * @return A new table, which contains the entries
+ */
+table get_entries_by_type(table tab, symbol_type type);
+
+/**
+ * Find entry from the only specified types
+ * @param tab The table
+ * @param symbol_count The count of given types
+ * @param ... The types to filter
+ * @return The entry if found, NULL if not found
+ */
+table_entry *find_by_types(table tab,char *key, int symbol_count, ...);
 #endif

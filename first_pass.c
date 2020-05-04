@@ -21,8 +21,8 @@
  * @param data_img The data image array
  * @return Whether succeeded.
  */
-bool process_line_fpass(char *line, table *datas, table *codes, table *externals, long *IC, long *DC, machine_word **code_img,
-                   machine_data **data_img) {
+bool process_line_fpass(char *line, long *IC, long *DC, machine_word **code_img, machine_data **data_img,
+                        table *symbol_table) {
 	int i,j;
 	char symbol[50];
 	instruction_type instruction;
@@ -59,7 +59,7 @@ bool process_line_fpass(char *line, table *datas, table *codes, table *externals
 		/* if .string or .data, and symbol defined, put it into the symbol table */
 		if ((instruction == DATA || instruction == STRING) && symbol[0] != '\0')
 			/* is data or string, add DC with the symbol to the table */
-			add_table_item(datas, symbol, *DC);
+			add_table_item(symbol_table, symbol, *DC, DATA_SYMBOL);
 		/* if string, encode into data image buffer and increase dc as needed. */
 		if (instruction == STRING)
 			return process_string_instruction(line, i, data_img, DC);
@@ -75,7 +75,7 @@ bool process_line_fpass(char *line, table *datas, table *codes, table *externals
 			}
 			symbol[j] = 0;
 			/* TODO: Validate that symbol contains a valid symbol! */
-			add_table_item(externals, symbol, 0); /* Extern value is defaulted to 0 */
+			add_table_item(symbol_table, symbol, 0, EXTERNAL_SYMBOL); /* Extern value is defaulted to 0 */
 		}
 		/* .entry is handled in second pass! */
 	} /* end if (instruction != NONE) */
@@ -83,7 +83,7 @@ bool process_line_fpass(char *line, table *datas, table *codes, table *externals
 	else {
 		/* if symbol defined, add it to the table */
 		if (symbol[0] != '\0')
-			add_table_item(codes, symbol, *IC);
+			add_table_item(symbol_table, symbol, *IC, CODE_SYMBOL);
 		/* Analyze code */
 		return process_code(line, i, IC, code_img);
 	}

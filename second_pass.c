@@ -4,25 +4,20 @@
 #include "utils.h"
 #include "string.h"
 
-int process_spass_operand(long *curr_ic, long *ic, char *operand, table data, table code, table externals, table *external_references, machine_word **code_img);
+int process_spass_operand(long *curr_ic, long *ic, char *operand, machine_word **code_img, table *symbol_table);
 
 /**
  * Processes a single line in the second pass
  * @param line The line string
- * @param ent_table The entries symbol table
- * @param ext_references The externals symbol table
- * @param code_table The code symbol table
  * @param ic A pointer to instruction counter
- * @param ext_table Externals table
- * @param data_table Data table
  * @param code_img Code image
+ * @param symbol_table The symbol table
  * @return Whether operation succeeded
  */
-bool process_line_spass(char *line, table *ent_table, table *ext_references, table code_table, long *ic, table ext_table,
-                        table data_table, machine_word **code_img) { /*TODO: DEBUG*/
+bool process_line_spass(char *line, long *ic, machine_word **code_img, table *symbol_table) {
 	char *indexOfColon;
 	char *token;
-	int i = 0;
+	long i = 0;
 	MOVE_TO_NOT_WHITE(line,i)
 	/* TODO: @AvivNaaman: This code is nice for the first pass. use it! */
 	if(line[i]==';'||strcmp("\n",line)==0) return TRUE;
@@ -40,25 +35,22 @@ bool process_line_spass(char *line, table *ent_table, table *ext_references, tab
 			i += 6;
 			MOVE_TO_NOT_WHITE(line, i);
 			token = strtok(line, " ");
-			/*if label is already in table dont add it*/
-			if (find_by_key(*ent_table, token) == NULL) {
+			/* if label is already marked as entry, ignore. */
+			if (find_by_types(*symbol_table, token, 1, ENTRY_SYMBOL) == NULL) {
 				table_entry *entry;
 				token = strtok(NULL, "\n"); /*get name of label*/
 				if(token[0] == '&') token++;
-				entry = find_by_key(data_table, token);
-				if(entry == NULL){
-					entry = find_by_key(code_table, token);
-					if(entry == NULL){
-						print_error("symbol not found");
-						return FALSE;
-					}
+				/* if symbol is not defined */
+				if ((entry = find_by_types(*symbol_table, token, 2, DATA_SYMBOL,CODE_SYMBOL)) == NULL) {
+					print_error("Symbol for .entry instruction is not defined.");
+					return FALSE;
 				}
-				add_table_item(ent_table, token, entry->value);
+				add_table_item(symbol_table, token, entry->value, ENTRY_SYMBOL);
 			}
 		}
 		return TRUE;
 	}
-	return add_symbols_to_code(line, ic, code_img, data_table, code_table, ext_table, ext_references);
+	return add_symbols_to_code(line, ic, code_img, symbol_table);
 }
 
 /**
@@ -72,8 +64,7 @@ bool process_line_spass(char *line, table *ent_table, table *ext_references, tab
  * @param ext_references A pointer to the external symbols references table
  * @return whether succeeded
  */
-bool add_symbols_to_code(char *line, long *ic, machine_word **code_img,
-                    table data_table, table code_table, table ext_table, table *ext_references) {
+bool add_symbols_to_code(char *line, long *ic, machine_word **code_img, table *symbol_table) {
 	char temp[80];
 	char *operands[2];
 	int i = 0, operand_count;
@@ -96,8 +87,8 @@ bool add_symbols_to_code(char *line, long *ic, machine_word **code_img,
 		/* now analyze operands */
 		analyze_operands(line, i, operands, &operand_count);
 		/* Process both operands, if failed return failure. otherwise continue */
-		if (!process_spass_operand(&curr_ic, ic, operands[0],data_table,code_table,ext_table,ext_references,code_img)) return FALSE;
-		if (!process_spass_operand(&curr_ic, ic, operands[1],data_table,code_table,ext_table,ext_references,code_img)) return FALSE;
+		if (!process_spass_operand(&curr_ic, ic, operands[0], code_img, NULL)) return FALSE;
+		if (!process_spass_operand(&curr_ic, ic, operands[1], code_img, NULL)) return FALSE;
 	}
 	/* Make the current pass IC as the next line ic */
 	(*ic) = (*ic)+length;
@@ -109,14 +100,11 @@ bool add_symbols_to_code(char *line, long *ic, machine_word **code_img,
  * @param curr_ic Current instruction pointer of source code line
  * @param ic Current instruction pointer of source code line start
  * @param operand The operand string
- * @param data The data symbol table
- * @param code The code symbol table
- * @param externals The externals symbol table
- * @param external_references The external references symbol table
  * @param code_img The code image array
- * @return Whetehr succeeded
+ * @param symbol_table The symbol table
+ * @return Whether succeeded
  */
-int process_spass_operand(long *curr_ic, long *ic, char *operand, table data, table code, table externals, table *external_references, machine_word **code_img) {
+int process_spass_operand(long *curr_ic, long *ic, char *operand, machine_word **code_img, table *symbol_table) {
 	bool is_extern_symbol = FALSE;
 	addressing_type addr = get_addressing_type(operand);
 	machine_word *word_to_write;
@@ -125,29 +113,18 @@ int process_spass_operand(long *curr_ic, long *ic, char *operand, table data, ta
 	if (addr == RELATIVE) operand++;
 	if (DIRECT == addr || RELATIVE == addr) {
 		long data_to_add;
-		table_entry *entry = find_by_key(data, operand);
-		if (entry == NULL) {
-			entry = find_by_key(code, operand);
-			if (entry == NULL) {
-				entry = find_by_key(externals, operand);
-				if (entry == NULL) /* Symbol not found! */{
-					print_error("Symbol not found.");
-					return FALSE;
-				}
-				is_extern_symbol = TRUE;
-			}
-		}
+		table_entry *entry = find_by_types(*symbol_table, operand,3,DATA_SYMBOL,CODE_SYMBOL,EXTERNAL_SYMBOL);
+		is_extern_symbol = entry->type == EXTERNAL_SYMBOL;
 		/*found symbol*/
 		data_to_add = entry->value;
-		/* Calculate the distance to the label from "here" */
-		/* TODO: Fix relative addressing doesn't work properly! */
+		/* Calculate the distance to the label from ic if needed */
 		if (addr == RELATIVE) {
 			data_to_add =  data_to_add - *ic;
 		}
 
 		/* Add to externals reference table if it's an external. increase ic because it's the next data word */
 		if (is_extern_symbol) {
-			add_table_item(external_references, operand, (*curr_ic)+1);
+			add_table_item(symbol_table, operand, (*curr_ic) + 1, EXTERNAL_REFERENCE);
 		}
 
 		/*found symbol*/

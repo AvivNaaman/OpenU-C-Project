@@ -4,9 +4,10 @@
 #include "utils.h"
 #include <string.h>
 #include "table.h"
+#include <stdarg.h>
 
-/* Adds a new entry to the table. the value argument is converted to char[3], which is 24bit word. */
-void add_table_item(table *tab, char *key, long value) {
+
+void add_table_item(table *tab, char *key, long value, symbol_type type) {
 	char *temp;
 	table prev_entry, curr_entry, new_entry;
 	new_entry = (table)malloc(sizeof(table_entry));
@@ -19,6 +20,7 @@ void add_table_item(table *tab, char *key, long value) {
 	strcpy(temp, key);
 	new_entry->key = temp;
 	new_entry->value = value;
+	new_entry->type = type;
 	/* if the table's null, set the new entry as the head. */
 	if ((*tab) == NULL || (*tab)->value > value) {
 		new_entry->next = (*tab);
@@ -36,24 +38,6 @@ void add_table_item(table *tab, char *key, long value) {
 	prev_entry->next = new_entry;
 }
 
-/* TODO: Documentation =>\/ */
-
-table_entry *find_by_key(table tab, char *key) {
-	while (tab != NULL) {
-		if (strcmp(key,tab->key) == 0) return tab;
-		tab = tab->next;
-	}
-	return NULL;
-}
-
-table_entry *find_by_value(table  tab, long value){
-	while (tab != NULL) {
-		if (tab->value == value) return tab;
-		tab = tab->next;
-	}
-	return NULL;
-}
-
 void free_table(table tab) {
 	table prev_entry, curr_entry = tab;
 	while (curr_entry != NULL) {
@@ -64,10 +48,44 @@ void free_table(table tab) {
 	}
 }
 
-void add_to_each_value(table tab, long to_add) {
+void add_value_to_type(table tab, long to_add, symbol_type type) {
 	table curr_entry;
-	/* for each entry, increase value by to_add */
+	/* for each entry, add value to_add if same type */
 	for (curr_entry = tab; curr_entry != NULL; curr_entry = curr_entry->next) {
-		curr_entry->value += to_add;
+		if (curr_entry->type == type) {
+			curr_entry->value += to_add;
+		}
 	}
+}
+
+table get_entries_by_type(table tab, symbol_type type) {
+	table new_table;
+	/* For each entry, check if has the type. if so, insert to the new table. */
+	while ((tab = tab->next) != NULL) {
+		if (tab->type == type) {
+			add_table_item(&new_table, tab->key, tab->value, tab->type);
+		}
+	}
+	return new_table; /* It holds a pointer to the first entry, dynamically-allocated, so it's fine (not in stack) */
+}
+
+table_entry *find_by_types(table tab, char *key, int symbol_count, ...) {
+	int i;
+	symbol_type *valid_symbol_types = malloc_with_check((symbol_count-1)*sizeof(int));
+	/* Build a list of the valid types */
+	va_list arglist;
+	va_start(arglist,symbol_count);
+	for (i=0;i < symbol_count; i++) {
+		valid_symbol_types[i] = va_arg(arglist,symbol_type);
+	}
+	/* iterate over table and then over array of valid. if type is valid and same key, return the entry. */
+	while ((tab = tab->next) != NULL) {
+		for (i = 0; i <symbol_count; i++) {
+			if (valid_symbol_types[i] == tab->type && strcmp(key, tab->key) == 0) {
+				return tab;
+			}
+		}
+	}
+	/* not found, return NULL */
+	return NULL;
 }

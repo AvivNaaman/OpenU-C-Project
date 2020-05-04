@@ -13,4 +13,5 @@
  * @param ext_table The external references table
  * @return Whether succeeded
  */
-int write_output_files(machine_word **code_img, machine_data **data_img, long icf, long dcf, char *filename, table ent_table, table ext_table);
+int write_output_files(machine_word **code_img, machine_data **data_img, long icf, long dcf, char *filename,
+                       table symbol_table);

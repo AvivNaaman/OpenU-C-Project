@@ -23,10 +23,9 @@
  */
 bool process_line_fpass(char *line, long *IC, long *DC, machine_word **code_img, machine_data **data_img,
                         table *symbol_table) {
-	int i,j;
+	int i, j;
 	char symbol[50];
 	instruction_type instruction;
-	/* TODO: implement */
 
 	i = 0;
 
@@ -39,16 +38,17 @@ bool process_line_fpass(char *line, long *IC, long *DC, machine_word **code_img,
 	if (parse_symbol(line, symbol)) {
 		return FALSE;
 	}
-	if(!is_legal_label_name(symbol)&&symbol[0]){
-	    print_error("Illegal label name");
+
+	if (!is_legal_label_name(symbol) && symbol[0]) {
+		print_error("Illegal label name");
 	}
 
 	if (symbol[0] != '\0') {
-        for (; line[i] != ':'; i++); /* is symbol detected, start analyzing from it's deceleration end */
-        i++;
-    }
+		for (; line[i] != ':'; i++); /* is symbol detected, start analyzing from it's deceleration end */
+		i++;
+	}
 	MOVE_TO_NOT_WHITE(line, i) /* Move to next not-white char */
-	if(line[i]=='\n') return TRUE; /*TODO: find out what should we do with the label*/
+	if (line[i] == '\n') return TRUE;
 	/* Check if it's an instruction (starting with '.') */
 	instruction = find_instruction_from_index(line, &i);
 
@@ -70,7 +70,7 @@ bool process_line_fpass(char *line, long *IC, long *DC, machine_word **code_img,
 		else if (instruction == EXTERN) {
 			MOVE_TO_NOT_WHITE(line, i)
 			/* is symbol detected, start analyzing from it's deceleration end */
-			for (j=0; line[i] && line[i] != '\n' && line[i] != '\t' && line[i] != ' ' && line[i] != EOF; i++,j++) {
+			for (j = 0; line[i] && line[i] != '\n' && line[i] != '\t' && line[i] != ' ' && line[i] != EOF; i++, j++) {
 				symbol[j] = line[i];
 			}
 			symbol[j] = 0;

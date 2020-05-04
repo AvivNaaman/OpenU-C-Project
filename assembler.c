@@ -9,17 +9,24 @@
 #include "first_pass.h"
 #include "second_pass.h"
 
-/* Global, static variables for getting the current line and file name being processed. */
+/**
+ * Contains the current file name that is being processed (for error printing)
+ */
 static char *curr_filename;
+/**
+ * Contains the current source line that is being processed (for error printing)
+ */
 static int curr_line;
 
-/*
- * Fully processes the assembly file, and writing all the associated files. Returns whether succeeded.
- * Accessible for the main only.
+/**
+ * Processes a single assembly source file
+ * @param filename
  */
 static void process_file(char *filename);
 
-/* Entry Point */
+/**
+ * Entry point - a 24bit assembler
+ */
 int main(int argc, char *argv[]) {
 	int i;
 	/* Process each file by arguments */

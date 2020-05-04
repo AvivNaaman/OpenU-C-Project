@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 set(CMAKE_C_STANDARD 90)
 
-add_subdirectory(UnitTests)
 
 # Default CLion generated
 project(mmn14 C)

@@ -87,8 +87,8 @@ bool add_symbols_to_code(char *line, long *ic, machine_word **code_img, table *s
 		/* now analyze operands */
 		analyze_operands(line, i, operands, &operand_count);
 		/* Process both operands, if failed return failure. otherwise continue */
-		if (!process_spass_operand(&curr_ic, ic, operands[0], code_img, NULL)) return FALSE;
-		if (!process_spass_operand(&curr_ic, ic, operands[1], code_img, NULL)) return FALSE;
+		if (!process_spass_operand(&curr_ic, ic, operands[0], code_img, symbol_table)) return FALSE;
+		if (!process_spass_operand(&curr_ic, ic, operands[1], code_img, symbol_table)) return FALSE;
 	}
 	/* Make the current pass IC as the next line ic */
 	(*ic) = (*ic)+length;
@@ -114,6 +114,10 @@ int process_spass_operand(long *curr_ic, long *ic, char *operand, machine_word *
 	if (DIRECT == addr || RELATIVE == addr) {
 		long data_to_add;
 		table_entry *entry = find_by_types(*symbol_table, operand,3,DATA_SYMBOL,CODE_SYMBOL,EXTERNAL_SYMBOL);
+		if (entry == NULL) {
+			print_error("Symbol not found");
+			return FALSE;
+		}
 		is_extern_symbol = entry->type == EXTERNAL_SYMBOL;
 		/*found symbol*/
 		data_to_add = entry->value;

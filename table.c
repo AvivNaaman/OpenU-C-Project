@@ -59,7 +59,7 @@ void add_value_to_type(table tab, long to_add, symbol_type type) {
 }
 
 table get_entries_by_type(table tab, symbol_type type) {
-	table new_table;
+	table new_table = NULL;
 	/* For each entry, check if has the type. if so, insert to the new table. */
 	while ((tab = tab->next) != NULL) {
 		if (tab->type == type) {
@@ -78,14 +78,17 @@ table_entry *find_by_types(table tab, char *key, int symbol_count, ...) {
 	for (i=0;i < symbol_count; i++) {
 		valid_symbol_types[i] = va_arg(arglist,symbol_type);
 	}
+	va_end(arglist);
+	/* table null => nothing to dos */
+	if (tab == NULL) return NULL;
 	/* iterate over table and then over array of valid. if type is valid and same key, return the entry. */
-	while ((tab = tab->next) != NULL) {
-		for (i = 0; i <symbol_count; i++) {
+	do {
+		for (i = 0; i < symbol_count; i++) {
 			if (valid_symbol_types[i] == tab->type && strcmp(key, tab->key) == 0) {
 				return tab;
 			}
 		}
-	}
+	} while ((tab = tab->next) != NULL);
 	/* not found, return NULL */
 	return NULL;
 }

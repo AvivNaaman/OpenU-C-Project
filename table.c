@@ -6,7 +6,7 @@
 #include "table.h"
 #include <stdarg.h>
 
-
+/* TODO: Allow multiple same keys */
 void add_table_item(table *tab, char *key, long value, symbol_type type) {
 	char *temp;
 	table prev_entry, curr_entry, new_entry;
@@ -61,11 +61,11 @@ void add_value_to_type(table tab, long to_add, symbol_type type) {
 table get_entries_by_type(table tab, symbol_type type) {
 	table new_table = NULL;
 	/* For each entry, check if has the type. if so, insert to the new table. */
-	while ((tab = tab->next) != NULL) {
+	do {
 		if (tab->type == type) {
 			add_table_item(&new_table, tab->key, tab->value, tab->type);
 		}
-	}
+	} while ((tab = tab->next) != NULL);
 	return new_table; /* It holds a pointer to the first entry, dynamically-allocated, so it's fine (not in stack) */
 }
 

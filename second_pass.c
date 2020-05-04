@@ -34,11 +34,11 @@ bool process_line_spass(char *line, long *ic, machine_word **code_img, table *sy
 		if (strncmp(".entry", line, 6) == 0) {
 			i += 6;
 			MOVE_TO_NOT_WHITE(line, i);
-			token = strtok(line, " ");
+			token = strtok(line+i, " \n\t");
 			/* if label is already marked as entry, ignore. */
 			if (find_by_types(*symbol_table, token, 1, ENTRY_SYMBOL) == NULL) {
 				table_entry *entry;
-				token = strtok(NULL, "\n"); /*get name of label*/
+				token = strtok(line+i, "\n"); /*get name of label*/
 				if(token[0] == '&') token++;
 				/* if symbol is not defined */
 				if ((entry = find_by_types(*symbol_table, token, 2, DATA_SYMBOL,CODE_SYMBOL)) == NULL) {

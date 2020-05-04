@@ -4,6 +4,8 @@
 #include "utils.h"
 #include "string.h"
 
+int process_spass_operand(long *curr_ic, long *ic, char *operand, table data, table code, table externals, table *external_references, machine_word **code_img);
+
 /**
  * Processes a single line in the second pass
  * @param line The line string
@@ -41,7 +43,6 @@ bool process_line_spass(char *line, table *ent_table, table *ext_references, tab
 			/*if label is already in table dont add it*/
 			if (find_by_key(*ent_table, token) == NULL) {
 				table_entry *entry;
-				int val;
 				token = strtok(NULL, "\n"); /*get name of label*/
 				if(token[0] == '&') token++;
 				entry = find_by_key(data_table, token);
@@ -75,14 +76,12 @@ bool add_symbols_to_code(char *line, long *ic, machine_word **code_img,
                     table data_table, table code_table, table ext_table, table *ext_references) {
 	char temp[80];
 	char *operands[2];
-	int i = 0, operand_count, curr_ic = *ic;
+	int i = 0, operand_count;
+	long curr_ic = *ic; /* using curr_ic as temp index inside the code image, in the current line code+data words */
 	/* Get the total word length of current code text line in code binary image */
 	int length = code_img[(*ic) - IC_INIT_VALUE]->length;
 	/* if the length is 1, then there's only the code word, no data. */
 	if (length > 1) {
-		addressing_type op1_addr, op2_addr;
-		machine_word *word_to_write;
-		bool is_extern_symbol = FALSE;
 		/* Now, we need to skip command, and get the operands themselves: */
 		MOVE_TO_NOT_WHITE(line, i)
 		parse_symbol(line, temp);
@@ -96,84 +95,67 @@ bool add_symbols_to_code(char *line, long *ic, machine_word **code_img,
 		for (; line[i] && line[i] != ' ' && line[i] != '\t' && line[i] != '\n' && line[i] != EOF; i++);
 		/* now analyze operands */
 		analyze_operands(line, i, operands, &operand_count);
-		/* Now check each operand addressing, determine whether we should change anything and if so, change that thing: */
-		op1_addr = get_addressing_type(operands[0]);
-		op2_addr = get_addressing_type(operands[1]);
-		/* if relative, move the pointer to 2nd char (the cymbol itself) */
-		if (operands[0][0] == '&') operands[0]++;
-		if (operands[1][0] == '&') operands[0]++;
-		/* if the word on *IC has the immediately addressed value (done in first pass), go to next cell (increase ic) */
-		if (op1_addr == IMMEDIATE) (curr_ic)++;
-		/* if operand is label that has to be replaced */
-		else if (op1_addr == DIRECT || op1_addr == RELATIVE) {
-			table_entry *entry = find_by_key(data_table, operands[0]);
-			if (entry == NULL) {
-				entry = find_by_key(code_table, operands[0]);
-				if (entry == NULL) {
-					entry = find_by_key(ext_table, operands[0]);
-					if (entry == NULL)/* Symbol not found! */{
-						print_error("Symbol not found.");
-						return FALSE;
-					}
-					is_extern_symbol = TRUE;
-				}
-			}
-			/*found symbol*/
-			long data_to_add = entry->value;
-			/* Calculate the distance to the label from "here" */
-			if (op1_addr == RELATIVE) {
-				data_to_add =  data_to_add - *ic;
-			}
-
-			/* Add to externals reference table if it's an external. add 1 to address because it's the word after the code word itself. */
-			if (is_extern_symbol) {
-				add_table_item(ext_references, operands[0], curr_ic+1);
-			}
-
-			word_to_write = (machine_word *) malloc_with_check(sizeof(machine_word));
-			word_to_write->length = 0; /* it's a data word */
-			word_to_write->word.data = build_data_word(op1_addr, data_to_add, is_extern_symbol); /* build data word and put it in place: */
-			code_img[(++(curr_ic)) - IC_INIT_VALUE] = word_to_write;
-		}
-		/* if the word on *IC has the immediately addressed value (done in first pass), go to next cell (increase ic) */
-		if (op2_addr == IMMEDIATE) curr_ic++;
-		/* if operand is label that has to be replaced */
-		if (DIRECT == op2_addr || RELATIVE == op2_addr) {
-			is_extern_symbol = FALSE;
-			table_entry *entry = find_by_key(data_table, operands[1]);
-			if (entry == NULL) {
-				entry = find_by_key(code_table, operands[1]);
-				if (entry == NULL) {
-					entry = find_by_key(ext_table, operands[1]);
-					if (entry == NULL)/* Symbol not found! */{
-						print_error("Symbol not found.");
-						return FALSE;
-					}
-					is_extern_symbol = TRUE;
-				}
-			}
-			/*found symbol*/
-			long data_to_add = entry->value;
-			/* Calculate the distance to the label from "here" */
-			if (op1_addr == RELATIVE) {
-				data_to_add = *ic - data_to_add;
-			}
-
-			/* Add to externals reference table if it's an external. increase ic because it's the next data word */
-			if (is_extern_symbol) {
-				add_table_item(ext_references, operands[1], curr_ic+1);
-			}
-
-			/*found symbol*/
-			word_to_write = (machine_word *) malloc_with_check(sizeof(machine_word));
-			word_to_write->length = 0;
-			word_to_write->word.data = build_data_word(op2_addr, data_to_add, is_extern_symbol);
-			code_img[(++(curr_ic)) - IC_INIT_VALUE] = word_to_write;
-
-		}
+		/* Process both operands, if failed return failure. otherwise continue */
+		if (!process_spass_operand(&curr_ic, ic, operands[0],data_table,code_table,ext_table,ext_references,code_img)) return FALSE;
+		if (!process_spass_operand(&curr_ic, ic, operands[1],data_table,code_table,ext_table,ext_references,code_img)) return FALSE;
 	}
 	/* Make the current pass IC as the next line ic */
 	(*ic) = (*ic)+length;
 	return TRUE;
 }
 
+/**
+ * Builds the additional data word for operand in the second pass, if needed.
+ * @param curr_ic Current instruction pointer of source code line
+ * @param ic Current instruction pointer of source code line start
+ * @param operand The operand string
+ * @param data The data symbol table
+ * @param code The code symbol table
+ * @param externals The externals symbol table
+ * @param external_references The external references symbol table
+ * @param code_img The code image array
+ * @return Whetehr succeeded
+ */
+int process_spass_operand(long *curr_ic, long *ic, char *operand, table data, table code, table externals, table *external_references, machine_word **code_img) {
+	bool is_extern_symbol = FALSE;
+	addressing_type addr = get_addressing_type(operand);
+	machine_word *word_to_write;
+	/* if the word on *IC has the immediately addressed value (done in first pass), go to next cell (increase ic) */
+	if (addr == IMMEDIATE) (*curr_ic)++;
+	if (addr == RELATIVE) operand++;
+	if (DIRECT == addr || RELATIVE == addr) {
+		long data_to_add;
+		table_entry *entry = find_by_key(data, operand);
+		if (entry == NULL) {
+			entry = find_by_key(code, operand);
+			if (entry == NULL) {
+				entry = find_by_key(externals, operand);
+				if (entry == NULL) /* Symbol not found! */{
+					print_error("Symbol not found.");
+					return FALSE;
+				}
+				is_extern_symbol = TRUE;
+			}
+		}
+		/*found symbol*/
+		data_to_add = entry->value;
+		/* Calculate the distance to the label from "here" */
+		/* TODO: Fix relative addressing doesn't work properly! */
+		if (addr == RELATIVE) {
+			data_to_add =  data_to_add - *ic;
+		}
+
+		/* Add to externals reference table if it's an external. increase ic because it's the next data word */
+		if (is_extern_symbol) {
+			add_table_item(external_references, operand, (*curr_ic)+1);
+		}
+
+		/*found symbol*/
+		word_to_write = (machine_word *) malloc_with_check(sizeof(machine_word));
+		word_to_write->length = 0;
+		word_to_write->word.data = build_data_word(addr, data_to_add, is_extern_symbol);
+		code_img[(++(*curr_ic)) - IC_INIT_VALUE] = word_to_write;
+
+	}
+	return TRUE;
+}

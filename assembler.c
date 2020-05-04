@@ -34,7 +34,7 @@ int main(int argc, char *argv[]) {
 void process_file(char *filename) {
 	/* Memory address counters */
 	long ic, dc, icf, dcf;
-	bool is_success; /* is an error occurred during current stage */
+	bool is_success; /* is succeeded so far */
 	char *input_filename;
 	char temp_line[MAX_LINE_LENGTH + 1]; /* temporary string for storing line, read from file */
 	FILE *file_des; /* Current assembly file descriptor to process */
@@ -46,7 +46,7 @@ void process_file(char *filename) {
 	/* We get just the name, without the extension, so we have to add it (.as+'\0'): */
 	input_filename = malloc_with_check(strlen(filename) + (4 * sizeof(char)));
 	strcpy(input_filename, filename);
-	strcat(input_filename, ".as"); /* add extension */
+	strcat(input_filename, ".as"); /* add file extension */
 
 	file_des = fopen(input_filename, "r");
 	/* Put filename in static variables for error messaging */
@@ -62,7 +62,7 @@ void process_file(char *filename) {
 	/* Initialize  */
 	data_table = code_table = ext_table = NULL;
 	is_success = TRUE;
-	ic = 100;
+	ic = IC_INIT_VALUE;
 	dc = 0;
 
 	/* start first pass: */
@@ -71,7 +71,7 @@ void process_file(char *filename) {
 		is_success &= process_line_fpass(temp_line, &data_table, &code_table, &ext_table, &ic, &dc, code_img, data_img);
 	}
 	if (!is_success) {
-		printf("Stopped assembling the file %s. See the above output for more information.\n", filename);
+		printf("Stopped assembling the file %s.as. See the above output for more information.\n", filename);
 		return;
 	}
 
@@ -93,7 +93,7 @@ void process_file(char *filename) {
 			                                 data_table, code_img);
 	}
 	if (!is_success) {
-		printf("Stopped assembling the file %s. See the above output for more information.\n", filename);
+		printf("Stopped assembling the file %s.as. See the above output for more information.\n", filename);
 		return;
 	}
 
@@ -104,12 +104,14 @@ void process_file(char *filename) {
 
 	/* TODO: Free these pointers on errors above! */
 	/* Now let's free some pointer: */
+	/* current file name */
 	free(input_filename);
 	/* Free symbol tables */
 	free_table(code_table);
 	free_table(ext_table);
 	free_table(data_table);
 	free_table(ent_table);
+	free_table(ext_references);
 	/* Free code & data buffer contents */
 	free_code_image(code_img, icf);
 	free_data_image(data_img, dcf);

@@ -14,12 +14,14 @@ int write_output_files(machine_word **code_img, machine_data **data_img, long ic
 }
 
 int write_ob(machine_word **code_img, machine_data **data_img, long icf, long dcf, char *filename){
-     int i,j;
+     int i;
      long val;
     FILE *file_desc;
+    /* add extension of file to open */
     char *output_filename = malloc_with_check(strlen(filename) + 4);
     strcpy(output_filename,filename);
     strcat(output_filename,".ob");
+
     /* Try to open the file for writing */
     file_desc = fopen(output_filename, "w");
 	free(output_filename);
@@ -27,8 +29,10 @@ int write_ob(machine_word **code_img, machine_data **data_img, long icf, long dc
         printf("Can't create or rewrite to file %s.", output_filename);
         return FALSE;
     }
+
     fprintf(file_desc, "%ld %ld", icf - 100, dcf);
-    for(i=0;code_img[i] != NULL;i++) {
+    /* starting from index 0, not IC_INIT_VALUE as icf, so we have to subtract it. */
+    for(i=0;i < icf - IC_INIT_VALUE;i++) {
         /*for(j=0;i<icf,i<11;i++,j++){*/
         	/* TODO: Check if it's possible to do it using pointer cast or something - it'll be much better! */
         	/* if it's a code word, build the binary data word: */
@@ -48,12 +52,15 @@ int write_ob(machine_word **code_img, machine_data **data_img, long icf, long dc
             fprintf(file_desc, "\n%.7d %.6lx", i + 100, val);
         /*}*/
     }
-    /* Write data image */
-    for(j=0;data_img[j] != NULL;j++){
+    /* Write data image. dcf starts at 0 so it's fine */
+    for(i=0;i < dcf;i++){
         unsigned long val;
-        val = (data_img[j]->byte0<<17)|(data_img[j]->byte1<<9)|(data_img[j]->byte2);
-        fprintf(file_desc, "\n%.7ld %.6lx", icf + j, val & 0xffffff);
+        /* build data to write from bytes */
+        val = (data_img[i]->byte0<<17)|(data_img[i]->byte1<<9)|(data_img[i]->byte2);
+        /* Write data to file */
+        fprintf(file_desc, "\n%.7ld %.6lx", icf + i, val & 0xffffff);
     }
+    /* Close the file */
     fclose(file_desc);
     return TRUE;
 }

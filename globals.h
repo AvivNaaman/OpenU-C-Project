@@ -26,14 +26,25 @@ typedef enum booleans {
 
 /* Represents an allowed addressing type */
 typedef enum addressing_types {
-	/* Immediate addressing (0) */
+	/**
+	 * Immediate addressing (0)
+	 */
 	IMMEDIATE = 0,
-	/* Direct addressing (1) */
+	/**
+	 * Direct addressing (1)
+	 */
 	DIRECT = 1,
-	/* Relative addressing (2) */
+	/**
+	 * Relative addressing (2)
+	 */
 	RELATIVE = 2,
-	/* address via register*/
+	/**
+	 * Register addressing
+	 */
 	REGISTER = 3,
+	/**
+	 * Failed/Not detected addressing
+	 */
 	NONE_ADDR = -1
 } addressing_type;
 
@@ -140,6 +151,9 @@ typedef enum instruction {
 	NONE_INST /* no instruction found */
 } instruction_type;
 
+/**
+ * General data word
+ */
 typedef struct machine_code_data {
 	char byte0;
 	char byte1;

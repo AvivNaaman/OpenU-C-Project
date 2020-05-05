@@ -4,48 +4,41 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
-/* Booleans */
+/** Boolean (t/f) definition */
 typedef enum booleans {
 	FALSE = 0, TRUE = 1
 } bool;
 
-/* Maximum size of machine code array - provides at least 200 code lines in *.as file */
+/** Maximum size of code image and data image */
 #define CODE_ARR_IMG_LENGTH 1200
+
+/** Maximum length of a single source line  */
 #define MAX_LINE_LENGTH 80
 
-#define IC_INIT_VALUE 100 /* Initial value of IC */
+/** Initial IC value */
+#define IC_INIT_VALUE 100
 
-/* moves the index to the next place in string where the char isn't white */
+/** moves the index to the next place in string where the char isn't white */
 #define MOVE_TO_NOT_WHITE(string, index) \
         for (;string[(index)] && (string[(index)] == '\t' || string[(index)] == ' '); (++(index)))\
         ;
 
-/* Represents an allowed addressing type */
+/** Operand addressing type */
 typedef enum addressing_types {
-	/**
-	 * Immediate addressing (0)
-	 */
+	/** Immediate addressing (0) */
 	IMMEDIATE = 0,
-	/**
-	 * Direct addressing (1)
-	 */
+	/** Direct addressing (1) */
 	DIRECT = 1,
-	/**
-	 * Relative addressing (2)
-	 */
+	/** Relative addressing (2) */
 	RELATIVE = 2,
-	/**
-	 * Register addressing
-	 */
+	/** Register addressing */
 	REGISTER = 3,
-	/**
-	 * Failed/Not detected addressing
-	 */
+	/** Failed/Not detected addressing */
 	NONE_ADDR = -1
 } addressing_type;
 
-/* definition for each command opcode */
-typedef enum opcode {
+/** Commands opcode */
+typedef enum opcodes {
 	/* First Group */
 	MOV_OP = 0,
 	CMP_OP = 1,
@@ -75,10 +68,11 @@ typedef enum opcode {
 	STOP_OP = 15,
 	/* END Third Group */
 
-	/* Failed flag (=no op detected) */
+	/** Failed/Error */
 	NONE_OP = -1
 } opcode;
-/* definition for the value of funct, for different commands with same names */
+
+/** Commands funct */
 typedef enum funct {
 	/* OPCODE 2 */
 	ADD_FUNCT = 1,
@@ -95,8 +89,11 @@ typedef enum funct {
 	BNE_FUNCT = 2,
 	JSR_FUNCT = 3,
 
+	/** Default (No need/Error) */
 	NONE_FUNCT = 0
 } funct;
+
+/** Registers */
 typedef enum registers {
 	R0 = 0,
 	R1,
@@ -108,7 +105,7 @@ typedef enum registers {
 	R7,
 	NONE_REG = -1
 } reg;
-/* Represents a single code word */
+/** Represents a single code word */
 typedef struct code_word {
 	/* First byte: ARE+funct */
 	unsigned int ARE: 3;
@@ -123,14 +120,15 @@ typedef struct code_word {
 
 } code_word;
 
-/* Represents a single data word. */
+/** Represents a single data word. */
+/* TODO: Migrate to 3-byte because we don't know for sure that int is 32+ bits! */
 typedef struct data_word {
 	unsigned int ARE: 3;
 	/* The data content itself (a method for putting data into these field is defined) */
 	unsigned int data: 21;
 } data_word;
 
-/* Represents a general machine code word contents */
+/** Represents a general machine code word contents */
 typedef struct machine_code_word {
 	short length; /* The length of the code word (if it's a code word), including data words required by it. */
 	union word {
@@ -139,6 +137,7 @@ typedef struct machine_code_word {
 	} word;
 } machine_word;
 
+/** Instruction type */
 typedef enum instruction {
 	DATA,
 	EXTERN,
@@ -147,9 +146,8 @@ typedef enum instruction {
 	NONE_INST /* no instruction found */
 } instruction_type;
 
-/**
- * General data word
- */
+/** General data word */
+/* TODO: Migrate to long array instead of this. */
 typedef struct machine_code_data {
 	char byte0;
 	char byte1;

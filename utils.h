@@ -1,3 +1,6 @@
+#ifndef UTILS_H
+#define UTILS_H
+
 #include "globals.h"
 
 /* TODO: Refactor */
@@ -24,11 +27,19 @@ char *int_to_word(long);
  */
 void *malloc_with_check(long size);
 
+/**
+ * Returns whether a label can be defined with the specified name.
+ * @param name The label name
+ * @return Whether the specified name is valid,
+ */
+bool is_legal_label_name(char* name);
 
-bool is_legal_label_name(char* string);
-
-/*Returns TRUE if string contains non alphanumeric chars*/
-bool is_contain_non_alphanumeric(char *string);
+/**
+ * Returns whether a string is alphanumeric.
+ * @param string The string
+ * @return Whether it's alphanumeric
+ */
+bool is_alphanumeric_str(char *string);
 
 /*Returns TRUE if string is saved word*/
 bool is_saved_word(char *string);
@@ -41,3 +52,5 @@ void free_code_image(machine_word **code_image, long fic);
 
 /* Frees all the allocated memory inside the data image */
 void free_data_image(machine_data ** data_image, long fdc);
+
+#endif

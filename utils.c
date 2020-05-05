@@ -4,6 +4,7 @@
 #include <string.h>
 #include "utils.h"
 #include "assembler.h"
+#include "code.h" /* for checking reserved words */
 
 /* Returns whether an error ocurred during the try of parsing the symbol. puts the symbol into the second buffer. */
 bool parse_symbol(char *line, char *symbol_dest) {
@@ -79,69 +80,28 @@ void *malloc_with_check(long size) {
 	return ptr;
 }
 
-bool is_legal_label_name(char *string) {
-	/*if the length of the label is more than 31 characters it's illegal name*/
-	if (strlen(string) > 31) return FALSE;
-		/*if the string doesn't start with a letter it's illegal name*/
-	else if (!isalpha(string[0])) return FALSE;
-		/*if the string contains non alphanumeric characters it's illegal name*/
-	else if (is_contain_non_alphanumeric(string)) return FALSE;
-		/*if the string is saved word it's illegal name*/
-	else if (is_saved_word(string)) return FALSE;
-	return TRUE;
-
-
+bool is_legal_label_name(char *name) {
+	/* Check length, first char is alpha and all the others are alphanumeric, and not saved word */
+	return name[0] && strlen(name) <= 31 && isalpha(name[0]) && is_alphanumeric_str(name+1) && !is_saved_word(name);
 }
 
-bool is_contain_non_alphanumeric(char *string) {
+bool is_alphanumeric_str(char *string) {
 	int i;
 	/*check for every char in string if it is non alphanumeric char if it is function returns true*/
 	for (i = 0; string[i]; i++) {
-		if (!(isalpha(string[i]) || isdigit(string[i]))) return TRUE;
+		if (!isalpha(string[i]) && !isdigit(string[i])) return FALSE;
 	}
-	return FALSE;
+	return TRUE;
 }
 
+/* TODO: See definition of reserved word again! */
 bool is_saved_word(char *string) {
-	/*compare to every saved word*/
-	if (strcmp(string, "mov") == 0) {
-		return TRUE;
-	} else if (strcmp(string, "cmp") == 0) {
-		return TRUE;
-	} else if (strcmp(string, "add") == 0) {
-		return TRUE;
-	} else if (strcmp(string, "sub") == 0) {
-		return TRUE;
-	} else if (strcmp(string, "lea") == 0) {
-		return TRUE;
-	} else if (strcmp(string, "clr") == 0) {
-		return TRUE;
-	} else if (strcmp(string, "not") == 0) {
-		return TRUE;
-	} else if (strcmp(string, "inc") == 0) {
-		return TRUE;
-	} else if (strcmp(string, "dec") == 0) {
-		return TRUE;
-	} else if (strcmp(string, "jmp") == 0) {
-		return TRUE;
-	} else if (strcmp(string, "bne") == 0) {
-		return TRUE;
-	} else if (strcmp(string, "jsr") == 0) {
-		return TRUE;
-	} else if (strcmp(string, "red") == 0) {
-		return TRUE;
-	} else if (strcmp(string, "prn") == 0) {
-		return TRUE;
-	} else if (strcmp(string, "rts") == 0) {
-		return TRUE;
-	} else if (strcmp(string, "stop") == 0) {
-		return TRUE;
-	} else if ((strcmp(string, "r0") == 0) || (strcmp(string, "r1") == 0) || (strcmp(string, "r2") == 0) ||
-	           (strcmp(string, "r3") == 0) ||
-	           (strcmp(string, "r4") == 0) || (strcmp(string, "r5") == 0) || (strcmp(string, "r6") == 0) ||
-	           (strcmp(string, "r7") == 0)) {
-		return TRUE;
-	} else if (strcmp(string, "entry") == 0) {
+	int fun, opc;
+	/* check if command (jmp,cmp,etc.) */
+	get_opcode_func(string, &opc, &fun);
+	if (opc != NONE_OP) return FALSE;
+	else if (get_register_by_name(string) != NONE_REG) return FALSE;
+	else if (strcmp(string, "entry") == 0) {
 		return TRUE;
 	} else if (strcmp(string, "extern") == 0) {
 		return TRUE;

@@ -1,3 +1,5 @@
+#ifndef CODE_H
+#define CODE_H
 #include "table.h"
 #include "globals.h"
 
@@ -62,3 +64,5 @@ data_word *build_data_word(addressing_type addressing, long data, bool is_extern
  * @return Whether analyzing succeeded
  */
 bool analyze_operands(char *line, int i, char **destination, int *operand_count);
+
+#endif

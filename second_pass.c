@@ -42,7 +42,7 @@ bool process_line_spass(char *line, long *ic, machine_word **code_img, table *sy
 				if(token[0] == '&') token++;
 				/* if symbol is not defined */
 				if ((entry = find_by_types(*symbol_table, token, 2, DATA_SYMBOL,CODE_SYMBOL)) == NULL) {
-					print_error("Symbol for .entry instruction is not defined.");
+					print_error("Symbol %s for .entry instruction not found.",token);
 					return FALSE;
 				}
 				add_table_item(symbol_table, token, entry->value, ENTRY_SYMBOL);
@@ -84,8 +84,8 @@ bool add_symbols_to_code(char *line, long *ic, machine_word **code_img, table *s
 		MOVE_TO_NOT_WHITE(line, i)
 		/* now skip command */
 		for (; line[i] && line[i] != ' ' && line[i] != '\t' && line[i] != '\n' && line[i] != EOF; i++);
-		/* now analyze operands */
-		analyze_operands(line, i, operands, &operand_count);
+		/* now analyze operands */ /* We send NULL as string of command because no error will be printed, and that's the only usage for it there. */
+		analyze_operands(line, i, operands, &operand_count, NULL);
 		/* Process both operands, if failed return failure. otherwise continue */
 		if (!process_spass_operand(&curr_ic, ic, operands[0], code_img, symbol_table)) return FALSE;
 		if (!process_spass_operand(&curr_ic, ic, operands[1], code_img, symbol_table)) return FALSE;
@@ -115,7 +115,7 @@ int process_spass_operand(long *curr_ic, long *ic, char *operand, machine_word *
 		long data_to_add;
 		table_entry *entry = find_by_types(*symbol_table, operand,3,DATA_SYMBOL,CODE_SYMBOL,EXTERNAL_SYMBOL);
 		if (entry == NULL) {
-			print_error("Symbol not found");
+			print_error("Symbol %s not found",operand);
 			return FALSE;
 		}
 		is_extern_symbol = entry->type == EXTERNAL_SYMBOL;

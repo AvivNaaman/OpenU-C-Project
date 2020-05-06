@@ -41,11 +41,17 @@ bool is_legal_label_name(char* name);
  */
 bool is_alphanumeric_str(char *string);
 
-/*Returns TRUE if string is saved word*/
-bool is_saved_word(char *string);
+/*Returns TRUE if name is saved word*/
+bool is_reserved_word(char *name);
 
-/* Prints a detailed error message to the user, including file, line, and message. */
-void print_error(char *message);
+/**
+ * Prints a detailed error message, including file name and line number by the specified message,
+ * formatted as specified in App. B of "The C Programming language" for printf.
+ * @param message The error message
+ * @param ... The arguments to format into the message
+ * @return printf result of the message
+ */
+int print_error(char *message,...);
 
 /* Frees all the allocated memory inside the code image */
 void free_code_image(machine_word **code_image, long fic);

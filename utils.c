@@ -2,10 +2,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdarg.h>
 #include "utils.h"
 #include "assembler.h"
 #include "code.h" /* for checking reserved words */
 
+/* TODO: Refactor! */
 /* Returns whether an error ocurred during the try of parsing the symbol. puts the symbol into the second buffer. */
 bool parse_symbol(char *line, char *symbol_dest) {
 	int j, i;
@@ -82,7 +84,7 @@ void *malloc_with_check(long size) {
 
 bool is_legal_label_name(char *name) {
 	/* Check length, first char is alpha and all the others are alphanumeric, and not saved word */
-	return name[0] && strlen(name) <= 31 && isalpha(name[0]) && is_alphanumeric_str(name+1) && !is_saved_word(name);
+	return name[0] && strlen(name) <= 31 && isalpha(name[0]) && is_alphanumeric_str(name+1) && !is_reserved_word(name);
 }
 
 bool is_alphanumeric_str(char *string) {
@@ -94,28 +96,38 @@ bool is_alphanumeric_str(char *string) {
 	return TRUE;
 }
 
-/* TODO: See definition of reserved word again! */
-bool is_saved_word(char *string) {
+bool is_reserved_word(char *name) {
 	int fun, opc;
-	/* check if command (jmp,cmp,etc.) */
-	get_opcode_func(string, &opc, &fun);
+	/* check if not a command (jmp,cmp,etc.) using the method from code.h. we need only opc, which has to be NONE_OP if name isn't a command. */
+	get_opcode_func(name, &opc, (funct *)&fun);
 	if (opc != NONE_OP) return FALSE;
-	else if (get_register_by_name(string) != NONE_REG) return FALSE;
-	else if (strcmp(string, "entry") == 0) {
+	/* check if not a register */
+	else if (get_register_by_name(name) != NONE_REG) return FALSE;
+
+/* TODO: See definition of reserved word again! */
+	else if (strcmp(name, "entry") == 0) {
 		return TRUE;
-	} else if (strcmp(string, "extern") == 0) {
+	} else if (strcmp(name, "extern") == 0) {
 		return TRUE;
-	} else if (strcmp(string, ".data") == 0) {
+	} else if (strcmp(name, ".data") == 0) {
 		return TRUE;
-	} else if (strcmp(string, ".string") == 0) {
+	} else if (strcmp(name, ".name") == 0) {
 		return TRUE;
 	}
 	return FALSE;
 }
 
 /* Prints a detailed error message to the user, including file, line, and message. */
-void print_error(char *message) {
-	printf("Error: In file %s:%ld: %s\n",get_curr_filename(),get_curr_line(),message);
+int print_error(char *message, ...) {
+	int result;
+	/* Print file+line */
+	printf("Error: In file %s:%ld: ",get_curr_filename(),get_curr_line());
+	/* use vprintf to call printf from variable argument function (from stdio.h) with message + format */
+	va_list arglist;
+	va_start(arglist, message);
+	result = vprintf(message, arglist);
+	puts(""); /* Line break */
+	return result;
 }
 
 void free_code_image(machine_word **code_image, long fic) {

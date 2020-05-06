@@ -7,7 +7,7 @@
 #include "utils.h"
 
 /* TODO: Check if possible to make it nicer to read */
-bool analyze_operands(char *line, int i, char **destination, int *operand_count) {
+bool analyze_operands(char *line, int i, char **destination, int *operand_count, char *command) {
 /* Make some space to the operand strings */
 	int j;
 	*operand_count = 0;
@@ -21,7 +21,7 @@ bool analyze_operands(char *line, int i, char **destination, int *operand_count)
 	/* until no too many operands (max of 2) and it's not the end of the line */
 	for (*operand_count = 0; line[i] != EOF && line[i] != '\n' && line[i];) {
 		if (*operand_count == 2) /* =We already got 2 operands in, We're going ot get the third! */ {
-			print_error("Too many operands for command.");
+			print_error("Too many operands for operation %s.", command);
 			return FALSE; /* an error occurred */
 		}
 		/* as long we're still on same operand */
@@ -112,6 +112,7 @@ addressing_type get_addressing_type(char *operand) {
 	else return NONE_ADDR;
 }
 
+/* TODO: Refactor(?): Pass only operation name to this function */
 code_word *get_code_word(opcode curr_opcode, funct curr_funct, int op_count, char *operands[2]) {
 	addressing_type first_addressing, second_addressing;
 	bool is_valid = TRUE;
@@ -121,10 +122,7 @@ code_word *get_code_word(opcode curr_opcode, funct curr_funct, int op_count, cha
 	/* Validate the operand types and count */
 	if (curr_opcode >= MOV_OP && curr_opcode <= LEA_OP) {
 		if (op_count != 2) {
-			if (op_count == 0)
-				print_error("2 operands required for operation (got 0)");
-			else
-				print_error("2 operands required for operation (got 1)");
+			print_error("Operation requires s2 operands (got %d)", op_count);
 			return NULL;
 		}
 
@@ -142,8 +140,7 @@ code_word *get_code_word(opcode curr_opcode, funct curr_funct, int op_count, cha
 	} else if (curr_opcode >= CLR_OP && curr_opcode <= PRN_OP) {
 		/*if operand number is not 1 there are either Too many operands or to few*/
 		if (op_count != 1) {
-			if (op_count < 1) print_error("Missing operands");
-			if (op_count > 1) print_error("Too many operands");
+			if (op_count < 1) print_error("Operation requires 1 operand (got %d)",op_count);
 			return NULL;
 		}
 		first_addressing = get_addressing_type(operands[0]);
@@ -157,7 +154,7 @@ code_word *get_code_word(opcode curr_opcode, funct curr_funct, int op_count, cha
 	} else if (curr_opcode <= STOP_OP && curr_opcode >= RTS_OP) {
 		/*if operand number is not 0 there are Too many operands*/
 		if (op_count > 0) {
-			print_error("Too many operands");
+			print_error("Operation requires no operands");
 			return NULL;
 		}
 	}

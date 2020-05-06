@@ -61,8 +61,9 @@ data_word *build_data_word(addressing_type addressing, long data, bool is_extern
  * @param i The index to start analyzing from
  * @param destination At least a 2-cell buffer of strings for the extracted operand strings
  * @param operand_count The destination of the detected operands count
+ * @param command The current command string
  * @return Whether analyzing succeeded
  */
-bool analyze_operands(char *line, int i, char **destination, int *operand_count);
+bool analyze_operands(char *line, int i, char **destination, int *operand_count, char *command);
 
 #endif

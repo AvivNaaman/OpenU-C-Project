@@ -35,12 +35,13 @@ bool process_line_fpass(char *line, long *IC, long *DC, machine_word **code_img,
 
 	/* Check if symbol (*:), stages 1.3-1.5 */
 	/* if tried to define label, but it's invalid, return that an error occurred. */
+	/* TODO: Remove double validation here \/ */
 	if (parse_symbol(line, symbol)) {
 		return FALSE;
 	}
 
 	if (!is_legal_label_name(symbol) && symbol[0]) {
-		print_error("Illegal label name");
+		print_error("Illegal label name %s", symbol);
 	}
 
 	if (symbol[0] != '\0') {
@@ -121,12 +122,12 @@ bool process_code(char *line, int i, long *ic, machine_word **code_img) {
 	get_opcode_func(operation, &curr_opcode, &curr_funct);
 	/* If invalid operation, print and skip processing the line. */
 	if (curr_opcode == NONE_OP) {
-		print_error("Unrecognized command.");
+		print_error("Unrecognized operation: %s.", operation);
 		return FALSE; /* an error occurred */
 	}
-	/* Analyze operands */
 
-	if (!analyze_operands(line, i, operands, &operand_count)) return FALSE; /* if error, return error */
+	/* Analyze operands */
+	if (!analyze_operands(line, i, operands, &operand_count, operation)) return FALSE; /* if error, return error */
 
 	/* Build code word (returns null if validation failed) */
 	if ((codeword = get_code_word(curr_opcode, curr_funct, operand_count, operands)) == NULL) return FALSE;

@@ -56,7 +56,7 @@ bool process_string_instruction(char *line, int index, machine_data **data_img, 
 		(*dc)++;
 	}
 	else {
-		/* something like: 'LABEL: .string  hello, world\n' - the string isn't surrounded with "" */
+		/* something like: LABEL: .string  hello, world\n - the string isn't surrounded with "" */
 		print_error("String must be defined between quotation marks");
 		return FALSE;
 	}
@@ -86,7 +86,7 @@ bool process_data_instruction(char *line, int index, machine_data **data_img, lo
 		}
 		temp[i] = '\0'; /* End of string */
 		if (!is_int(temp)) {
-			print_error("Expected a number as operand for .data instruction");
+			print_error("Expected integer for .data instruction (got '%s')",temp);
 			return FALSE;
 		}
 		/* Now let's write to data buffer */

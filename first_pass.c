@@ -45,18 +45,20 @@ bool process_line_fpass(char *line, long *IC, long *DC, machine_word **code_img,
 		print_error("Illegal label name %s", symbol);
 		return FALSE;
 	}
-	/* if already defined as data/external/code */
+	/* try using strtok instead... */
+	if (symbol[0] != '\0') {
+		for (; line[i] != ':'; i++); /* if symbol detected, start analyzing from it's deceleration end */
+		i++;
+	}
+	MOVE_TO_NOT_WHITE(line, i) /* Move to next not-white char */
+	if (line[i] == '\n') return TRUE;
+
+	/* if already defined as data/external/code and not empty line */
 	if (find_by_types(*symbol_table, symbol, 3, EXTERNAL_SYMBOL, DATA_SYMBOL, CODE_SYMBOL)) {
 		print_error("Symbol %s is already defined.",symbol);
 		return FALSE;
 	}
 
-	if (symbol[0] != '\0') {
-		for (; line[i] != ':'; i++); /* is symbol detected, start analyzing from it's deceleration end */
-		i++;
-	}
-	MOVE_TO_NOT_WHITE(line, i) /* Move to next not-white char */
-	if (line[i] == '\n') return TRUE;
 	/* Check if it's an instruction (starting with '.') */
 	instruction = find_instruction_from_index(line, &i);
 
@@ -66,8 +68,9 @@ bool process_line_fpass(char *line, long *IC, long *DC, machine_word **code_img,
 	if (instruction != NONE_INST) {
 		/* if .string or .data, and symbol defined, put it into the symbol table */
 		if ((instruction == DATA || instruction == STRING) && symbol[0] != '\0')
-			/* is data or string, add DC with the symbol to the table */
+			/* is data or string, add DC with the symbol to the table as data */
 			add_table_item(symbol_table, symbol, *DC, DATA_SYMBOL);
+
 		/* if string, encode into data image buffer and increase dc as needed. */
 		if (instruction == STRING)
 			return process_string_instruction(line, i, data_img, DC);

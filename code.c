@@ -119,13 +119,14 @@ code_word *get_code_word(opcode curr_opcode, funct curr_funct, int op_count, cha
 	code_word *codeword;
 	first_addressing = get_addressing_type(operands[0]);
 	second_addressing = get_addressing_type(operands[1]);
-	/* Validate the operand types and count */
+	/* Validate the operand count and types */
 	if (curr_opcode >= MOV_OP && curr_opcode <= LEA_OP) {
+		/* 2 operands required */
 		if (op_count != 2) {
-			print_error("Operation requires s2 operands (got %d)", op_count);
+			print_error("Operation requires 2 operands (got %d)", op_count);
 			return NULL;
 		}
-
+		/* validate operand addressing */
 		if (curr_opcode == CMP_OP) {
 			is_valid = validate_op_addr(first_addressing, second_addressing, 3, 3, IMMEDIATE, DIRECT, REGISTER,
 			                            IMMEDIATE, DIRECT, REGISTER);
@@ -138,11 +139,12 @@ code_word *get_code_word(opcode curr_opcode, funct curr_funct, int op_count, cha
 			                            DIRECT, REGISTER);
 		}
 	} else if (curr_opcode >= CLR_OP && curr_opcode <= PRN_OP) {
-		/*if operand number is not 1 there are either Too many operands or to few*/
+		/* 1 operand required */
 		if (op_count != 1) {
 			if (op_count < 1) print_error("Operation requires 1 operand (got %d)",op_count);
 			return NULL;
 		}
+		/* validate operand addressing */
 		first_addressing = get_addressing_type(operands[0]);
 		if (curr_opcode == RED_OP || curr_opcode == CLR_OP) { /* Also for NOT, INC, DEC */
 			is_valid = validate_op_addr(first_addressing, NONE_ADDR, 2, 0, DIRECT, REGISTER);
@@ -152,13 +154,13 @@ code_word *get_code_word(opcode curr_opcode, funct curr_funct, int op_count, cha
 			is_valid = validate_op_addr(first_addressing, NONE_ADDR, 3, 0, IMMEDIATE, DIRECT, REGISTER);
 		}
 	} else if (curr_opcode <= STOP_OP && curr_opcode >= RTS_OP) {
-		/*if operand number is not 0 there are Too many operands*/
+		/* 0 operands exactly */
 		if (op_count > 0) {
-			print_error("Operation requires no operands");
+			print_error("Operation requires no operands (got %d)",op_count);
 			return NULL;
 		}
 	}
-	if (is_valid == FALSE) return NULL; /* Return null if invalid */
+	if (!is_valid) return NULL; /* Return null if invalid */
 
 	/* Create the code word by the data: */
 	codeword = (code_word *) malloc_with_check(sizeof(code_word));
@@ -190,6 +192,7 @@ code_word *get_code_word(opcode curr_opcode, funct curr_funct, int op_count, cha
 	return codeword;
 }
 
+/* TODO(?): Migrate to array */
 bool validate_op_addr(addressing_type op1_addressing, addressing_type op2_addressing, int op1_valid_addr_count,
                       int op2_valid_addr_count, ...) {
 	bool is_valid;

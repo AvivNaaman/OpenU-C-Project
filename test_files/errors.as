@@ -1,4 +1,5 @@
-;Tester for Maman 14. The described errors are in "Maman14_errors"
+; Error tester: v1 by Reut Cohen @ openu
+; v2 by @AvivNaaman
 
 NUM: .entry NUM
 add r3,   #4
@@ -13,11 +14,19 @@ LABEL: .data 5  , -25,  -5, 14, 1
     .data 34  , -100 ,
     LABEL:
 Main: .string "abc"
+.string abcd"
+.string "abce
+.string abcf
 Main: .data  5
     .entry Main
 lea r2 , r5
 string: mov 5 , r8
 stop r5
+
+;
+
+;
+
 add Main#5
 sub # 5, *r6
     .string "hffonhof  543 ^&*"

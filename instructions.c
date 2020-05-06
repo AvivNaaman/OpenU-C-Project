@@ -39,7 +39,12 @@ bool process_string_instruction(char *line, int index, machine_data **data_img, 
 	machine_data *data;
 	long dc_at_start = *dc;
 	MOVE_TO_NOT_WHITE(line, index)
-	if (line[index] == '"') {
+	if (line[index ] != '"') {
+		/* something like: LABEL: .string  hello, world\n - the string isn't surrounded with "" */
+		print_error("String must be defined between quotation marks");
+		return FALSE;
+	}
+	else {
 		index++;
 		/* Foreach char between the two " */
 		for (;line[index] != '"' && line[index] && line[index] != '\n' && line[index] != EOF;index++) {
@@ -55,17 +60,8 @@ bool process_string_instruction(char *line, int index, machine_data **data_img, 
 		data_img[*dc] = data;
 		(*dc)++;
 	}
-	else {
-		/* something like: LABEL: .string  hello, world\n - the string isn't surrounded with "" */
-		print_error("String must be defined between quotation marks");
-		return FALSE;
-	}
 	if (line[index] != '"') {
 		print_error("String must be defined between quotation marks");
-		return FALSE;
-	}
-	if (*dc == dc_at_start) { /* Nothing was added */
-		print_error("Error: Empty string definition");
 		return FALSE;
 	}
 	/* Return processed chars count */
@@ -80,6 +76,9 @@ bool process_data_instruction(char *line, int index, machine_data **data_img, lo
 	machine_data *data;
 	int i;
 	MOVE_TO_NOT_WHITE(line, index)
+	if (line[index] == ',') {
+		print_error("Unexpected comma after .data instruction");
+	}
 	do {
 		for (i = 0; line[index] && line[index] != EOF && line[index] != '\t' && line[index] != ' ' && line[index] != ',' && line[index] != '\n' ; index++,i++) {
 			temp[i] = line[index];

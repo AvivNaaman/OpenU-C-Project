@@ -10,11 +10,8 @@
 void add_table_item(table *tab, char *key, long value, symbol_type type) {
 	char *temp;
 	table prev_entry, curr_entry, new_entry;
-	new_entry = (table)malloc(sizeof(table_entry));
-	if (new_entry == NULL) {
-		printf("Memory Allocation Failed");
-		exit(1); /* if can't allocate memory, can't do anything anymore. */
-	}
+	/* allocate memory for new entry */
+	new_entry = (table)malloc_with_check(sizeof(table_entry));
 	/* Prevent "Aliasing" of pointers. Don't worry-when we free the list, we also free these allocated char ptrs */
 	temp = (char *)malloc_with_check(strlen(key));
 	strcpy(temp, key);

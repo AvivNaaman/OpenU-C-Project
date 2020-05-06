@@ -40,8 +40,15 @@ bool process_line_fpass(char *line, long *IC, long *DC, machine_word **code_img,
 		return FALSE;
 	}
 
+	/* if illegal name */
 	if (!is_legal_label_name(symbol) && symbol[0]) {
 		print_error("Illegal label name %s", symbol);
+		return FALSE;
+	}
+	/* if already defined as data/external/code */
+	if (find_by_types(*symbol_table, symbol, 3, EXTERNAL_SYMBOL, DATA_SYMBOL, CODE_SYMBOL)) {
+		print_error("Symbol %s is already defined.",symbol);
+		return FALSE;
 	}
 
 	if (symbol[0] != '\0') {
@@ -69,14 +76,23 @@ bool process_line_fpass(char *line, long *IC, long *DC, machine_word **code_img,
 			return process_data_instruction(line, i, data_img, DC);
 			/* if .extern, add to externals symbol table */
 		else if (instruction == EXTERN) {
+			/* if label is defined before (e.g. LABEL: .extern something) */
+			if (symbol[0] != '\0') {
+				print_error("Can't define a label to an extern instruction.");
+			}
 			MOVE_TO_NOT_WHITE(line, i)
-			/* is symbol detected, start analyzing from it's deceleration end */
+			/* if external symbol detected, start analyzing from it's deceleration end */
 			for (j = 0; line[i] && line[i] != '\n' && line[i] != '\t' && line[i] != ' ' && line[i] != EOF; i++, j++) {
 				symbol[j] = line[i];
 			}
 			symbol[j] = 0;
 			/* TODO: Validate that symbol contains a valid symbol! */
 			add_table_item(symbol_table, symbol, 0, EXTERNAL_SYMBOL); /* Extern value is defaulted to 0 */
+		}
+		/* if entry and symbol defined, print error */
+		else if (instruction == ENTRY && symbol[0] != '\0') {
+			print_error("Can't define a label to an entry instruction.");
+			return FALSE;
 		}
 		/* .entry is handled in second pass! */
 	} /* end if (instruction != NONE) */

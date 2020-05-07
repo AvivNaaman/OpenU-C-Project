@@ -21,7 +21,9 @@ bool analyze_operands(char *line, int i, char **destination, int *operand_count,
 	/* until no too many operands (max of 2) and it's not the end of the line */
 	for (*operand_count = 0; line[i] != EOF && line[i] != '\n' && line[i];) {
 		if (*operand_count == 2) /* =We already got 2 operands in, We're going ot get the third! */ {
-			print_error("Too many operands for operation (got %d)",*operand_count);
+			print_error("Too many operands for operation (got >%d)",*operand_count);
+			free(destination[0]);
+			free(destination[1]);
 			return FALSE; /* an error occurred */
 		}
 		/* as long we're still on same operand */
@@ -47,13 +49,16 @@ bool analyze_operands(char *line, int i, char **destination, int *operand_count,
 		if (line[i] == '\n' || line[i] == EOF || !line[i]) print_error("Missing operand after comma.");
 		else if (line[i] == ',') print_error("Multiple consecutive commas.");
 		else continue; /* No errors, continue */
-		{ /* Error found */
+		{ /* Error found! (didn't continue) */
 			/* No one forgot you two! */
 			free(destination[0]);
 			free(destination[1]);
 			return FALSE;
 		}
 	}
+	/* Allocated for operands */
+	free(destination[0]);
+	free(destination[1]);
 	return TRUE;
 }
 

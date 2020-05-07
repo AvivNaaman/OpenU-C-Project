@@ -24,7 +24,7 @@
 bool process_line_fpass(char *line, long *IC, long *DC, machine_word **code_img, machine_data **data_img,
                         table *symbol_table) {
 	int i, j;
-	char symbol[50];
+	char symbol[MAX_LINE_LENGTH];
 	instruction_type instruction;
 
 	i = 0;

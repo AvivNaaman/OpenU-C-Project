@@ -21,7 +21,7 @@ bool analyze_operands(char *line, int i, char **destination, int *operand_count,
 	/* until no too many operands (max of 2) and it's not the end of the line */
 	for (*operand_count = 0; line[i] != EOF && line[i] != '\n' && line[i];) {
 		if (*operand_count == 2) /* =We already got 2 operands in, We're going ot get the third! */ {
-			print_error("Too many operands for operation %s.", command);
+			print_error("Too many operands for operation (got %d)",*operand_count);
 			return FALSE; /* an error occurred */
 		}
 		/* as long we're still on same operand */

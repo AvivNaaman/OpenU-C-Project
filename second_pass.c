@@ -123,6 +123,10 @@ int process_spass_operand(long *curr_ic, long *ic, char *operand, machine_word *
 		data_to_add = entry->value;
 		/* Calculate the distance to the label from ic if needed */
 		if (addr == RELATIVE) {
+			/* if not code symbol it's impossible! */
+			if (entry->type != CODE_SYMBOL) {
+				print_error("Symbol %s cannot be addressed relatively because it's not a code symbol.", operand);
+			}
 			data_to_add =  data_to_add - *ic;
 		}
 

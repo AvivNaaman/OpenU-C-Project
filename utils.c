@@ -145,13 +145,3 @@ void free_code_image(machine_word **code_image, long fic) {
 		}
 	}
 }
-
-void free_data_image(machine_data ** data_image, long fdc) {
-	long i;
-	for (i = 0; i < fdc; i++) {
-		if (data_image[i] != NULL) {
-			free(data_image[i]);
-			data_image[i] = NULL;
-		}
-	}
-}

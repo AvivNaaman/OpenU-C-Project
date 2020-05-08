@@ -63,7 +63,4 @@ int print_error(char *message,...);
 /* Frees all the allocated memory inside the code image */
 void free_code_image(machine_word **code_image, long fic);
 
-/* Frees all the allocated memory inside the data image */
-void free_data_image(machine_data ** data_image, long fdc);
-
 #endif

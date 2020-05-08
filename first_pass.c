@@ -1,5 +1,5 @@
 /* Contains major function that are related to the first pass */
-#include "globals.h"
+#include "constants.h"
 #include "code.h"
 #include "utils.h"
 #include "instructions.h"
@@ -21,11 +21,11 @@
  * @param data_img The data image array
  * @return Whether succeeded.
  */
-bool process_line_fpass(char *line, long *IC, long *DC, machine_word **code_img, machine_data **data_img,
+bool process_line_fpass(char *line, long *IC, long *DC, machine_word **code_img, long *data_img,
                         table *symbol_table) {
 	int i, j;
 	char symbol[MAX_LINE_LENGTH];
-	instruction_type instruction;
+	instruction instruction;
 
 	i = 0;
 
@@ -67,18 +67,18 @@ bool process_line_fpass(char *line, long *IC, long *DC, machine_word **code_img,
 	/* is it's an instruction */
 	if (instruction != NONE_INST) {
 		/* if .string or .data, and symbol defined, put it into the symbol table */
-		if ((instruction == DATA || instruction == STRING) && symbol[0] != '\0')
+		if ((instruction == DATA_INST || instruction == STRING_INST) && symbol[0] != '\0')
 			/* is data or string, add DC with the symbol to the table as data */
 			add_table_item(symbol_table, symbol, *DC, DATA_SYMBOL);
 
 		/* if string, encode into data image buffer and increase dc as needed. */
-		if (instruction == STRING)
+		if (instruction == STRING_INST)
 			return process_string_instruction(line, i, data_img, DC);
 			/* if .data, do same but parse numbers. */
-		else if (instruction == DATA)
+		else if (instruction == DATA_INST)
 			return process_data_instruction(line, i, data_img, DC);
 			/* if .extern, add to externals symbol table */
-		else if (instruction == EXTERN) {
+		else if (instruction == EXTERN_INST) {
 			/* if label is defined before (e.g. LABEL: .extern something) */
 			if (symbol[0] != '\0') {
 				print_error("Can't define a label to an extern instruction.");
@@ -93,7 +93,7 @@ bool process_line_fpass(char *line, long *IC, long *DC, machine_word **code_img,
 			add_table_item(symbol_table, symbol, 0, EXTERNAL_SYMBOL); /* Extern value is defaulted to 0 */
 		}
 		/* if entry and symbol defined, print error */
-		else if (instruction == ENTRY && symbol[0] != '\0') {
+		else if (instruction == ENTRY_INST && symbol[0] != '\0') {
 			print_error("Can't define a label to an entry instruction.");
 			return FALSE;
 		}
@@ -164,30 +164,30 @@ bool process_code(char *line, int i, long *ic, machine_word **code_img) {
 		first_addr = get_addressing_type(operands[0]);
 		second_addr = get_addressing_type(operands[1]);
 		/* if an additional data word is required */
-		if (first_addr != NONE_ADDR && first_addr != REGISTER) {
+		if (first_addr != NONE_ADDR && first_addr != REGISTER_ADDR) {
 			(*ic)++; /* increase ci */
 			/* if the operand is immediately addressed, we can encode it right now: */
-			if (first_addr == IMMEDIATE) {
+			if (first_addr == IMMEDIATE_ADDR) {
 				char *ptr;
 				/* Get value of immediate addressed operand. notice that it starts with #, so we're skipping the # in the call to strtol */
 				long value = strtol(operands[0] + 1, &ptr, 10);
 				word_to_write = (machine_word *) malloc_with_check(sizeof(machine_word));
 				word_to_write->length = 0; /* Not code word! */
-				(word_to_write->word).data = build_data_word(IMMEDIATE, value, FALSE);
+				(word_to_write->word).data = build_data_word(IMMEDIATE_ADDR, value, FALSE);
 				code_img[(*ic) - IC_INIT_VALUE] = word_to_write;
 
 			}
 		}
 		/* And again - if another data word is required, increase CI. if it's an immediate addressing, encode it. */
-		if (second_addr != NONE_ADDR && second_addr != REGISTER) {
+		if (second_addr != NONE_ADDR && second_addr != REGISTER_ADDR) {
 			(*ic)++;
-			if (get_addressing_type(operands[1]) == IMMEDIATE) {
+			if (get_addressing_type(operands[1]) == IMMEDIATE_ADDR) {
 				char *ptr;
 				/* Get value of immediate addressed operand. notice that it starts with #, so we're skipping the # in the call to strtol */
 				long value = strtol(operands[1] + 1, &ptr, 10);
 				word_to_write = (machine_word *) malloc_with_check(sizeof(machine_word));
 				word_to_write->length = 0; /* Not Code word! */
-				(word_to_write->word).data = build_data_word(IMMEDIATE, value, FALSE);
+				(word_to_write->word).data = build_data_word(IMMEDIATE_ADDR, value, FALSE);
 
 				code_img[(*ic) - IC_INIT_VALUE] = word_to_write;
 			}

@@ -1,6 +1,7 @@
-
+#ifndef _FIRST_PASS_H
+#define _FIRST_PASS_H
 /* Processes a code line in first pass */
-#include "globals.h"
+#include "constants.h"
 
 /**
  * Processes a single line in the first pass
@@ -14,7 +15,7 @@
  * @param data_img The data image array
  * @return Whether succeeded.
  */
-bool process_line_fpass(char *line, long *IC, long *DC, machine_word **code_img, machine_data **data_img,
+bool process_line_fpass(char *line, long *IC, long *DC, machine_word **code_img, long *data_img,
                         table *symbol_table);
 
 /**
@@ -28,3 +29,4 @@ bool process_line_fpass(char *line, long *IC, long *DC, machine_word **code_img,
  * @return Whether succeeded or notssss
  */
 bool process_code(char *line, int i, long *ic, machine_word **code_img);
+#endif

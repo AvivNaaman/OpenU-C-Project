@@ -1,4 +1,7 @@
-#include "globals.h"
+
+#ifndef _SECOND_PASS_H
+#define _SECOND_PASS_H
+#include "constants.h"
 #include "table.h"
 
 /**
@@ -20,3 +23,5 @@ bool process_line_spass(char *line, long *ic, machine_word **code_img, table *sy
  * @return Whether succeeded
  */
 bool add_symbols_to_code(char *line, long *ic, machine_word **code_img, table *symbol_table);
+
+#endif

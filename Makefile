@@ -1,7 +1,7 @@
 # Basic compilation macros
 CC = gcc # GCC Compiler
 CFLAGS = -ansi -Wall -pedantic # Flags
-GLOBAL_DEPS = globals.h # Depecdencies for evrything
+GLOBAL_DEPS = constants.h # Dependencies for everything
 EXE_DEPS = assembler.o code.o fpass.o spass.o instructions.o table.o utils.o writefiles.o # Deps for exe
 
 ## Executable
@@ -39,3 +39,4 @@ utils.o: utils.c instructions.h $(GLOBAL_DEPS)
 ## Output Files:
 writefiles.o: writefiles.c writefiles.h $(GLOBAL_DEPS)
 	$(CC) -c writefiles.c $(CFLAGS) -o $@
+

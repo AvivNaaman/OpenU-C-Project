@@ -1,5 +1,6 @@
-
-#include "globals.h"
+#ifndef _WRITEFILES_H
+#define _WRITEFILES_H
+#include "constants.h"
 #include "table.h"
 
 /**
@@ -13,5 +14,7 @@
  * @param ext_table The external references table
  * @return Whether succeeded
  */
-int write_output_files(machine_word **code_img, machine_data **data_img, long icf, long dcf, char *filename,
+int write_output_files(machine_word **code_img, long *data_img, long icf, long dcf, char *filename,
                        table symbol_table);
+
+#endif

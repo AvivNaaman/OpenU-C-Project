@@ -4,11 +4,11 @@
 #include "utils.h"
 #include "table.h"
 
-int write_ob(machine_word **code_img, machine_data **data_img, long icf, long dcf, char *filename);
+int write_ob(machine_word **code_img, long *data_img, long icf, long dcf, char *filename);
 
 int write_table_to_file(table tab, char *filename, char *file_extension);
 
-int write_output_files(machine_word **code_img, machine_data **data_img, long icf, long dcf, char *filename,
+int write_output_files(machine_word **code_img, long *data_img, long icf, long dcf, char *filename,
                        table symbol_table) {
 	/* Write .ob file */
 	return write_ob(code_img, data_img, icf, dcf, filename) &&
@@ -17,7 +17,7 @@ int write_output_files(machine_word **code_img, machine_data **data_img, long ic
 	       write_table_to_file(get_entries_by_type(symbol_table, ENTRY_SYMBOL), filename, "ent");
 }
 
-int write_ob(machine_word **code_img, machine_data **data_img, long icf, long dcf, char *filename) {
+int write_ob(machine_word **code_img, long *data_img, long icf, long dcf, char *filename) {
 	int i;
 	long val;
 	FILE *file_desc;
@@ -52,10 +52,10 @@ int write_ob(machine_word **code_img, machine_data **data_img, long icf, long dc
 	}
 	/* Write data image. dcf starts at 0 so it's fine */
 	for (i = 0; i < dcf; i++) {
-		/* build data to write from bytes */
-		val = (data_img[i]->byte0 << 17) | (data_img[i]->byte1 << 9) | (data_img[i]->byte2);
+		/* get only lower 24 bytes */
+		val = data_img[i] & 0xFFFFFF;
 		/* Write data to file */
-		fprintf(file_desc, "\n%.7ld %.6lx", icf + i, val & 0xffffff);
+		fprintf(file_desc, "\n%.7ld %.6lx", icf + i, val);
 	}
 	/* Close the file */
 	fclose(file_desc);

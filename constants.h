@@ -1,8 +1,8 @@
-/* Contains useful global definitions for the whole projects */
+/* Constants */
 
 /* Prevent double definitions */
-#ifndef GLOBALS_H
-#define GLOBALS_H
+#ifndef _GLOBALS_H
+#define _GLOBALS_H
 
 /** Boolean (t/f) definition */
 typedef enum booleans {
@@ -18,21 +18,17 @@ typedef enum booleans {
 /** Initial IC value */
 #define IC_INIT_VALUE 100
 
-/** moves the index to the next place in string where the char isn't white */
-#define MOVE_TO_NOT_WHITE(string, index) \
-        for (;string[(index)] && (string[(index)] == '\t' || string[(index)] == ' '); (++(index)))\
-        ;
 
 /** Operand addressing type */
 typedef enum addressing_types {
 	/** Immediate addressing (0) */
-	IMMEDIATE = 0,
+	IMMEDIATE_ADDR = 0,
 	/** Direct addressing (1) */
-	DIRECT = 1,
+	DIRECT_ADDR = 1,
 	/** Relative addressing (2) */
-	RELATIVE = 2,
+	RELATIVE_ADDR = 2,
 	/** Register addressing */
-	REGISTER = 3,
+	REGISTER_ADDR = 3,
 	/** Failed/Not detected addressing */
 	NONE_ADDR = -1
 } addressing_type;
@@ -129,29 +125,22 @@ typedef struct data_word {
 } data_word;
 
 /** Represents a general machine code word contents */
-typedef struct machine_code_word {
-	short length; /* The length of the code word (if it's a code word), including data words required by it. */
+typedef struct machine_word {
+	/* if it represents code (not additional data), this field contains the total length required by the code. if it's data, this field is 0. */
+	short length;
+	/* The content can be code or data */
 	union word {
 		data_word *data;
 		code_word *code;
 	} word;
 } machine_word;
 
-/** Instruction type */
+/** Instruction type (.data, .entry, etc.) */
 typedef enum instruction {
-	DATA,
-	EXTERN,
-	ENTRY,
-	STRING,
+	DATA_INST,
+	EXTERN_INST,
+	ENTRY_INST,
+	STRING_INST,
 	NONE_INST /* no instruction found */
-} instruction_type;
-
-/** General data word */
-/* TODO: Migrate to long array instead of this. */
-typedef struct machine_code_data {
-	char byte0;
-	char byte1;
-	char byte2;
-} machine_data;
-
+} instruction;
 #endif

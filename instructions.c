@@ -4,7 +4,7 @@
 #include "utils.h"
 
 /* Returns the first instruction from the specified index. if no such one, returns NONE */
-instruction_type find_instruction_from_index(char *string, int *index){
+instruction find_instruction_from_index(char *string, int *index){
 	char temp[MAX_LINE_LENGTH];
 	int j;
 	MOVE_TO_NOT_WHITE(string, *index) /* get index to first not white place */
@@ -16,16 +16,16 @@ instruction_type find_instruction_from_index(char *string, int *index){
 	temp[j] = '\0'; /* End of string */
 
 	if (strcmp(temp, ".extern") == 0) {
-		return EXTERN;
+		return EXTERN_INST;
 	}
 	else if (strcmp(temp, ".data") == 0) {
-		return DATA;
+		return DATA_INST;
 	}
 	else if (strcmp(temp, ".entry") == 0) {
-		return ENTRY;
+		return ENTRY_INST;
 	}
 	else if (strcmp(temp, ".string") == 0) {
-		return STRING;
+		return STRING_INST;
 	}
 	return NONE_INST;
 }
@@ -35,9 +35,8 @@ instruction_type find_instruction_from_index(char *string, int *index){
  * Processes a string instruction from index. encode into data image and change dc.
  * Returns whether encountered an error.
  */
-bool process_string_instruction(char *line, int index, machine_data **data_img, long *dc) {
-	machine_data *data;
-	long dc_at_start = *dc;
+bool process_string_instruction(char *line, int index, long *data_img, long *dc) {
+	long data;
 	MOVE_TO_NOT_WHITE(line, index)
 	if (line[index ] != '"') {
 		/* something like: LABEL: .string  hello, world\n - the string isn't surrounded with "" */
@@ -48,16 +47,13 @@ bool process_string_instruction(char *line, int index, machine_data **data_img, 
 		index++;
 		/* Foreach char between the two " */
 		for (;line[index] != '"' && line[index] && line[index] != '\n' && line[index] != EOF;index++) {
-			data = malloc_with_check(sizeof(machine_data));
-			data->byte0 = data->byte1 = '\0';
-			data->byte2 = line[index];
+			/* Save the char into the data image */
+			data = line[index];
 			data_img[*dc] = data;
 			(*dc)++;
 		}
 		/* Add end of string ('\0') */
-		data = malloc_with_check(sizeof(machine_data));
-		data->byte0 = data->byte1 = data->byte2 = '\0';
-		data_img[*dc] = data;
+		data_img[*dc] = 0;
 		(*dc)++;
 	}
 	if (line[index] != '"') {
@@ -71,9 +67,9 @@ bool process_string_instruction(char *line, int index, machine_data **data_img, 
 /*
  * Parses a .data instruction. copies each number value to data_img by dc position, and returns the amount of processed data.
  */
-bool process_data_instruction(char *line, int index, machine_data **data_img, long *dc) {
+bool process_data_instruction(char *line, int index, long *data_img, long *dc) {
 	char temp[80], *temp_ptr;
-	machine_data *data;
+	long value;
 	int i;
 	MOVE_TO_NOT_WHITE(line, index)
 	if (line[index] == ',') {
@@ -89,15 +85,12 @@ bool process_data_instruction(char *line, int index, machine_data **data_img, lo
 			return FALSE;
 		}
 		/* Now let's write to data buffer */
-		temp_ptr = int_to_word(atoi(temp));
-		data = (machine_data *)malloc_with_check(sizeof(machine_data));
-		data->byte0 = temp_ptr[0];
-		data->byte1 = temp_ptr[1];
-		data->byte2 = temp_ptr[2];
+		value = strtol(temp, &temp_ptr, 10);
 
-		data_img[*dc] = data;
+		/* TODO: Check if validation required here! */
 
-		free(temp_ptr);
+		data_img[*dc] = value;
+
 		(*dc)++; /* a word was written right now */
 		MOVE_TO_NOT_WHITE(line, index)
 		/* TODO: Some error if something (Think!) */

@@ -1,6 +1,6 @@
 /* Implements a dynamically-allocated symbol table */
-#ifndef TABLE_H
-#define TABLE_H
+#ifndef _TABLE_H
+#define _TABLE_H
 
 /**
  * A symbol type

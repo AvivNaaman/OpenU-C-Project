@@ -1,7 +1,14 @@
-#ifndef UTILS_H
-#define UTILS_H
+/* Contains general-purposed functions, for both passes and many usages */
+#ifndef _UTILS_H
+#define _UTILS_H
 
-#include "globals.h"
+#include "constants.h"
+
+
+/** moves the index to the next place in string where the char isn't white */
+#define MOVE_TO_NOT_WHITE(string, index) \
+        for (;string[(index)] && (string[(index)] == '\t' || string[(index)] == ' '); (++(index)))\
+        ;
 
 /* TODO: Refactor */
 bool parse_symbol(char *line, char *symbol_dest);

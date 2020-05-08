@@ -25,9 +25,10 @@ void add_table_item(table *tab, char *key, long value, symbol_type type) {
 		return;
 	}
 
-	prev_entry = NULL;
-	curr_entry = *tab;
-	while (curr_entry != NULL && (curr_entry->value < value||(curr_entry->value == 0 && value == 0))) {
+	/* Insert the new table entry, keeping it sorted */
+	curr_entry = (*tab)->next;
+	prev_entry = *tab;
+	while (curr_entry != NULL && curr_entry->value < value) {
 		prev_entry = curr_entry;
 		curr_entry = curr_entry->next;
 	}

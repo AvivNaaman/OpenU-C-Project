@@ -1,7 +1,8 @@
-#ifndef CODE_H
-#define CODE_H
+/* Contains function prototypes for code.c, which are used to parse and analyze code and build it to a word */
+#ifndef _CODE_H
+#define _CODE_H
 #include "table.h"
-#include "globals.h"
+#include "constants.h"
 
 /**
  * Detects the opcode and the funct of a command by it's name

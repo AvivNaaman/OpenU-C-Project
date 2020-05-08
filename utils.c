@@ -120,10 +120,10 @@ bool is_reserved_word(char *name) {
 /* Prints a detailed error message to the user, including file, line, and message. */
 int print_error(char *message, ...) {
 	int result;
+	va_list arglist; /* for formatting */
 	/* Print file+line */
 	printf("Error: In file %s:%ld: ",get_curr_filename(),get_curr_line());
 	/* use vprintf to call printf from variable argument function (from stdio.h) with message + format */
-	va_list arglist;
 	va_start(arglist, message);
 	result = vprintf(message, arglist);
 	puts(""); /* Line break */

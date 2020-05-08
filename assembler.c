@@ -43,7 +43,7 @@ static void process_file(char *filename) {
 	char *input_filename;
 	char temp_line[MAX_LINE_LENGTH + 1]; /* temporary string for storing line, read from file */
 	FILE *file_des; /* Current assembly file descriptor to process */
-	machine_data *data_img[CODE_ARR_IMG_LENGTH]; /* Contains an image of the machine code */
+	long data_img[CODE_ARR_IMG_LENGTH]; /* Contains an image of the machine code */
 	machine_word *code_img[CODE_ARR_IMG_LENGTH];
 	/* Out symbol table */
 	table symbol_table = NULL;
@@ -74,10 +74,7 @@ static void process_file(char *filename) {
 	for (curr_line = 1; fgets(temp_line, MAX_LINE_LENGTH, file_des) != NULL; curr_line++) {
 		is_success &= process_line_fpass(temp_line, &ic, &dc, code_img, data_img, &symbol_table);
 	}
-	if (!is_success) {
-		printf("Stopped assembling the file %s.as. See the above output for more information.\n", filename);
-		return;
-	}
+	if (!is_success) return; /* stop */
 
 	/* Save ICF & DCF (1.18) */
 	icf = ic;
@@ -95,15 +92,10 @@ static void process_file(char *filename) {
 		if (code_img[ic - 100] != NULL||temp_line[i]=='.')
 			is_success &= process_line_spass(temp_line, &ic, code_img, &symbol_table);
 	}
-	if (!is_success) {
-		printf("Stopped assembling the file %s.as. See the above output for more information.\n", filename);
-		return;
-	}
+	if (!is_success) return;
 
 	/* Everything was done. Write to *filename.ob/.ext/.ent */
-	if (!write_output_files(code_img, data_img, icf, dcf, filename, symbol_table)) {
-		printf("Failed to write some of the output files. See the above output for more information.\n");
-	}
+	write_output_files(code_img, data_img, icf, dcf, filename, symbol_table);
 
 	/* Now let's free some pointer: */
 	/* current file name */
@@ -112,7 +104,6 @@ static void process_file(char *filename) {
 	free_table(symbol_table);
 	/* Free code & data buffer contents */
 	free_code_image(code_img, icf);
-	free_data_image(data_img, dcf);
 }
 
 long get_curr_line() {

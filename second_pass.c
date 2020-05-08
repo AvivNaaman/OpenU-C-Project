@@ -40,8 +40,14 @@ bool process_line_spass(char *line, long *ic, machine_word **code_img, table *sy
 				table_entry *entry;
 				token = strtok(line+i, "\n"); /*get name of label*/
 				if(token[0] == '&') token++;
-				/* if symbol is not defined */
+				/* if symbol is not defined as data/code */
 				if ((entry = find_by_types(*symbol_table, token, 2, DATA_SYMBOL,CODE_SYMBOL)) == NULL) {
+					/* if defined as external print error */
+					if ((entry = find_by_types(*symbol_table, token, 1, EXTERNAL_SYMBOL)) != NULL) {
+						print_error("External symbol cannot be defined as an entry symbol as well.");
+						return FALSE;
+					}
+					/* otherwise print more general error */
 					print_error("Symbol %s for .entry instruction not found.",token);
 					return FALSE;
 				}
@@ -109,9 +115,9 @@ int process_spass_operand(long *curr_ic, long *ic, char *operand, machine_word *
 	addressing_type addr = get_addressing_type(operand);
 	machine_word *word_to_write;
 	/* if the word on *IC has the immediately addressed value (done in first pass), go to next cell (increase ic) */
-	if (addr == IMMEDIATE) (*curr_ic)++;
-	if (addr == RELATIVE) operand++;
-	if (DIRECT == addr || RELATIVE == addr) {
+	if (addr == IMMEDIATE_ADDR) (*curr_ic)++;
+	if (addr == RELATIVE_ADDR) operand++;
+	if (DIRECT_ADDR == addr || RELATIVE_ADDR == addr) {
 		long data_to_add;
 		table_entry *entry = find_by_types(*symbol_table, operand,3,DATA_SYMBOL,CODE_SYMBOL,EXTERNAL_SYMBOL);
 		if (entry == NULL) {
@@ -122,14 +128,14 @@ int process_spass_operand(long *curr_ic, long *ic, char *operand, machine_word *
 		/*found symbol*/
 		data_to_add = entry->value;
 		/* Calculate the distance to the label from ic if needed */
-		if (addr == RELATIVE) {
+		if (addr == RELATIVE_ADDR) {
 			/* if not code symbol it's impossible! */
 			if (entry->type != CODE_SYMBOL) {
 				print_error("Symbol %s cannot be addressed relatively because it's not a code symbol.", operand);
+				return FALSE;
 			}
 			data_to_add =  data_to_add - *ic;
 		}
-
 		/* Add to externals reference table if it's an external. increase ic because it's the next data word */
 		if (is_extern_symbol) {
 			add_table_item(symbol_table, operand, (*curr_ic) + 1, EXTERNAL_REFERENCE);

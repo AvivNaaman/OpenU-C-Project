@@ -19,24 +19,30 @@ static int curr_line;
 /**
  * Processes a single assembly source file
  * @param filename
+ * @return Whether succeeded
  */
-static void process_file(char *filename);
+static bool process_file(char *filename);
 
 /**
  * Entry point - a 24bit assembler
  */
 int main(int argc, char *argv[]) {
 	int i;
+	/* To break line if needed */
+	bool succeeded = TRUE;
 	/* Process each file by arguments */
 	for (i = 1; i < argc; ++i) {
+		/* if last process failed and there's another file, break line: */
+		if (!succeeded) puts("");
 		/* foreach argument (file name), send it for full processing. */
-		process_file(argv[i]);
+		succeeded = process_file(argv[i]);
+		/* Line break if failed */
 	}
 	return 0;
 }
 
-
-static void process_file(char *filename) {
+/* TODO: Free some pointer after failure! */
+static bool process_file(char *filename) {
 	/* Memory address counters */
 	long ic, dc, icf, dcf;
 	bool is_success; /* is succeeded so far */
@@ -60,7 +66,7 @@ static void process_file(char *filename) {
 	if (file_des == NULL) {
 		/* if file couldn't be opened, write to stderr. */
 		printf("Error: file \"%s.as\" is inaccessible for reading.", filename);
-		return;
+		return FALSE;
 	}
 
 
@@ -74,7 +80,7 @@ static void process_file(char *filename) {
 	for (curr_line = 1; fgets(temp_line, MAX_LINE_LENGTH, file_des) != NULL; curr_line++) {
 		is_success &= process_line_fpass(temp_line, &ic, &dc, code_img, data_img, &symbol_table);
 	}
-	if (!is_success) return; /* stop */
+	if (!is_success) return FALSE; /* stop, failed */
 
 	/* Save ICF & DCF (1.18) */
 	icf = ic;
@@ -86,16 +92,16 @@ static void process_file(char *filename) {
 	/* First pass done right. start second pass: */
 	rewind(file_des); /* Reread the file from the beginning */
 	for (curr_line = 1; !feof(file_des); curr_line++) {
-	    int i = 0;
+		int i = 0;
 		fgets(temp_line, MAX_LINE_LENGTH, file_des); /* Get line */
-		MOVE_TO_NOT_WHITE(temp_line,i)
-		if (code_img[ic - 100] != NULL||temp_line[i]=='.')
+		MOVE_TO_NOT_WHITE(temp_line, i)
+		if (code_img[ic - 100] != NULL || temp_line[i] == '.')
 			is_success &= process_line_spass(temp_line, &ic, code_img, &symbol_table);
 	}
-	if (!is_success) return;
+	if (!is_success) return FALSE; /* stop, failed */
 
 	/* Everything was done. Write to *filename.ob/.ext/.ent */
-	write_output_files(code_img, data_img, icf, dcf, filename, symbol_table);
+	is_success = write_output_files(code_img, data_img, icf, dcf, filename, symbol_table);
 
 	/* Now let's free some pointer: */
 	/* current file name */
@@ -104,6 +110,7 @@ static void process_file(char *filename) {
 	free_table(symbol_table);
 	/* Free code & data buffer contents */
 	free_code_image(code_img, icf);
+	return is_success;
 }
 
 long get_curr_line() {

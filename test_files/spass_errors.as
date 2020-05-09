@@ -12,4 +12,4 @@ CODELABEL: mov r0, r1
 ; jumping to data label is invalid
 jmp &DATALABEL
 
-
+.entry SOMEUNKNOWNLABEL

@@ -11,9 +11,9 @@ void add_table_item(table *tab, char *key, long value, symbol_type type) {
 	char *temp;
 	table prev_entry, curr_entry, new_entry;
 	/* allocate memory for new entry */
-	new_entry = (table)malloc_with_check(sizeof(table_entry));
+	new_entry = (table) malloc_with_check(sizeof(table_entry));
 	/* Prevent "Aliasing" of pointers. Don't worry-when we free the list, we also free these allocated char ptrs */
-	temp = (char *)malloc_with_check(strlen(key));
+	temp = (char *) malloc_with_check(strlen(key));
 	strcpy(temp, key);
 	new_entry->key = temp;
 	new_entry->value = value;
@@ -70,12 +70,12 @@ table get_entries_by_type(table tab, symbol_type type) {
 
 table_entry *find_by_types(table tab, char *key, int symbol_count, ...) {
 	int i;
-	symbol_type *valid_symbol_types = malloc_with_check((symbol_count-1)*sizeof(int));
+	symbol_type *valid_symbol_types = malloc_with_check((symbol_count - 1) * sizeof(int));
 	/* Build a list of the valid types */
 	va_list arglist;
-	va_start(arglist,symbol_count);
-	for (i=0;i < symbol_count; i++) {
-		valid_symbol_types[i] = va_arg(arglist,symbol_type);
+	va_start(arglist, symbol_count);
+	for (i = 0; i < symbol_count; i++) {
+		valid_symbol_types[i] = va_arg(arglist, symbol_type);
 	}
 	va_end(arglist);
 	/* table null => nothing to dos */

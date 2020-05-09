@@ -41,7 +41,7 @@ bool process_line_fpass(char *line, long *IC, long *DC, machine_word **code_img,
 	}
 
 	/* if illegal name */
-	if (!is_legal_label_name(symbol) && symbol[0]) {
+	if (!is_valid_label_name(symbol) && symbol[0]) {
 		print_error("Illegal label name %s", symbol);
 		return FALSE;
 	}
@@ -55,7 +55,7 @@ bool process_line_fpass(char *line, long *IC, long *DC, machine_word **code_img,
 
 	/* if already defined as data/external/code and not empty line */
 	if (find_by_types(*symbol_table, symbol, 3, EXTERNAL_SYMBOL, DATA_SYMBOL, CODE_SYMBOL)) {
-		print_error("Symbol %s is already defined.",symbol);
+		print_error("Symbol %s is already defined.", symbol);
 		return FALSE;
 	}
 
@@ -89,10 +89,14 @@ bool process_line_fpass(char *line, long *IC, long *DC, machine_word **code_img,
 				symbol[j] = line[i];
 			}
 			symbol[j] = 0;
-			/* TODO: Validate that symbol contains a valid symbol! */
+			/* If invalid label name, linkage will */
+			if (!is_valid_label_name(symbol)) {
+				print_error("Invalid label name %s", symbol);
+				return TRUE;
+			}
 			add_table_item(symbol_table, symbol, 0, EXTERNAL_SYMBOL); /* Extern value is defaulted to 0 */
 		}
-		/* if entry and symbol defined, print error */
+			/* if entry and symbol defined, print error */
 		else if (instruction == ENTRY_INST && symbol[0] != '\0') {
 			print_error("Can't define a label to an entry instruction.");
 			return FALSE;

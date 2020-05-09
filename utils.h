@@ -20,13 +20,6 @@ bool parse_symbol(char *line, char *symbol_dest);
  */
 bool is_int(char* string);
 
-/* TODO: Remove this function and migrate to the one used in code.c! */
-/**
- * Converts a 21-bit signed integer into
- * @return A pointer to 3-byte char array which holds the bytes from high to low.
- */
-char *int_to_word(long);
-
 /**
  * Allocates memory in the required size. Exits the program if failed.
  * @param size The size to allocate in bytes
@@ -39,7 +32,7 @@ void *malloc_with_check(long size);
  * @param name The label name
  * @return Whether the specified name is valid,
  */
-bool is_legal_label_name(char* name);
+bool is_valid_label_name(char* name);
 
 /**
  * Returns whether a string is alphanumeric.

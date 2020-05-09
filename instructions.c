@@ -4,27 +4,24 @@
 #include "utils.h"
 
 /* Returns the first instruction from the specified index. if no such one, returns NONE */
-instruction find_instruction_from_index(char *string, int *index){
+instruction find_instruction_from_index(char *string, int *index) {
 	char temp[MAX_LINE_LENGTH];
 	int j;
 	MOVE_TO_NOT_WHITE(string, *index) /* get index to first not white place */
 	if (string[*index] != '.') return NONE_INST;
 
-	for (j = 0;string[*index] && string[*index] != '\t' && string[*index] != ' ';(*index)++,j++) {
+	for (j = 0; string[*index] && string[*index] != '\t' && string[*index] != ' '; (*index)++, j++) {
 		temp[j] = string[*index];
 	}
 	temp[j] = '\0'; /* End of string */
 
 	if (strcmp(temp, ".extern") == 0) {
 		return EXTERN_INST;
-	}
-	else if (strcmp(temp, ".data") == 0) {
+	} else if (strcmp(temp, ".data") == 0) {
 		return DATA_INST;
-	}
-	else if (strcmp(temp, ".entry") == 0) {
+	} else if (strcmp(temp, ".entry") == 0) {
 		return ENTRY_INST;
-	}
-	else if (strcmp(temp, ".string") == 0) {
+	} else if (strcmp(temp, ".string") == 0) {
 		return STRING_INST;
 	}
 	return NONE_INST;
@@ -38,15 +35,14 @@ instruction find_instruction_from_index(char *string, int *index){
 bool process_string_instruction(char *line, int index, long *data_img, long *dc) {
 	long data;
 	MOVE_TO_NOT_WHITE(line, index)
-	if (line[index ] != '"') {
+	if (line[index] != '"') {
 		/* something like: LABEL: .string  hello, world\n - the string isn't surrounded with "" */
 		print_error("String must be defined between quotation marks");
 		return FALSE;
-	}
-	else {
+	} else {
 		index++;
 		/* Foreach char between the two " */
-		for (;line[index] != '"' && line[index] && line[index] != '\n' && line[index] != EOF;index++) {
+		for (; line[index] != '"' && line[index] && line[index] != '\n' && line[index] != EOF; index++) {
 			/* Save the char into the data image */
 			data = line[index];
 			data_img[*dc] = data;
@@ -76,12 +72,14 @@ bool process_data_instruction(char *line, int index, long *data_img, long *dc) {
 		print_error("Unexpected comma after .data instruction");
 	}
 	do {
-		for (i = 0; line[index] && line[index] != EOF && line[index] != '\t' && line[index] != ' ' && line[index] != ',' && line[index] != '\n' ; index++,i++) {
+		for (i = 0;
+		     line[index] && line[index] != EOF && line[index] != '\t' && line[index] != ' ' && line[index] != ',' &&
+		     line[index] != '\n'; index++, i++) {
 			temp[i] = line[index];
 		}
 		temp[i] = '\0'; /* End of string */
 		if (!is_int(temp)) {
-			print_error("Expected integer for .data instruction (got '%s')",temp);
+			print_error("Expected integer for .data instruction (got '%s')", temp);
 			return FALSE;
 		}
 		/* Now let's write to data buffer */
@@ -95,7 +93,8 @@ bool process_data_instruction(char *line, int index, long *data_img, long *dc) {
 		MOVE_TO_NOT_WHITE(line, index)
 		/* TODO: Some error if something (Think!) */
 		if (line[index] == ',') index++;
-		else if (!line[index] || line[index] == '\n' || line[index] == EOF) break; /* End of line/file/string => nothing to process anymore */
+		else if (!line[index] || line[index] == '\n' || line[index] == EOF)
+			break; /* End of line/file/string => nothing to process anymore */
 		/* Got comma. Skip white chars and check if end of line (if so, there's extraneous comma!) */
 		MOVE_TO_NOT_WHITE(line, index)
 		if (line[index] == ',') {

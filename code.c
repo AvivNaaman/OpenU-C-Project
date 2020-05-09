@@ -21,7 +21,7 @@ bool analyze_operands(char *line, int i, char **destination, int *operand_count,
 	/* until no too many operands (max of 2) and it's not the end of the line */
 	for (*operand_count = 0; line[i] != EOF && line[i] != '\n' && line[i];) {
 		if (*operand_count == 2) /* =We already got 2 operands in, We're going ot get the third! */ {
-			print_error("Too many operands for operation (got >%d)",*operand_count);
+			print_error("Too many operands for operation (got >%d)", *operand_count);
 			free(destination[0]);
 			free(destination[1]);
 			return FALSE; /* an error occurred */
@@ -109,8 +109,8 @@ addressing_type get_addressing_type(char *operand) {
 	if (operand[0] == '\0') return NONE_ADDR;
 	if (operand[0] == 'r' && operand[1] >= '0' && operand[1] <= '7') return REGISTER_ADDR;
 	else if (operand[0] == '#' && is_int(operand + 1)) return IMMEDIATE_ADDR;
-	else if (is_legal_label_name(operand)) return DIRECT_ADDR;
-	else if (operand[0] && operand[0] == '&' && is_legal_label_name(operand + 1)) return RELATIVE_ADDR;
+	else if (is_valid_label_name(operand)) return DIRECT_ADDR;
+	else if (operand[0] && operand[0] == '&' && is_valid_label_name(operand + 1)) return RELATIVE_ADDR;
 	else return NONE_ADDR;
 }
 
@@ -130,10 +130,12 @@ code_word *get_code_word(opcode curr_opcode, funct curr_funct, int op_count, cha
 		}
 		/* validate operand addressing */
 		if (curr_opcode == CMP_OP) {
-			is_valid = validate_op_addr(first_addressing, second_addressing, 3, 3, IMMEDIATE_ADDR, DIRECT_ADDR, REGISTER_ADDR,
+			is_valid = validate_op_addr(first_addressing, second_addressing, 3, 3, IMMEDIATE_ADDR, DIRECT_ADDR,
+			                            REGISTER_ADDR,
 			                            IMMEDIATE_ADDR, DIRECT_ADDR, REGISTER_ADDR);
 		} else if (curr_opcode == ADD_OP || curr_opcode == MOV_OP) { /* Also SUB_OP */
-			is_valid = validate_op_addr(first_addressing, second_addressing, 3, 2, IMMEDIATE_ADDR, DIRECT_ADDR, REGISTER_ADDR,
+			is_valid = validate_op_addr(first_addressing, second_addressing, 3, 2, IMMEDIATE_ADDR, DIRECT_ADDR,
+			                            REGISTER_ADDR,
 			                            DIRECT_ADDR, REGISTER_ADDR);
 		} else if (curr_opcode == LEA_OP) {
 
@@ -143,7 +145,7 @@ code_word *get_code_word(opcode curr_opcode, funct curr_funct, int op_count, cha
 	} else if (curr_opcode >= CLR_OP && curr_opcode <= PRN_OP) {
 		/* 1 operand required */
 		if (op_count != 1) {
-			if (op_count < 1) print_error("Operation requires 1 operand (got %d)",op_count);
+			if (op_count < 1) print_error("Operation requires 1 operand (got %d)", op_count);
 			return NULL;
 		}
 		/* validate operand addressing */
@@ -158,7 +160,7 @@ code_word *get_code_word(opcode curr_opcode, funct curr_funct, int op_count, cha
 	} else if (curr_opcode <= STOP_OP && curr_opcode >= RTS_OP) {
 		/* 0 operands exactly */
 		if (op_count > 0) {
-			print_error("Operation requires no operands (got %d)",op_count);
+			print_error("Operation requires no operands (got %d)", op_count);
 			return NULL;
 		}
 	}
@@ -215,7 +217,8 @@ bool validate_op_addr(addressing_type op1_addressing, addressing_type op2_addres
 	if (op1_valid_addr_count >= 4) {
 		op1_3 = va_arg(list, int);
 	}
-	for (; op1_valid_addr_count > 5; va_arg(list, int), op1_valid_addr_count--); /* Go on with stack until got all (even above limitation of 4) */
+	for (; op1_valid_addr_count > 5; va_arg(list,
+	                                        int), op1_valid_addr_count--); /* Go on with stack until got all (even above limitation of 4) */
 	/* Again for second operand by the count */
 	if (op2_valid_addr_count >= 1) {
 		op2_0 = va_arg(list, int);

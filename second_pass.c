@@ -36,6 +36,10 @@ bool process_line_spass(char *line, long *ic, machine_word **code_img, table *sy
 			MOVE_TO_NOT_WHITE(line, i)
 			token = strtok(line+i, " \n\t");
 			/* if label is already marked as entry, ignore. */
+			if (token == NULL) {
+				print_error("You have to specify label name for .entry instruction.");
+				return FALSE;
+			}
 			if (find_by_types(*symbol_table, token, 1, ENTRY_SYMBOL) == NULL) {
 				table_entry *entry;
 				token = strtok(line+i, "\n"); /*get name of label*/

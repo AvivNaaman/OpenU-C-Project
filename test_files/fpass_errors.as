@@ -13,6 +13,7 @@ CODELABEL: .data "Again!"
 .extern LONGLONGLONGLONGLONGLONGLABEL
 .extern 1nvalidLabel
 .extern Label@With4t
+.extern
 WHATEVEREXT: .string "Another definition!"
 VERY_VERY_VERY_VERY_VERY_LONG_LABEL_DEFINITION_SO_ITS_ILLEGAL: .data 0
 SOME*INVALID&CHARS%HERE: .data 5

@@ -24,7 +24,7 @@ static int curr_line;
 static bool process_file(char *filename);
 
 /**
- * Entry point - a 24bit assembler
+ * Entry point - 24bit assembler
  * Assembly language specification appears in booklet
  */
 int main(int argc, char *argv[]) {

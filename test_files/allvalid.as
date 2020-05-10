@@ -4,8 +4,9 @@ X: .string "First String!"
 label0: .data -1
 label00: .data -1, 1, -2, 78, 90, 45328, -95743
 label89: .string "H e l l o			. We like chars, so let's put some : 	"
-label1: .string "Another String...."
+.extern label1
 XYZ123XYZ: .data 0	 ,  	0 	,	 0  ,  0,	 	0, 	0 	, 	0
+.entry XYZ123XYZ
 
 ; mov 013,13
 mov #0, label0
@@ -32,7 +33,7 @@ add #3957, label00
 add #-1, r0
 add r2, r3
 add r7, label89
-add label01, label11
+add X1234YZASFJKFDSA524bsdasfjdgdaf, label11
 add label0, r6
 
 ; sub 013,13
@@ -40,11 +41,11 @@ sub #3957, label00
 sub #-1, r0
 sub r2, r3
 sub r7, label89
-sub label01, label11
+sub fasdiu3245dghfgshdsf78dhkj12345, label11
 sub label0, r6
 
 ; lea 1,13
-lea label0, label1
+lea label0, fasdiu3245dghfgshdsf78dhkj12345
 lea label11, r4
 
 ; clr 13
@@ -57,11 +58,11 @@ not X
 
 ; inc 13
 inc r7
-inc XYZ123XYZ
+inc X1234YZASFJKFDSA524bsdasfjdgdaf
 
 ; dec 13
 dec r0
-dec ALPHABETAGAMA123
+dec fasdiu3245dghfgshdsf78dhkj12345
 
 ; jmp 12
 C0: jmp label0
@@ -70,7 +71,7 @@ jmp &C0
 ; Put some data here:
 
 ALPHABETAGAMA123: .string "ALPHABETAGAMA123"
-
+.entry ALPHABETAGAMA123
 
 ; bne 12
 CCC1: bne X
@@ -96,5 +97,10 @@ stop
 
 label11: .data 9
 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX: .string " "
+.entry XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+X1234YZASFJKFDSA524bsdasfjdgdaf: .data 5
+.entry X1234YZASFJKFDSA524bsdasfjdgdaf
 label01: .data -000000, +000000, +000001, -000004
 mychars: .string "mychars!@#$%^&#*() 	\/+-=_"
+
+.extern fasdiu3245dghfgshdsf78dhkj12345

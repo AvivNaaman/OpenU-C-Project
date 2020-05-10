@@ -18,7 +18,8 @@ typedef enum booleans {
 /** Initial IC value */
 #define IC_INIT_VALUE 100
 
-
+/** Count of operand addressing types + the none one */
+#define OPERAND_ADDRESSINGS_COUNT 5
 /** Operand addressing type */
 typedef enum addressing_types {
 	/** Immediate addressing (0) */

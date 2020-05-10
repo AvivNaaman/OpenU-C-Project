@@ -25,6 +25,7 @@ static bool process_file(char *filename);
 
 /**
  * Entry point - a 24bit assembler
+ * Assembly language specification appears in booklet
  */
 int main(int argc, char *argv[]) {
 	int i;
@@ -41,7 +42,6 @@ int main(int argc, char *argv[]) {
 	return 0;
 }
 
-/* TODO: Free some pointer after failure! */
 static bool process_file(char *filename) {
 	/* Memory address counters */
 	long ic, dc, icf, dcf;
@@ -59,6 +59,7 @@ static bool process_file(char *filename) {
 	strcpy(input_filename, filename);
 	strcat(input_filename, ".as"); /* add file extension */
 
+	/* Open file, exit in failure */
 	file_des = fopen(input_filename, "r");
 	/* Put filename in static variables for error messaging */
 	curr_filename = input_filename;
@@ -66,6 +67,7 @@ static bool process_file(char *filename) {
 	if (file_des == NULL) {
 		/* if file couldn't be opened, write to stderr. */
 		printf("Error: file \"%s.as\" is inaccessible for reading.", filename);
+		free(input_filename); /* The only allocated space is for the full file name */
 		return FALSE;
 	}
 
@@ -80,28 +82,34 @@ static bool process_file(char *filename) {
 	for (curr_line = 1; fgets(temp_line, MAX_LINE_LENGTH, file_des) != NULL; curr_line++) {
 		is_success &= process_line_fpass(temp_line, &ic, &dc, code_img, data_img, &symbol_table);
 	}
-	if (!is_success) return FALSE; /* stop, failed */
 
-	/* Save ICF & DCF (1.18) */
-	icf = ic;
-	dcf = dc;
-	ic = 100;
-	/* Now let's add IC to each DC for data symbols in table (step 1.19) */
-	add_value_to_type(symbol_table, icf, DATA_SYMBOL);
+	/* if first pass didn't fail, start the second pass */
+	if (is_success) {
 
-	/* First pass done right. start second pass: */
-	rewind(file_des); /* Reread the file from the beginning */
-	for (curr_line = 1; !feof(file_des); curr_line++) {
-		int i = 0;
-		fgets(temp_line, MAX_LINE_LENGTH, file_des); /* Get line */
-		MOVE_TO_NOT_WHITE(temp_line, i)
-		if (code_img[ic - 100] != NULL || temp_line[i] == '.')
-			is_success &= process_line_spass(temp_line, &ic, code_img, &symbol_table);
+		/* Save ICF & DCF (1.18) */
+		icf = ic;
+		dcf = dc;
+		ic = 100;
+		/* Now let's add IC to each DC for data symbols in table (step 1.19) */
+		add_value_to_type(symbol_table, icf, DATA_SYMBOL);
+
+		/* First pass done right. start second pass: */
+		rewind(file_des); /* Reread the file from the beginning */
+		for (curr_line = 1; !feof(file_des); curr_line++) {
+			int i = 0;
+			fgets(temp_line, MAX_LINE_LENGTH, file_des); /* Get line */
+			MOVE_TO_NOT_WHITE(temp_line, i)
+			if (code_img[ic - 100] != NULL || temp_line[i] == '.')
+				is_success &= process_line_spass(temp_line, &ic, code_img, &symbol_table);
+		}
+		if (!is_success) return FALSE; /* stop, failed */
 	}
-	if (!is_success) return FALSE; /* stop, failed */
 
-	/* Everything was done. Write to *filename.ob/.ext/.ent */
-	is_success = write_output_files(code_img, data_img, icf, dcf, filename, symbol_table);
+	/* Write files if second pass has no errors */
+	if (is_success) {
+		/* Everything was done. Write to *filename.ob/.ext/.ent */
+		is_success = write_output_files(code_img, data_img, icf, dcf, filename, symbol_table);
+	}
 
 	/* Now let's free some pointer: */
 	/* current file name */
@@ -110,6 +118,8 @@ static bool process_file(char *filename) {
 	free_table(symbol_table);
 	/* Free code & data buffer contents */
 	free_code_image(code_img, icf);
+
+	/* return whether every assembling step succeeded */
 	return is_success;
 }
 

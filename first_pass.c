@@ -203,5 +203,8 @@ bool process_code(char *line, int i, long *ic, machine_word **code_img) {
 	/* Add the final length (of code word + data words) to the code word struct: */
 	code_img[ic_before - IC_INIT_VALUE]->length = (*ic) - ic_before;
 
+	free(operands[0]);
+	free(operands[1]);
+
 	return TRUE; /* No errors */
 }

@@ -6,7 +6,6 @@
 #include "table.h"
 #include <stdarg.h>
 
-/* TODO: Allow multiple same keys */
 void add_table_item(table *tab, char *key, long value, symbol_type type) {
 	char *temp;
 	table prev_entry, curr_entry, new_entry;

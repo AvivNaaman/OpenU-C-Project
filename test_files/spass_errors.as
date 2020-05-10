@@ -36,3 +36,8 @@ prn X
 .entry
 .entry 0
 .entry NULL
+
+; Assembler will ignore
+EMPTYLABEL:
+
+jmp &EMPTYLABEL

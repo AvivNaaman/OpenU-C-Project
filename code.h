@@ -2,7 +2,7 @@
 #ifndef _CODE_H
 #define _CODE_H
 #include "table.h"
-#include "constants.h"
+#include "globals.h"
 
 /**
  * Detects the opcode and the funct of a command by it's name

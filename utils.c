@@ -6,32 +6,36 @@
 #include "utils.h"
 #include "assembler.h"
 #include "code.h" /* for checking reserved words */
-
-/* TODO: Refactor! */
-/* Returns whether an error ocurred during the try of parsing the symbol. puts the symbol into the second buffer. */
+/* TODO: Make it less stupid */
+/**
+ * Tries to copy the label from the given string into the symbol_dest.
+ * @param line
+ * @param symbol_dest
+ * @return FALSE if failed, TRUE if succeeded or label not found.
+ */
 bool parse_symbol(char *line, char *symbol_dest) {
 	int j, i;
 	bool isvalid; /* Indexes + can it be a valid label */
 	i = j = 0;
 
-	isvalid = TRUE;
+	isvalid = FALSE;
 	/* Skip white chars at the beginning TODO: Check if necessary */
 	MOVE_TO_NOT_WHITE(line, i)
 
 	/* Label should start with alpha char */
 	if (!isalpha(line[i])) {
-		isvalid = FALSE;
+		isvalid = TRUE;
 	}
 	/* Let's allocate some memory to the string needed to be returned */
 	for (; line[i] && line[i] != ':' && i <= 100; i++, j++) {
 		symbol_dest[j] = line[i]; /* Go on until empty char OR symbol */
 		/*max length of label is 32 characters*/
 		if (j == 31) {
-			isvalid = FALSE;
+			isvalid = TRUE;
 		}
 		/* Label must be alphanumeric! */
 		if (!isalnum(line[i])) {
-			isvalid = FALSE;
+			isvalid = TRUE;
 		}
 	}
 	symbol_dest[j] = '\0'; /* End of string */
@@ -42,12 +46,12 @@ bool parse_symbol(char *line, char *symbol_dest) {
 			print_error(
 					"Label must start with a letter, contain letters and digits only, do not exceed thirty-two characters long and end with ':'.");
 			symbol_dest[0] = '\0';
-			return TRUE; /* No valid symbol, and no try to define one */
+			return FALSE; /* No valid symbol, and no try to define one */
 		}
-		return FALSE;
+		return TRUE;
 	}
 	symbol_dest[0] = '\0';
-	return FALSE; /* There was no error */
+	return TRUE; /* There was no error */
 }
 
 
@@ -108,7 +112,6 @@ bool is_reserved_word(char *name) {
 	return FALSE;
 }
 
-/* Prints a detailed error message to the user, including file, line, and message. */
 int print_error(char *message, ...) {
 	int result;
 	va_list arglist; /* for formatting */

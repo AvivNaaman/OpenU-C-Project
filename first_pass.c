@@ -1,5 +1,5 @@
 /* Contains major function that are related to the first pass */
-#include "constants.h"
+#include "globals.h"
 #include "code.h"
 #include "utils.h"
 #include "instructions.h"
@@ -47,17 +47,10 @@ bool process_line_fpass(char *line, long *IC, long *DC, machine_word **code_img,
 
 	/* Check if symbol (*:), stages 1.3-1.5 */
 	/* if tried to define label, but it's invalid, return that an error occurred. */
-	/* TODO: Remove double validation here \/ */
 	if (parse_symbol(line, symbol)) {
 		return FALSE;
 	}
 
-	/* if illegal name */
-	if (!is_valid_label_name(symbol) && symbol[0]) {
-		print_error("Illegal label name %s", symbol);
-		return FALSE;
-	}
-	/* try using strtok instead... */
 	if (symbol[0] != '\0') {
 		for (; line[i] != ':'; i++); /* if symbol detected, start analyzing from it's deceleration end */
 		i++;
@@ -76,8 +69,9 @@ bool process_line_fpass(char *line, long *IC, long *DC, machine_word **code_img,
 
 	MOVE_TO_NOT_WHITE(line, i)
 
-	/* is it's an instruction */
+	/* if it's an instruction */
 	if (instruction != NONE_INST) {
+
 		/* if .string or .data, and symbol defined, put it into the symbol table */
 		if ((instruction == DATA_INST || instruction == STRING_INST) && symbol[0] != '\0')
 			/* is data or string, add DC with the symbol to the table as data */
@@ -90,6 +84,7 @@ bool process_line_fpass(char *line, long *IC, long *DC, machine_word **code_img,
 		else if (instruction == DATA_INST)
 			return process_data_instruction(line, i, data_img, DC);
 			/* if .extern, add to externals symbol table */
+
 		else if (instruction == EXTERN_INST) {
 			/* if label is defined before (e.g. LABEL: .extern something) */
 			if (symbol[0] != '\0') {
@@ -114,16 +109,15 @@ bool process_line_fpass(char *line, long *IC, long *DC, machine_word **code_img,
 			return FALSE;
 		}
 		/* .entry is handled in second pass! */
-	} /* end if (instruction != NONE) */
-		/* not instruction=>it's a command! */
+	}
+		/* else - not an instruction=>it's a command! */
 	else {
 		/* if symbol defined, add it to the table */
 		if (symbol[0] != '\0')
 			add_table_item(symbol_table, symbol, *IC, CODE_SYMBOL);
-		/* Analyze code */
+		/* Return the result of trying to process the current line as code, and putting it into the code image arrays */
 		return process_code(line, i, IC, code_img);
 	}
-	return TRUE;
 }
 
 /**

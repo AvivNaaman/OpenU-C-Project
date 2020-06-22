@@ -2,7 +2,7 @@
 #ifndef _UTILS_H
 #define _UTILS_H
 
-#include "constants.h"
+#include "globals.h"
 
 
 /** moves the index to the next place in string where the char isn't white */

@@ -19,10 +19,9 @@ bool process_line_spass(char *line, long *ic, machine_word **code_img, table *sy
 	char *token;
 	long i = 0;
 	MOVE_TO_NOT_WHITE(line,i)
-	/* TODO: @AvivNaaman: This code is nice for the first pass. use it! */
 	if(line[i]==';'||strcmp("\n",line)==0) return TRUE;
 	indexOfColon = strchr(line, ':');
-	/*check for label */
+	/* check for label */
 	if (indexOfColon != NULL) {
 		i = indexOfColon - line;
 		i++;

@@ -1,7 +1,7 @@
 
 #ifndef _SECOND_PASS_H
 #define _SECOND_PASS_H
-#include "constants.h"
+#include "globals.h"
 #include "table.h"
 
 /**

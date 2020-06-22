@@ -28,10 +28,7 @@ instruction find_instruction_from_index(char *string, int *index) {
 }
 
 /* Instruction line processing helper functions */
-/*
- * Processes a string instruction from index. encode into data image and change dc.
- * Returns whether encountered an error.
- */
+
 bool process_string_instruction(char *line, int index, long *data_img, long *dc) {
 	long data;
 	MOVE_TO_NOT_WHITE(line, index)
@@ -60,9 +57,6 @@ bool process_string_instruction(char *line, int index, long *data_img, long *dc)
 	return TRUE;
 }
 
-/*
- * Parses a .data instruction. copies each number value to data_img by dc position, and returns the amount of processed data.
- */
 bool process_data_instruction(char *line, int index, long *data_img, long *dc) {
 	char temp[80], *temp_ptr;
 	long value;

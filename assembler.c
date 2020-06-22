@@ -57,7 +57,7 @@ static bool process_file(char *filename) {
 	/* We get just the name, without the extension, so we have to add it (.as+'\0'): */
 	input_filename = malloc_with_check(strlen(filename) + (4 * sizeof(char)));
 	strcpy(input_filename, filename);
-	strcat(input_filename, ".as"); /* add file extension */
+	strcat(input_filename, ".as");
 
 	/* Open file, exit in failure */
 	file_des = fopen(input_filename, "r");
@@ -102,13 +102,12 @@ static bool process_file(char *filename) {
 			if (code_img[ic - 100] != NULL || temp_line[i] == '.')
 				is_success &= process_line_spass(temp_line, &ic, code_img, &symbol_table);
 		}
-		if (!is_success) return FALSE; /* stop, failed */
-	}
 
-	/* Write files if second pass has no errors */
-	if (is_success) {
-		/* Everything was done. Write to *filename.ob/.ext/.ent */
-		is_success = write_output_files(code_img, data_img, icf, dcf, filename, symbol_table);
+		/* Write files if second pass succeeded */
+		if (is_success) {
+			/* Everything was done. Write to *filename.ob/.ext/.ent */
+			is_success = write_output_files(code_img, data_img, icf, dcf, filename, symbol_table);
+		}
 	}
 
 	/* Now let's free some pointer: */
@@ -119,7 +118,7 @@ static bool process_file(char *filename) {
 	/* Free code & data buffer contents */
 	free_code_image(code_img, icf);
 
-	/* return whether every assembling step succeeded */
+	/* return whether every assembling succeeded */
 	return is_success;
 }
 

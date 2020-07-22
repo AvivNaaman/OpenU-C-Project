@@ -40,5 +40,6 @@ utils.o: utils.c instructions.h $(GLOBAL_DEPS)
 writefiles.o: writefiles.c writefiles.h $(GLOBAL_DEPS)
 	$(CC) -c writefiles.c $(CFLAGS) -o $@
 
+# Clean Target (remove leftovers)
 clean:
-	rm -rf *.o assembler
+	rm -rf *.o

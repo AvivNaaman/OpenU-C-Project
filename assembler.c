@@ -34,38 +34,30 @@ int main(int argc, char *argv[]) {
 
 static bool process_file(char *filename) {
 	/* Memory address counters */
-	long ic, dc, icf, dcf;
-	bool is_success; /* is succeeded so far */
+	long ic = IC_INIT_VALUE, dc = 0, icf, dcf;
+	bool is_success = TRUE; /* is succeeded so far */
 	char *input_filename;
 	char temp_line[MAX_LINE_LENGTH + 1]; /* temporary string for storing line, read from file */
 	FILE *file_des; /* Current assembly file descriptor to process */
 	long data_img[CODE_ARR_IMG_LENGTH]; /* Contains an image of the machine code */
 	machine_word *code_img[CODE_ARR_IMG_LENGTH];
-	/* Out symbol table */
+	/* Our symbol table */
 	table symbol_table = NULL;
 	line_info curr_line_info;
 
-	/* We get just the name, without the extension, so we have to add it (.as+'\0'): */
+	/* Concat extensionless filename with .as extension */
 	input_filename = malloc_with_check(strlen(filename) + (4 * sizeof(char)));
 	strcpy(input_filename, filename);
 	strcat(input_filename, ".as");
 
-	/* Open file, exit in failure */
+	/* Open file, skip on failure */
 	file_des = fopen(input_filename, "r");
-	/* Put filename in static variables for error messaging */
-	/* Make sure opening the file succeeded */
 	if (file_des == NULL) {
 		/* if file couldn't be opened, write to stderr. */
 		printf("Error: file \"%s.as\" is inaccessible for reading. skipping it.\n", filename);
 		free(input_filename); /* The only allocated space is for the full file name */
 		return FALSE;
 	}
-
-
-	/* Initialize  */
-	is_success = TRUE;
-	ic = IC_INIT_VALUE;
-	dc = 0;
 
 	/* start first pass: */
 	curr_line_info.file_name = input_filename;
@@ -81,17 +73,19 @@ static bool process_file(char *filename) {
 		/* Save ICF & DCF (1.18) */
 		icf = ic;
 		dcf = dc;
-		ic = 100;
-		/* Now let's add IC to each DC for data symbols in table (step 1.19) */
+		ic = IC_INIT_VALUE;
+
+		/* Now let's add IC to each DC for each of the data symbols in table (step 1.19) */
 		add_value_to_type(symbol_table, icf, DATA_SYMBOL);
 
 		/* First pass done right. start second pass: */
-		rewind(file_des); /* Reread the file from the beginning */
+		rewind(file_des); /* Start from beginning of file again */
+
 		for (curr_line_info.line_number = 1; !feof(file_des); curr_line_info.line_number++) {
 			int i = 0;
 			fgets(temp_line, MAX_LINE_LENGTH, file_des); /* Get line */
 			MOVE_TO_NOT_WHITE(temp_line, i)
-			if (code_img[ic - 100] != NULL || temp_line[i] == '.')
+			if (code_img[ic - IC_INIT_VALUE] != NULL || temp_line[i] == '.')
 				is_success &= process_line_spass(curr_line_info, &ic, code_img, &symbol_table);
 		}
 

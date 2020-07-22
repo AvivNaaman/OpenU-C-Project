@@ -8,20 +8,20 @@
 
 
 /**
- * Returns whether the current addressing types of the operands are valid by the valid types, provided in the variable param.
- * @param op1_addressing The addressing type of the first operand
- * @param op2_addressing The addressing type of the second operand
- * @param op1_valid_addr_count The count of the valid addressing types for the first operand, specified afterwards.
- * @param op2_valid_addr_count The count of the valid addressing types for the second operand, specified afterwards.
- * @param ... The valid addressing types (as enum addressing_type) for the operands. The valid for the first, followed by the valid for the second.
- * @return Whether the addressing types are valid as specified
+ * Validates the operands addressing types, and prints error message if needed.
+ * @param line The current line information
+ * @param op1_addressing The current addressing of the first operand
+ * @param op2_addressing The current addressing of the second operand
+ * @param op1_valid_addr_count The count of valid addressing types for the first operand
+ * @param op2_valid_addr_count The count of valid addressing types for the first operand
+ * @param ... The valid addressing types for first & second operand, respectively
+ * @return Whether addressign types are valid
  */
 static bool validate_op_addr(line_info line, addressing_type op1_addressing, addressing_type op2_addressing,
 		int op1_valid_addr_count, int op2_valid_addr_count,...);
 
-/* TODO: Check if possible to make it nicer to read */
+
 bool analyze_operands(line_info line, int i, char **destination, int *operand_count, char *c) {
-/* Make some space to the operand strings */
 	int j;
 	*operand_count = 0;
 	MOVE_TO_NOT_WHITE(line.content, i)
@@ -29,10 +29,11 @@ bool analyze_operands(line_info line, int i, char **destination, int *operand_co
 		print_error(line, "Unexpected comma after command.");
 		return FALSE; /* an error occurred */
 	}
+	/* allocate space to save the processes operands */
 	destination[0] = malloc_with_check(MAX_LINE_LENGTH);
 	destination[1] = malloc_with_check(MAX_LINE_LENGTH);
 
-	/* until no too many operands (max of 2) and it's not the end of the line */
+	/* Until noy too many operands (max of 2) and it's not the end of the line */
 	for (*operand_count = 0; line.content[i] != EOF && line.content[i] != '\n' && line.content[i];) {
 		if (*operand_count == 2) /* =We already got 2 operands in, We're going ot get the third! */ {
 			print_error(line, "Too many operands for operation (got >%d)", *operand_count);
@@ -110,7 +111,7 @@ void get_opcode_func(char *cmd, opcode *opcode_out, funct *funct_out) {
 	struct cmd_lookup_element *e;
 	*opcode_out = NONE_OP;
 	*funct_out = NONE_FUNCT;
-	/* iterate over the lookup table, if cmds are same return the opcode of found. */
+	/* iterate through the lookup table, if commands are same return the opcode of found. */
 	for (e = lookup_table; e->cmd != NULL; e++) {
 		if (strcmp(e->cmd, cmd) == 0) {
 			*opcode_out = e->op;

@@ -145,4 +145,14 @@ typedef enum instruction {
 	NONE_INST, /* no instruction found */
 	ERROR_INST /* parsing error (syntax-level) */
 } instruction;
+
+/**
+ * Represents a single source line, including it's details
+ */
+typedef struct line_info {
+	long line_number;
+	char *file_name;
+	char *content;
+} line_info;
+
 #endif

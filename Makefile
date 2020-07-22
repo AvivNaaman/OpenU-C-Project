@@ -9,7 +9,7 @@ assembler: $(EXE_DEPS) $(GLOBAL_DEPS)
 	$(CC) -g $(EXE_DEPS) $(CFLAGS) -o $@
 
 ## Main:
-assembler.o: assembler.c assembler.h $(GLOBAL_DEPS)
+assembler.o: assembler.c $(GLOBAL_DEPS)
 	$(CC) -c assembler.c $(CFLAGS) -o $@
 
 ## Code helper functions:

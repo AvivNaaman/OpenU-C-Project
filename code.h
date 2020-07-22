@@ -27,7 +27,7 @@ addressing_type get_addressing_type(char *operand);
  * @param operands a 2-cell array of pointers to first and second operands.
  * @return A pointer to code word struct, which represents the code. if validation fails, returns NULL.
  */
-code_word *get_code_word(opcode curr_opcode, funct curr_funct, int op_count, char *operands[2]);
+code_word *get_code_word(line_info line, opcode curr_opcode, funct curr_funct, int op_count, char *operands[2]);
 
 /**
  * Returns the register enum value by it's name
@@ -55,6 +55,6 @@ data_word *build_data_word(addressing_type addressing, long data, bool is_extern
  * @param command The current command string
  * @return Whether analyzing succeeded
  */
-bool analyze_operands(char *line, int i, char **destination, int *operand_count, char *command);
+bool analyze_operands(line_info line, int i, char **destination, int *operand_count, char *command);
 
 #endif

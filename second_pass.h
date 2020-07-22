@@ -12,7 +12,7 @@
  * @param symbol_table The symbol table
  * @return Whether succeeded
  */
-bool process_line_spass(char *line, long *ic, machine_word **code_img, table *symbol_table);
+bool process_line_spass(line_info line, long *ic, machine_word **code_img, table *symbol_table);
 
 /**
  * Adds the symbol-dependent data words by the code line.
@@ -22,6 +22,6 @@ bool process_line_spass(char *line, long *ic, machine_word **code_img, table *sy
  * @param symbol_table The symbol table
  * @return Whether succeeded
  */
-bool add_symbols_to_code(char *line, long *ic, machine_word **code_img, table *symbol_table);
+bool add_symbols_to_code(line_info line, long *ic, machine_word **code_img, table *symbol_table);
 
 #endif

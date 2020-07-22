@@ -11,7 +11,7 @@
         ;
 
 /* TODO: Refactor */
-bool parse_symbol(char *line, char *symbol_dest);
+bool parse_symbol(line_info line, char *symbol_dest);
 
 /**
  * Returns whether the string is a valid 21-bit integer
@@ -51,7 +51,7 @@ bool is_reserved_word(char *name);
  * @param ... The arguments to format into the message
  * @return printf result of the message
  */
-int print_error(char *message,...);
+int print_error(line_info line, char *message, ...);
 
 /* Frees all the allocated memory inside the code image */
 void free_code_image(machine_word **code_image, long fic);

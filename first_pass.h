@@ -15,7 +15,7 @@
  * @param data_img The data image array
  * @return Whether succeeded.
  */
-bool process_line_fpass(char *line, long *IC, long *DC, machine_word **code_img, long *data_img,
+bool process_line_fpass(line_info line, long *IC, long *DC, machine_word **code_img, long *data_img,
                         table *symbol_table);
 
 #endif

@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include "assembler.h"
 #include <string.h>
 #include <stdlib.h>
 #include "writefiles.h"
@@ -8,17 +7,8 @@
 #include "second_pass.h"
 
 /**
- * Contains the current file name that is being processed (for error printing)
- */
-static char *curr_filename;
-/**
- * Contains the current source line that is being processed (for error printing)
- */
-static int curr_line;
-
-/**
  * Processes a single assembly source file
- * @param filename
+ * @param filename The filename, without it's extension
  * @return Whether succeeded
  */
 static bool process_file(char *filename);
@@ -53,6 +43,7 @@ static bool process_file(char *filename) {
 	machine_word *code_img[CODE_ARR_IMG_LENGTH];
 	/* Out symbol table */
 	table symbol_table = NULL;
+	line_info curr_line_info;
 
 	/* We get just the name, without the extension, so we have to add it (.as+'\0'): */
 	input_filename = malloc_with_check(strlen(filename) + (4 * sizeof(char)));
@@ -62,11 +53,10 @@ static bool process_file(char *filename) {
 	/* Open file, exit in failure */
 	file_des = fopen(input_filename, "r");
 	/* Put filename in static variables for error messaging */
-	curr_filename = input_filename;
 	/* Make sure opening the file succeeded */
 	if (file_des == NULL) {
 		/* if file couldn't be opened, write to stderr. */
-		printf("Error: file \"%s.as\" is inaccessible for reading.", filename);
+		printf("Error: file \"%s.as\" is inaccessible for reading. skipping it.\n", filename);
 		free(input_filename); /* The only allocated space is for the full file name */
 		return FALSE;
 	}
@@ -78,9 +68,11 @@ static bool process_file(char *filename) {
 	dc = 0;
 
 	/* start first pass: */
+	curr_line_info.file_name = input_filename;
+	curr_line_info.content = temp_line; /* We use temp_line to read from the file, but it stays at same location. */
 	/* Read line - stop if read failed (when NULL returned) - usually when EOF. increase line counter for error printing. */
-	for (curr_line = 1; fgets(temp_line, MAX_LINE_LENGTH, file_des) != NULL; curr_line++) {
-		is_success &= process_line_fpass(temp_line, &ic, &dc, code_img, data_img, &symbol_table);
+	for (curr_line_info.line_number = 1; fgets(temp_line, MAX_LINE_LENGTH, file_des) != NULL; curr_line_info.line_number++) {
+		is_success &= process_line_fpass(curr_line_info, &ic, &dc, code_img, data_img, &symbol_table);
 	}
 
 	/* if first pass didn't fail, start the second pass */
@@ -95,12 +87,12 @@ static bool process_file(char *filename) {
 
 		/* First pass done right. start second pass: */
 		rewind(file_des); /* Reread the file from the beginning */
-		for (curr_line = 1; !feof(file_des); curr_line++) {
+		for (curr_line_info.line_number = 1; !feof(file_des); curr_line_info.line_number++) {
 			int i = 0;
 			fgets(temp_line, MAX_LINE_LENGTH, file_des); /* Get line */
 			MOVE_TO_NOT_WHITE(temp_line, i)
 			if (code_img[ic - 100] != NULL || temp_line[i] == '.')
-				is_success &= process_line_spass(temp_line, &ic, code_img, &symbol_table);
+				is_success &= process_line_spass(curr_line_info, &ic, code_img, &symbol_table);
 		}
 
 		/* Write files if second pass succeeded */
@@ -120,12 +112,4 @@ static bool process_file(char *filename) {
 
 	/* return whether every assembling succeeded */
 	return is_success;
-}
-
-long get_curr_line() {
-	return curr_line;
-}
-
-char *get_curr_filename() {
-	return curr_filename;
 }

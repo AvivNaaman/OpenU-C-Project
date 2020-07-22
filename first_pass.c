@@ -19,7 +19,7 @@
  * @param code_img The code image array
  * @return Whether succeeded or notssss
  */
-static bool process_code(char *line, int i, long *ic, machine_word **code_img);
+static bool process_code(line_info line, int i, long *ic, machine_word **code_img);
 
 /**
  * Processes a single line in the first pass
@@ -33,7 +33,7 @@ static bool process_code(char *line, int i, long *ic, machine_word **code_img);
  * @param data_img The data image array
  * @return Whether succeeded.
  */
-bool process_line_fpass(char *line, long *IC, long *DC, machine_word **code_img, long *data_img,
+bool process_line_fpass(line_info line, long *IC, long *DC, machine_word **code_img, long *data_img,
                         table *symbol_table) {
 	int i, j;
 	char symbol[MAX_LINE_LENGTH];
@@ -41,8 +41,8 @@ bool process_line_fpass(char *line, long *IC, long *DC, machine_word **code_img,
 
 	i = 0;
 
-	MOVE_TO_NOT_WHITE(line, i) /* Move to next non-white char */
-	if (line[i] == '\n' || line[i] == EOF || line[i] == ';')
+	MOVE_TO_NOT_WHITE(line.content, i) /* Move to next non-white char */
+	if (line.content[i] == '\n' || line.content[i] == EOF || line.content[i] == ';')
 		return TRUE; /* Empty/Comment line - no errors found (of course) */
 
 	/* Check if symbol (*:), stages 1.3-1.5 */
@@ -54,32 +54,32 @@ bool process_line_fpass(char *line, long *IC, long *DC, machine_word **code_img,
 
 	/* if illegal name */
 	if (!is_valid_label_name(symbol) && symbol[0]) {
-		print_error("Illegal label name %s", symbol);
+		print_error(line, "Illegal label name %s", symbol);
 		return FALSE;
 	}
 	/* try using strtok instead... */
 	if (symbol[0] != '\0') {
-		for (; line[i] != ':'; i++); /* if symbol detected, start analyzing from it's deceleration end */
+		for (; line.content[i] != ':'; i++); /* if symbol detected, start analyzing from it's deceleration end */
 		i++;
 	}
-	MOVE_TO_NOT_WHITE(line, i) /* Move to next not-white char */
-	if (line[i] == '\n') return TRUE;
+	MOVE_TO_NOT_WHITE(line.content, i) /* Move to next not-white char */
+	if (line.content[i] == '\n') return TRUE;
 
 	/* if already defined as data/external/code and not empty line */
 	if (find_by_types(*symbol_table, symbol, 3, EXTERNAL_SYMBOL, DATA_SYMBOL, CODE_SYMBOL)) {
-		print_error("Symbol %s is already defined.", symbol);
+		print_error(line, "Symbol %s is already defined.", symbol);
 		return FALSE;
 	}
 
 	/* Check if it's an instruction (starting with '.') */
-	instruction = find_instruction_from_index(line, &i);
+	instruction = find_instruction_from_index(line.content, &i);
 
 	if (instruction == ERROR_INST) { /* is syntax error found (usually . with unrecognized instruction) */
-		print_error("Invalid instruction name");
+		print_error(line, "Invalid instruction name");
 		return FALSE;
 	}
 
-	MOVE_TO_NOT_WHITE(line, i)
+	MOVE_TO_NOT_WHITE(line.content, i)
 
 	/* is it's an instruction */
 	if (instruction != NONE_INST) {
@@ -98,24 +98,24 @@ bool process_line_fpass(char *line, long *IC, long *DC, machine_word **code_img,
 		else if (instruction == EXTERN_INST) {
 			/* if label is defined before (e.g. LABEL: .extern something) */
 			if (symbol[0] != '\0') {
-				print_error("Can't define a label to an extern instruction.");
+				print_error(line, "Can't define a label to an extern instruction.");
 			}
-			MOVE_TO_NOT_WHITE(line, i)
+			MOVE_TO_NOT_WHITE(line.content, i)
 			/* if external symbol detected, start analyzing from it's deceleration end */
-			for (j = 0; line[i] && line[i] != '\n' && line[i] != '\t' && line[i] != ' ' && line[i] != EOF; i++, j++) {
-				symbol[j] = line[i];
+			for (j = 0; line.content[i] && line.content[i] != '\n' && line.content[i] != '\t' && line.content[i] != ' ' && line.content[i] != EOF; i++, j++) {
+				symbol[j] = line.content[i];
 			}
 			symbol[j] = 0;
 			/* If invalid label name, linkage will */
 			if (!is_valid_label_name(symbol)) {
-				print_error("Invalid label name %s", symbol);
+				print_error(line, "Invalid label name %s", symbol);
 				return TRUE;
 			}
 			add_table_item(symbol_table, symbol, 0, EXTERNAL_SYMBOL); /* Extern value is defaulted to 0 */
 		}
 			/* if entry and symbol defined, print error */
 		else if (instruction == ENTRY_INST && symbol[0] != '\0') {
-			print_error("Can't define a label to an entry instruction.");
+			print_error(line, "Can't define a label to an entry instruction.");
 			return FALSE;
 		}
 		/* .entry is handled in second pass! */
@@ -150,7 +150,7 @@ static void build_extra_codeword_fpass(machine_word **code_img, long *ic, char *
  * @param code_img The code image array
  * @return Whether succeeded or notssss
  */
-static bool process_code(char *line, int i, long *ic, machine_word **code_img) {
+static bool process_code(line_info line, int i, long *ic, machine_word **code_img) {
 	char operation[8]; /* stores the string of the current code instruction */
 	char *operands[2]; /* 2 strings, each for operand */
 	opcode curr_opcode; /* the current opcode and funct values */
@@ -160,18 +160,18 @@ static bool process_code(char *line, int i, long *ic, machine_word **code_img) {
 	int j, operand_count;
 	machine_word *word_to_write;
 	/* Skip white chars */
-	MOVE_TO_NOT_WHITE(line, i)
+	MOVE_TO_NOT_WHITE(line.content, i)
 
 	/* Until white char, end of line, or too big instruction, copy it: */
-	for (j = 0; line[i] && line[i] != '\t' && line[i] != ' ' && line[i] != '\n' && line[i] != EOF && j < 6; i++, j++) {
-		operation[j] = line[i];
+	for (j = 0; line.content[i] && line.content[i] != '\t' && line.content[i] != ' ' && line.content[i] != '\n' && line.content[i] != EOF && j < 6; i++, j++) {
+		operation[j] = line.content[i];
 	}
 	operation[j] = '\0'; /* End of string */
 	/* Get opcode & funct by command name into curr_opcode/curr_funct */
 	get_opcode_func(operation, &curr_opcode, &curr_funct);
 	/* If invalid operation (opcode is NONE_OP=-1), print and skip processing the line. */
 	if (curr_opcode == NONE_OP) {
-		print_error("Unrecognized instruction: %s.", operation);
+		print_error(line, "Unrecognized instruction: %s.", operation);
 		return FALSE; /* an error occurred */
 	}
 
@@ -179,7 +179,7 @@ static bool process_code(char *line, int i, long *ic, machine_word **code_img) {
 	if (!analyze_operands(line, i, operands, &operand_count, operation)) return FALSE; /* if error, return error */
 
 	/* Build code word struct to store in code image array */
-	if ((codeword = get_code_word(curr_opcode, curr_funct, operand_count, operands)) == NULL) return FALSE;
+	if ((codeword = get_code_word(line, curr_opcode, curr_funct, operand_count, operands)) == NULL) return FALSE;
 
 	/* ic in position of new code word */
 	ic_before = *ic;

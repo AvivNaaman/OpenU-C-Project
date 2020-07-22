@@ -4,42 +4,41 @@
 #include <string.h>
 #include <stdarg.h>
 #include "utils.h"
-#include "assembler.h"
 #include "code.h" /* for checking reserved words */
 
 /* TODO: Refactor! */
 /* Returns whether an error ocurred during the try of parsing the symbol. puts the symbol into the second buffer. */
-bool parse_symbol(char *line, char *symbol_dest) {
+bool parse_symbol(line_info line, char *symbol_dest) {
 	int j, i;
 	bool isvalid; /* Indexes + can it be a valid label */
 	i = j = 0;
 
 	isvalid = TRUE;
 	/* Skip white chars at the beginning TODO: Check if necessary */
-	MOVE_TO_NOT_WHITE(line, i)
+	MOVE_TO_NOT_WHITE(line.content, i)
 
 	/* Label should start with alpha char */
-	if (!isalpha(line[i])) {
+	if (!isalpha(line.content[i])) {
 		isvalid = FALSE;
 	}
 	/* Let's allocate some memory to the string needed to be returned */
-	for (; line[i] && line[i] != ':' && i <= 100; i++, j++) {
-		symbol_dest[j] = line[i]; /* Go on until empty char OR symbol */
+	for (; line.content[i] && line.content[i] != ':' && i <= 100; i++, j++) {
+		symbol_dest[j] = line.content[i]; /* Go on until empty char OR symbol */
 		/*max length of label is 32 characters*/
 		if (j == 31) {
 			isvalid = FALSE;
 		}
 		/* Label must be alphanumeric! */
-		if (!isalnum(line[i])) {
+		if (!isalnum(line.content[i])) {
 			isvalid = FALSE;
 		}
 	}
 	symbol_dest[j] = '\0'; /* End of string */
 
 	/* if it was a try to define label, print errors if needed. */
-	if (line[i] == ':') {
+	if (line.content[i] == ':') {
 		if (!isvalid) {
-			print_error(
+			print_error(line,
 					"Label must start with a letter, contain letters and digits only, do not exceed thirty-two characters long and end with ':'.");
 			symbol_dest[0] = '\0';
 			return TRUE; /* No valid symbol, and no try to define one */
@@ -66,7 +65,7 @@ bool is_int(char *string) {
 void *malloc_with_check(long size) {
 	void *ptr = malloc(size);
 	if (ptr == NULL) {
-		print_error("Memory allocation failed");
+		printf("Error: Fatal: Memory allocation failed.");
 		exit(1);
 	}
 	return ptr;
@@ -109,11 +108,11 @@ bool is_reserved_word(char *name) {
 }
 
 /* Prints a detailed error message to the user, including file, line, and message. */
-int print_error(char *message, ...) {
+int print_error(line_info line, char *message, ...) {
 	int result;
 	va_list arglist; /* for formatting */
 	/* Print file+line */
-	printf("Error: In file %s:%ld: ", get_curr_filename(), get_curr_line());
+	printf("Error: In file %s:%ld: ", line.file_name, line.line_number);
 	/* use vprintf to call printf from variable argument function (from stdio.h) with message + format */
 	va_start(arglist, message);
 	result = vprintf(message, arglist);

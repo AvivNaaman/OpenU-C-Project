@@ -18,7 +18,7 @@ instruction find_instruction_from_index(char *string, int *index);
  * @param dc The current data counter
  * @return Whether succeeded
  */
-bool process_string_instruction(char *line, int index, long *data_img, long *dc);
+bool process_string_instruction(line_info line, int index, long *data_img, long *dc);
 
 /**
  * Processes a .data instruction from index of source line.
@@ -28,6 +28,6 @@ bool process_string_instruction(char *line, int index, long *data_img, long *dc)
  * @param dc The current data counter
  * @return Whether succeeded
  */
-bool process_data_instruction(char *line, int index, long *data_img, long *dc);
+bool process_data_instruction(line_info line, int index, long *data_img, long *dc);
 
 #endif

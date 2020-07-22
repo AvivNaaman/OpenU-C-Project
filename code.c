@@ -220,61 +220,49 @@ code_word *get_code_word(line_info line, opcode curr_opcode, funct curr_funct, i
 /* TODO(?): Refactor to using an array instead of many many single vars */
 static bool validate_op_addr(line_info line, addressing_type op1_addressing, addressing_type op2_addressing, int op1_valid_addr_count,
                       int op2_valid_addr_count, ...) {
+	int i;
 	bool is_valid;
 	va_list list;
-	addressing_type op1_0, op1_1, op1_2, op1_3, op2_0, op2_1, op2_2, op2_3; /* valid addressing types for each operand */
-	op1_0 = op1_1 = op1_2 = op1_3 = op2_0 = op2_1 = op2_2 = op2_3 = NONE_ADDR;
+
+	addressing_type op1_valids[4], op2_valids[4];
+	memset(op1_valids, NONE_ADDR, sizeof(op1_valids));
+	memset(op2_valids, NONE_ADDR, sizeof(op2_valids));
+
 	va_start(list, op2_valid_addr_count);
-	/* Put the valid addressing types in the op[1|2]_[0|1|2] varriables, using va_arg (we user the count operand to determine how many arguments are sent */
-	if (op1_valid_addr_count >= 1) {
-		op1_0 = va_arg(list, int);
-	}
-	if (op1_valid_addr_count >= 2) {
-		op1_1 = va_arg(list, int);
-	}
-	if (op1_valid_addr_count >= 3) {
-		op1_2 = va_arg(list, int);
-	}
-	if (op1_valid_addr_count >= 4) {
-		op1_3 = va_arg(list, int);
-	}
+	/* get the variable args and put them in both arrays (op1_valids & op2_valids) */
+	for (i = 0; i < op1_valid_addr_count && i <= 3 ;i++)
+		op1_valids[i] = va_arg(list, int);
 	for (; op1_valid_addr_count > 5; va_arg(list,
 	                                        int), op1_valid_addr_count--); /* Go on with stack until got all (even above limitation of 4) */
 	/* Again for second operand by the count */
-	if (op2_valid_addr_count >= 1) {
-		op2_0 = va_arg(list, int);
+	for (i = 0; i < op2_valid_addr_count && i <= 3 ;i++)
+		op2_valids[i] = va_arg(list, int);
+
+	va_end(list);  /* We got all the arguments we wanted, goodbye va_arg */
+
+	/* Make the validation itself: check if any of the operand addressing type has match to any of the valid ones: */
+	is_valid = op1_valid_addr_count == 0 && op1_addressing == NONE_ADDR;
+	for (i = 0; i < op1_valid_addr_count && !is_valid; i++) {
+		if (op1_valids[i] == op1_addressing) {
+			is_valid = TRUE;
+		}
 	}
-	if (op2_valid_addr_count >= 2) {
-		op2_1 = va_arg(list, int);
-	}
-	if (op2_valid_addr_count >= 3) {
-		op2_2 = va_arg(list, int);
-	}
-	if (op2_valid_addr_count >= 4) {
-		op2_3 = va_arg(list, int);
-	}
-	va_end(list);  /* We got all the arguments we wanted */
-	is_valid = TRUE;
-	/* if operand addressing is not valid, print error */
-	/* A little bit complex, but basically: if there's something to check, find out what to check by the count params and check if any of those. */
-	if (!((op1_valid_addr_count == 0 && op1_addressing == NONE_ADDR) ||
-	      (op1_valid_addr_count > 0 && op1_0 == op1_addressing) ||
-	      (op1_valid_addr_count > 1 && op1_1 == op1_addressing) ||
-	      (op1_valid_addr_count > 2 && op1_2 == op1_addressing) ||
-	      (op1_valid_addr_count > 3 && op1_3 == op1_addressing))) {
+	if (!is_valid) {
 		print_error(line, "Invalid addressing mode for first operand.");
-		is_valid = FALSE;
+		return FALSE;
 	}
-	/* Again for second addressing */
-	if (!((op2_valid_addr_count == 0 && op2_addressing == NONE_ADDR) ||
-	      (op2_valid_addr_count > 0 && op2_0 == op2_addressing) ||
-	      (op2_valid_addr_count > 1 && op2_1 == op2_addressing) ||
-	      (op2_valid_addr_count > 2 && op2_2 == op2_addressing) ||
-	      (op2_valid_addr_count > 3 && op2_3 == op2_addressing))) {
+	/* Same */
+	is_valid = op2_valid_addr_count == 0 && op2_addressing == NONE_ADDR;
+	for (i = 0; i < op2_valid_addr_count && !is_valid; i++) {
+		if (op2_valids[i] == op2_addressing) {
+			is_valid = TRUE;
+		}
+	}
+	if (!is_valid) {
 		print_error(line, "Invalid addressing mode for second operand.");
-		is_valid = FALSE;
+		return FALSE;
 	}
-	return is_valid;
+	return TRUE;
 }
 
 reg get_register_by_name(char *name) {
@@ -298,7 +286,7 @@ data_word *build_data_word(addressing_type addressing, long data, bool is_extern
 	/* Now all left is to encode the data */
 	mask = -1;
 	mask_un = mask; /* both hold 11...11 */
-	mask_un >>= 11; /* Now mask_un holds 000000000001111....111, 11 zeros and 21 ones */
+	mask_un >>= 11; /* Now mask_un holds 0..001111....111, 11 zeros and 21 ones */
 	dataword->data = mask_un & data; /* Now just the 21 lsb bits area left and assigned to data field. */
 	return dataword;
 }

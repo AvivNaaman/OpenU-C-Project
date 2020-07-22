@@ -10,6 +10,8 @@
         for (;string[(index)] && (string[(index)] == '\t' || string[(index)] == ' '); (++(index)))\
         ;
 
+#define STATIC_ARR_LEN(arr) ((sizeof(arr)) / (sizeof(arr[0])))
+
 /* TODO: Refactor */
 bool parse_symbol(line_info line, char *symbol_dest);
 

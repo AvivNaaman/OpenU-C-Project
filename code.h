@@ -30,6 +30,17 @@ addressing_type get_addressing_type(char *operand);
 code_word *get_code_word(opcode curr_opcode, funct curr_funct, int op_count, char *operands[2]);
 
 /**
+ * Returns whether the current addressing types of the operand are valid by the valid types, defined as the unlimited parameters
+ * @param op1_addressing The addressing type of the first operand
+ * @param op2_addressing The addressing type of the second operand
+ * @param op1_valid_addr_count The count of the valid addressing types for the first operand, specified afterwards.
+ * @param op2_valid_addr_count The count of the valid addressing types for the second operand, specified afterwards.
+ * @param ... The valid addressing types (as enum addressing_type) for the operands. The valid for the first, followed by the valid for the second.
+ * @return Whether the addressing types are valid as specified
+ */
+bool validate_op_addr(addressing_type op1_addressing, addressing_type op2_addressing, int op1_valid_addr_count, int op2_valid_addr_count,...);
+
+/**
  * Returns the register enum value by it's name
  * @param name The name of the register
  * @return The enum value of the register if found. otherwise, returns NONE_REG
@@ -46,8 +57,7 @@ reg get_register_by_name(char *name);
 data_word *build_data_word(addressing_type addressing, long data, bool is_extern_symbol);
 
 /**
- * Separates the operands from a certain index, puts each operand into the destination array,
- * and puts the found operand count in operand count argument
+ * Analyzes command's operand by their string from a certain index, and return whether succeeded.
  * @param line The command text
  * @param i The index to start analyzing from
  * @param destination At least a 2-cell buffer of strings for the extracted operand strings

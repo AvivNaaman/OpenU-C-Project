@@ -6,18 +6,6 @@
 #include "code.h"
 #include "utils.h"
 
-
-/**
- * Returns whether the current addressing types of the operand are valid by the valid types, defined as the unlimited parameters
- * @param op1_addressing The addressing type of the first operand
- * @param op2_addressing The addressing type of the second operand
- * @param op1_valid_addr_count The count of the valid addressing types for the first operand, specified afterwards.
- * @param op2_valid_addr_count The count of the valid addressing types for the second operand, specified afterwards.
- * @param ... The valid addressing types (as enum addressing_type) for the operands. The valid for the first, followed by the valid for the second.
- * @return Whether the addressing types are valid as specified
- */
-static bool validate_op_addr(addressing_type op1_addressing, addressing_type op2_addressing, int op1_valid_addr_count, int op2_valid_addr_count,...);
-
 /* TODO: Check if possible to make it nicer to read */
 bool analyze_operands(char *line, int i, char **destination, int *operand_count, char *command) {
 /* Make some space to the operand strings */
@@ -30,7 +18,6 @@ bool analyze_operands(char *line, int i, char **destination, int *operand_count,
 	}
 	destination[0] = malloc_with_check(MAX_LINE_LENGTH);
 	destination[1] = malloc_with_check(MAX_LINE_LENGTH);
-
 	/* until no too many operands (max of 2) and it's not the end of the line */
 	for (*operand_count = 0; line[i] != EOF && line[i] != '\n' && line[i];) {
 		if (*operand_count == 2) /* =We already got 2 operands in, We're going ot get the third! */ {
@@ -39,17 +26,14 @@ bool analyze_operands(char *line, int i, char **destination, int *operand_count,
 			free(destination[1]);
 			return FALSE; /* an error occurred */
 		}
-
 		/* as long we're still on same operand */
 		for (j = 0; line[i] && line[i] != '\t' && line[i] != ' ' && line[i] != '\n' && line[i] != EOF &&
 		            line[i] != ','; i++, j++) {
 			destination[*operand_count][j] = line[i];
 		}
-
 		destination[*operand_count][j] = '\0';
 		(*operand_count)++; /* We've just saved another operand! */
 		MOVE_TO_NOT_WHITE(line, i)
-
 		if (line[i] == '\n' || line[i] == EOF || !line[i]) break;
 		else if (line[i] != ',') {
 			/* After operand & after white chars there's something that isn't ',' or end of line.. */
@@ -75,61 +59,58 @@ bool analyze_operands(char *line, int i, char **destination, int *operand_count,
 	return TRUE;
 }
 
-/**
- * A single lookup table element
- */
-struct cmd_lookup_element {
-	char *cmd;
-	opcode op;
-	funct fun;
-};
-/**
- * A lookup table for opcode & funct by command name
- */
-static struct cmd_lookup_element lookup_table[] = {
-		{"mov", MOV_OP, NONE_FUNCT},
-		{"cmp",CMP_OP, NONE_FUNCT},
-		{"add",ADD_OP, ADD_FUNCT},
-		{"sub",SUB_OP, SUB_FUNCT},
-		{"lea",LEA_OP, NONE_FUNCT},
-		{"clr",CLR_OP, CLR_FUNCT},
-		{"not",NOT_OP, NOT_FUNCT},
-		{"inc",INC_OP, INC_FUNCT},
-		{"dec",DEC_OP, DEC_FUNCT},
-		{"jmp",JMP_OP, JMP_FUNCT},
-		{"bne",BNE_OP, BNE_FUNCT},
-		{"jsr",JSR_OP, JSR_FUNCT},
-		{"red",RED_OP, NONE_FUNCT},
-		{"prn",PRN_OP, NONE_FUNCT},
-		{"rts",RTS_OP, NONE_FUNCT},
-		{"stop",STOP_OP, NONE_FUNCT},
-		{NULL, NONE_OP, NONE_FUNCT}
-};
 void get_opcode_func(char *cmd, opcode *opcode_out, funct *funct_out) {
-	struct cmd_lookup_element *e;
-	*opcode_out = NONE_OP;
 	*funct_out = NONE_FUNCT;
-	/* iterate over the lookup table, if cmds are same return the opcode of found. */
-	for (e = lookup_table; e->cmd != NULL; e++) {
-		if (strcmp(e->cmd, cmd) == 0) {
-			*opcode_out = e->op;
-			*funct_out = e->fun;
-			return;
-		}
-	}
+	if (strcmp(cmd, "mov") == 0) {
+		*opcode_out = MOV_OP;
+	} else if (strcmp(cmd, "cmp") == 0) {
+		*opcode_out = CMP_OP;
+	} else if (strcmp(cmd, "add") == 0) {
+		*opcode_out = ADD_OP;
+		*funct_out = ADD_FUNCT;
+	} else if (strcmp(cmd, "sub") == 0) {
+		*opcode_out = SUB_OP;
+		*funct_out = SUB_FUNCT;
+	} else if (strcmp(cmd, "lea") == 0) {
+		*opcode_out = LEA_OP;
+	} else if (strcmp(cmd, "clr") == 0) {
+		*opcode_out = CLR_OP;
+		*funct_out = CLR_FUNCT;
+	} else if (strcmp(cmd, "not") == 0) {
+		*opcode_out = NOT_OP;
+		*funct_out = NOT_FUNCT;
+	} else if (strcmp(cmd, "inc") == 0) {
+		*opcode_out = INC_OP;
+		*funct_out = INC_FUNCT;
+	} else if (strcmp(cmd, "dec") == 0) {
+		*opcode_out = DEC_OP;
+		*funct_out = DEC_FUNCT;
+	} else if (strcmp(cmd, "jmp") == 0) {
+		*opcode_out = JMP_OP;
+		*funct_out = JMP_FUNCT;
+	} else if (strcmp(cmd, "bne") == 0) {
+		*opcode_out = BNE_OP;
+		*funct_out = BNE_FUNCT;
+	} else if (strcmp(cmd, "jsr") == 0) {
+		*opcode_out = JSR_OP;
+		*funct_out = JSR_FUNCT;
+	} else if (strcmp(cmd, "red") == 0) {
+		*opcode_out = RED_OP;
+	} else if (strcmp(cmd, "prn") == 0) {
+		*opcode_out = PRN_OP;
+	} else if (strcmp(cmd, "rts") == 0) {
+		*opcode_out = RTS_OP;
+	} else if (strcmp(cmd, "stop") == 0) {
+		*opcode_out = STOP_OP;
+	} else *opcode_out = NONE_OP; /* Not found! */
 }
 
 addressing_type get_addressing_type(char *operand) {
-	/* if nothing, just return none */
 	if (operand[0] == '\0') return NONE_ADDR;
-	/* if first char is 'r', second is number in range 0-7 and third is end of string, it's a register */
-	if (operand[0] == 'r' && operand[1] >= '0' && operand[1] <= '7' && operand[2] == '\0') return REGISTER_ADDR;
-	/* if operand starts with # and a number right after that, it's immediately addressed */
+	if (operand[0] == 'r' && operand[1] >= '0' && operand[1] <= '7') return REGISTER_ADDR;
 	else if (operand[0] == '#' && is_int(operand + 1)) return IMMEDIATE_ADDR;
-	/* if operand starts with & and has label afterwards, it;s realtively addressed */
-	else if (operand[0] && operand[0] == '&' && is_valid_label_name(operand + 1)) return RELATIVE_ADDR;
-	/* if operand is a valid label name, it's directly addressed */
 	else if (is_valid_label_name(operand)) return DIRECT_ADDR;
+	else if (operand[0] && operand[0] == '&' && is_valid_label_name(operand + 1)) return RELATIVE_ADDR;
 	else return NONE_ADDR;
 }
 
@@ -216,7 +197,7 @@ code_word *get_code_word(opcode curr_opcode, funct curr_funct, int op_count, cha
 }
 
 /* TODO(?): Migrate to array */
-static bool validate_op_addr(addressing_type op1_addressing, addressing_type op2_addressing, int op1_valid_addr_count,
+bool validate_op_addr(addressing_type op1_addressing, addressing_type op2_addressing, int op1_valid_addr_count,
                       int op2_valid_addr_count, ...) {
 	bool is_valid;
 	va_list list;

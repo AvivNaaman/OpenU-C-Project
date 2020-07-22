@@ -18,4 +18,15 @@
 bool process_line_fpass(char *line, long *IC, long *DC, machine_word **code_img, long *data_img,
                         table *symbol_table);
 
+/**
+ * Processes a single code line in the first pass.
+ * Adds the code build binary structure to the code_img,
+ * encodes immediately-addresses operands and leaves required data word that use labels NULL.
+ * @param line The code line to process
+ * @param i Where to start processing the line from
+ * @param ic A pointer to the current instruction counter
+ * @param code_img The code image array
+ * @return Whether succeeded or notssss
+ */
+bool process_code(char *line, int i, long *ic, machine_word **code_img);
 #endif

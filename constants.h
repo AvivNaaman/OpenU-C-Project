@@ -142,6 +142,7 @@ typedef enum instruction {
 	EXTERN_INST,
 	ENTRY_INST,
 	STRING_INST,
-	NONE_INST /* no instruction found */
+	NONE_INST, /* no instruction found */
+	ERROR_INST /* parsing error (syntax-level) */
 } instruction;
 #endif

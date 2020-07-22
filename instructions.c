@@ -24,7 +24,7 @@ instruction find_instruction_from_index(char *string, int *index) {
 	} else if (strcmp(temp, ".string") == 0) {
 		return STRING_INST;
 	}
-	return NONE_INST;
+	return ERROR_INST; /* starts with '.' but not a valid instruction! */
 }
 
 /* Instruction line processing helper functions */

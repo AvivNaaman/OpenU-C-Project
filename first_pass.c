@@ -74,6 +74,11 @@ bool process_line_fpass(char *line, long *IC, long *DC, machine_word **code_img,
 	/* Check if it's an instruction (starting with '.') */
 	instruction = find_instruction_from_index(line, &i);
 
+	if (instruction == ERROR_INST) { /* is syntax error found (usually . with unrecognized instruction) */
+		print_error("Invalid instruction name");
+		return FALSE;
+	}
+
 	MOVE_TO_NOT_WHITE(line, i)
 
 	/* is it's an instruction */

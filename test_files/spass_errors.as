@@ -33,7 +33,6 @@ prn X
 .entry MYDATA0
 .entry 0MYDATA
 .entry 0MYSTRING
-.entry
 .entry 0
 .entry NULL
 

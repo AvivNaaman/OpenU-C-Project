@@ -32,7 +32,7 @@ typedef struct entry {
 	 */
 	long value;
 	/**
-	 * Key (aka symbol name) is a string (aka char*)
+	 * Key (symbol name) is a string (aka char*)
 	 */
 	char *key;
 	/**

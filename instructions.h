@@ -1,6 +1,6 @@
 #ifndef _INSTRUCTIONS_H
 #define _INSTRUCTIONS_H
-#include "globals.h"
+#include "constants.h"
 
 /**
  * Returns the first instruction detected from the index in the string.

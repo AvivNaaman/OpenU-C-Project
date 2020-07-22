@@ -4,9 +4,25 @@
 #include "utils.h"
 #include "table.h"
 
-int write_ob(machine_word **code_img, long *data_img, long icf, long dcf, char *filename);
+/**
+ * Writes the code and data image into an .ob file, with lengths on top
+ * @param code_img The code image
+ * @param data_img The data image
+ * @param icf The final instruction counter
+ * @param dcf The final data counter
+ * @param filename The filename, without the extension
+ * @return Whether succeeded
+ */
+static int write_ob(machine_word **code_img, long *data_img, long icf, long dcf, char *filename);
 
-int write_table_to_file(table tab, char *filename, char *file_extension);
+/**
+ * Writes a symbol table to a file. Each symbol and it's address in line, separated by a single space.
+ * @param tab The symbol table to write
+ * @param filename The filename without the extension
+ * @param file_extension The extension of the file
+ * @return Whether succeeded
+ */
+static int write_table_to_file(table tab, char *filename, char *file_extension);
 
 int write_output_files(machine_word **code_img, long *data_img, long icf, long dcf, char *filename,
                        table symbol_table) {
@@ -17,7 +33,7 @@ int write_output_files(machine_word **code_img, long *data_img, long icf, long d
 	       write_table_to_file(get_entries_by_type(symbol_table, ENTRY_SYMBOL), filename, "ent");
 }
 
-int write_ob(machine_word **code_img, long *data_img, long icf, long dcf, char *filename) {
+static int write_ob(machine_word **code_img, long *data_img, long icf, long dcf, char *filename) {
 	int i;
 	long val;
 	FILE *file_desc;
@@ -33,8 +49,10 @@ int write_ob(machine_word **code_img, long *data_img, long icf, long dcf, char *
 		printf("Can't create or rewrite to file %s.", output_filename);
 		return FALSE;
 	}
+
 	/* print data/code word count on top */
 	fprintf(file_desc, "%ld %ld", icf - IC_INIT_VALUE, dcf);
+
 	/* starting from index 0, not IC_INIT_VALUE as icf, so we have to subtract it. */
 	for (i = 0; i < icf - IC_INIT_VALUE; i++) {
 		if (code_img[i]->length != 0) {
@@ -50,6 +68,7 @@ int write_ob(machine_word **code_img, long *data_img, long icf, long dcf, char *
 		/* Write the value to the file - first */
 		fprintf(file_desc, "\n%.7d %.6lx", i + 100, val);
 	}
+
 	/* Write data image. dcf starts at 0 so it's fine */
 	for (i = 0; i < dcf; i++) {
 		/* get only lower 24 bytes */
@@ -57,25 +76,29 @@ int write_ob(machine_word **code_img, long *data_img, long icf, long dcf, char *
 		/* Write data to file */
 		fprintf(file_desc, "\n%.7ld %.6lx", icf + i, val);
 	}
+
 	/* Close the file */
 	fclose(file_desc);
 	return TRUE;
 }
 
-/* Writes a table to a file. Each line has key and value, separated by a single space */
-int write_table_to_file(table tab, char *filename, char *file_extension) {
+static int write_table_to_file(table tab, char *filename, char *file_extension) {
 	FILE *file_desc;
+	/* concatenate filename & extension, and open the file for writing: */
 	char *full_filename = malloc_with_check(strlen(filename) + strlen(file_extension) + 2);
 	strcpy(full_filename, filename);
 	strcat(full_filename, ".");
 	strcat(full_filename, file_extension);
 	file_desc = fopen(full_filename, "w");
 	free(full_filename);
+	/* if failed, print error and exit */
 	if (file_desc == NULL) {
 		printf("Can't create or rewrite to file %s.", full_filename);
 		return FALSE;
 	}
+	/* if table is null, nothing to write */
 	if (tab == NULL) return TRUE;
+
 	/* Write first line without \n to avoid extraneous line breaks */
 	fprintf(file_desc, "%s %.7ld", tab->key, tab->value);
 	while ((tab = tab->next) != NULL) {

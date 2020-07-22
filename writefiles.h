@@ -1,6 +1,6 @@
 #ifndef _WRITEFILES_H
 #define _WRITEFILES_H
-#include "globals.h"
+#include "constants.h"
 #include "table.h"
 
 /**

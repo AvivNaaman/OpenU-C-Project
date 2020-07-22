@@ -1,5 +1,5 @@
 /* Contains major function that are related to the first pass */
-#include "constants.h"
+#include "globals.h"
 #include "code.h"
 #include "utils.h"
 #include "instructions.h"

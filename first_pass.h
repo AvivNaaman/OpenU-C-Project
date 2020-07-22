@@ -1,7 +1,7 @@
 #ifndef _FIRST_PASS_H
 #define _FIRST_PASS_H
 /* Processes a code line in first pass */
-#include "constants.h"
+#include "globals.h"
 
 /**
  * Processes a single line in the first pass

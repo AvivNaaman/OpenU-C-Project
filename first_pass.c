@@ -190,6 +190,7 @@ static bool process_code(line_info line, int i, long *ic, machine_word **code_im
 	code_img[(*ic) -
 	         IC_INIT_VALUE] = word_to_write; /* Avoid "spending" cells of the array, by starting from initial value of ic */
 
+	/* Build extra information code word if possible */
 	build_extra_codeword_fpass(code_img, ic, operands[0]);
 	build_extra_codeword_fpass(code_img, ic, operands[1]);
 
@@ -198,6 +199,7 @@ static bool process_code(line_info line, int i, long *ic, machine_word **code_im
 	/* Add the final length (of code word + data words) to the code word struct: */
 	code_img[ic_before - IC_INIT_VALUE]->length = (*ic) - ic_before;
 
+	/* Release allocated memory for operands */
 	free(operands[0]);
 	free(operands[1]);
 

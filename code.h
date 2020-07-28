@@ -13,7 +13,7 @@
 void get_opcode_func(char* cmd, opcode *opcode_out, funct *funct_out);
 
 /**
- * Return the addressing type of an operand
+ * Returns the addressing type of an operand
  * @param operand The operand's string
  * @return The addressing type of the operand
  */

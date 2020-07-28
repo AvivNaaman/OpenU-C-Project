@@ -1,6 +1,5 @@
 /* Constants */
 
-/* Prevent double definitions */
 #ifndef _GLOBALS_H
 #define _GLOBALS_H
 
@@ -18,8 +17,8 @@ typedef enum booleans {
 /** Initial IC value */
 #define IC_INIT_VALUE 100
 
-/** Count of operand addressing types + the none one */
-#define OPERAND_ADDRESSINGS_COUNT 5
+/* Note: many enum declaration contains NONE_X value - which is a flag for not found during parsing. */
+
 /** Operand addressing type */
 typedef enum addressing_types {
 	/** Immediate addressing (0) */
@@ -90,7 +89,7 @@ typedef enum funct {
 	NONE_FUNCT = 0
 } funct;
 
-/** Registers */
+/** Registers - r0->r1 + not found */
 typedef enum registers {
 	R0 = 0,
 	R1,
@@ -138,20 +137,29 @@ typedef struct machine_word {
 
 /** Instruction type (.data, .entry, etc.) */
 typedef enum instruction {
+	/** .data instruction */
 	DATA_INST,
+	/** .extern instruction */
 	EXTERN_INST,
+	/** .entry instruction */
 	ENTRY_INST,
+	/** .string instruction */
 	STRING_INST,
-	NONE_INST, /* no instruction found */
-	ERROR_INST /* parsing error (syntax-level) */
+	/** Not found */
+	NONE_INST,
+	/** Parsing/syntax error */
+	ERROR_INST
 } instruction;
 
 /**
  * Represents a single source line, including it's details
  */
 typedef struct line_info {
+	/** Line number in file */
 	long line_number;
+	/** File name */
 	char *file_name;
+	/** Line content (source) */
 	char *content;
 } line_info;
 

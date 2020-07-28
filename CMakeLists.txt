@@ -11,7 +11,7 @@ add_executable(mmn14 assembler.c
 ## math library, gcc option -lm
 target_link_libraries(mmn14 m)
 ## add warning flags -pedantic -Wall
-set (CMAKE_CXX_FLAGS "-pedantic -Wall")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ansi -pedantic -Wall")
 
 # Using makefile for compilation
 project(assembler C)

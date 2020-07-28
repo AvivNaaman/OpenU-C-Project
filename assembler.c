@@ -14,8 +14,7 @@
 static bool process_file(char *filename);
 
 /**
- * Entry point - 24bit assembler
- * Assembly language specification appears in booklet
+ * Entry point - 24bit assembler. Assembly language specified in booklet.
  */
 int main(int argc, char *argv[]) {
 	int i;
@@ -46,9 +45,7 @@ static bool process_file(char *filename) {
 	line_info curr_line_info;
 
 	/* Concat extensionless filename with .as extension */
-	input_filename = malloc_with_check(strlen(filename) + (4 * sizeof(char)));
-	strcpy(input_filename, filename);
-	strcat(input_filename, ".as");
+	input_filename = strallocat(filename, ".as");
 
 	/* Open file, skip on failure */
 	file_des = fopen(input_filename, "r");

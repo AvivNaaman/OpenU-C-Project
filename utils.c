@@ -6,8 +6,17 @@
 #include "utils.h"
 #include "code.h" /* for checking reserved words */
 
+
+
+char *strallocat(char *s0, char* s1) {
+	char *str = (char *)malloc_with_check(strlen(s0) + strlen(s1));
+	strcpy(str, s0);
+	strcat(str, s1);
+	return str;
+}
+
 /* TODO: Refactor! */
-/* Returns whether an error ocurred during the try of parsing the symbol. puts the symbol into the second buffer. */
+/* Returns whether an error occurred during the try of parsing the symbol. puts the symbol into the second buffer. */
 bool parse_symbol(line_info line, char *symbol_dest) {
 	int j, i;
 	bool isvalid; /* Indexes + can it be a valid label */

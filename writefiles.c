@@ -19,7 +19,7 @@ static int write_ob(machine_word **code_img, long *data_img, long icf, long dcf,
  * Writes a symbol table to a file. Each symbol and it's address in line, separated by a single space.
  * @param tab The symbol table to write
  * @param filename The filename without the extension
- * @param file_extension The extension of the file
+ * @param file_extension The extension of the file, including dot before
  * @return Whether succeeded
  */
 static int write_table_to_file(table tab, char *filename, char *file_extension);
@@ -29,8 +29,8 @@ int write_output_files(machine_word **code_img, long *data_img, long icf, long d
 	/* Write .ob file */
 	return write_ob(code_img, data_img, icf, dcf, filename) &&
 	       /* Write *.ent and *.ext files: call with symbols from external references type or entry type only */
-	       write_table_to_file(get_entries_by_type(symbol_table, EXTERNAL_REFERENCE), filename, "ext") &&
-	       write_table_to_file(get_entries_by_type(symbol_table, ENTRY_SYMBOL), filename, "ent");
+	       write_table_to_file(get_entries_by_type(symbol_table, EXTERNAL_REFERENCE), filename, ".ext") &&
+	       write_table_to_file(get_entries_by_type(symbol_table, ENTRY_SYMBOL), filename, ".ent");
 }
 
 static int write_ob(machine_word **code_img, long *data_img, long icf, long dcf, char *filename) {
@@ -38,10 +38,7 @@ static int write_ob(machine_word **code_img, long *data_img, long icf, long dcf,
 	long val;
 	FILE *file_desc;
 	/* add extension of file to open */
-	char *output_filename = malloc_with_check(strlen(filename) + 4);
-	strcpy(output_filename, filename);
-	strcat(output_filename, ".ob");
-
+	char *output_filename = strallocat(filename, ".ob");
 	/* Try to open the file for writing */
 	file_desc = fopen(output_filename, "w");
 	free(output_filename);
@@ -71,9 +68,9 @@ static int write_ob(machine_word **code_img, long *data_img, long icf, long dcf,
 
 	/* Write data image. dcf starts at 0 so it's fine */
 	for (i = 0; i < dcf; i++) {
-		/* get only lower 24 bytes */
+		/* print only lower 24 bytes */
 		val = data_img[i] & 0xFFFFFF;
-		/* Write data to file */
+		/* print at least 6 digits of hex, and 7 digits of dc */
 		fprintf(file_desc, "\n%.7ld %.6lx", icf + i, val);
 	}
 
@@ -85,10 +82,7 @@ static int write_ob(machine_word **code_img, long *data_img, long icf, long dcf,
 static int write_table_to_file(table tab, char *filename, char *file_extension) {
 	FILE *file_desc;
 	/* concatenate filename & extension, and open the file for writing: */
-	char *full_filename = malloc_with_check(strlen(filename) + strlen(file_extension) + 2);
-	strcpy(full_filename, filename);
-	strcat(full_filename, ".");
-	strcat(full_filename, file_extension);
+	char *full_filename = strallocat(filename, file_extension);
 	file_desc = fopen(full_filename, "w");
 	free(full_filename);
 	/* if failed, print error and exit */

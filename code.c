@@ -135,66 +135,77 @@ addressing_type get_addressing_type(char *operand) {
 	else return NONE_ADDR;
 }
 
-/* TODO: Refactor(?): Pass only operation name to this function */
-code_word *get_code_word(line_info line, opcode curr_opcode, funct curr_funct, int op_count, char *operands[2]) {
-	addressing_type first_addressing, second_addressing;
-	bool is_valid = TRUE;
-	code_word *codeword;
-	first_addressing = get_addressing_type(operands[0]);
-	second_addressing = get_addressing_type(operands[1]);
-	/* Validate the operand count and types */
+/**
+ * Validates the operands' addressing types by the opcode of the instruction
+ * @param line The current source line info
+ * @param first_addressing The addressing of the first operand
+ * @param second_addressing The addressing of the second operand
+ * @param curr_opcode The opcode of the current instruction
+ * @param op_count The operand count of the current instruction
+ * @return Whether valid addressing
+ */
+bool validate_operand_by_opcode(line_info line, addressing_type first_addressing,
+                                addressing_type second_addressing, opcode curr_opcode, int op_count) {
 	if (curr_opcode >= MOV_OP && curr_opcode <= LEA_OP) {
 		/* 2 operands required */
 		if (op_count != 2) {
 			print_error(line, "Operation requires 2 operands (got %d)", op_count);
-			return NULL;
+			return FALSE;
 		}
-		/* validate operand addressings */
+		/* validate operand addressing */
 		if (curr_opcode == CMP_OP) {
-			is_valid = validate_op_addr(line, first_addressing, second_addressing, 3, 3, IMMEDIATE_ADDR, DIRECT_ADDR,
+			return validate_op_addr(line, first_addressing, second_addressing, 3, 3, IMMEDIATE_ADDR, DIRECT_ADDR,
 			                            REGISTER_ADDR,
 			                            IMMEDIATE_ADDR, DIRECT_ADDR, REGISTER_ADDR);
 		} else if (curr_opcode == ADD_OP || curr_opcode == MOV_OP) { /* Also SUB_OP */
-			is_valid = validate_op_addr(line, first_addressing, second_addressing, 3, 2, IMMEDIATE_ADDR, DIRECT_ADDR,
+			return validate_op_addr(line, first_addressing, second_addressing, 3, 2, IMMEDIATE_ADDR, DIRECT_ADDR,
 			                            REGISTER_ADDR,
 			                            DIRECT_ADDR, REGISTER_ADDR);
 		} else if (curr_opcode == LEA_OP) {
 
-			is_valid = validate_op_addr(line, first_addressing, second_addressing, 1, 2, DIRECT_ADDR,
+			return validate_op_addr(line, first_addressing, second_addressing, 1, 2, DIRECT_ADDR,
 			                            DIRECT_ADDR, REGISTER_ADDR);
 		}
 	} else if (curr_opcode >= CLR_OP && curr_opcode <= PRN_OP) {
 		/* 1 operand required */
 		if (op_count != 1) {
 			if (op_count < 1) print_error(line, "Operation requires 1 operand (got %d)", op_count);
-			return NULL;
+			return FALSE;
 		}
 		/* validate operand addressing */
-		first_addressing = get_addressing_type(operands[0]);
 		if (curr_opcode == RED_OP || curr_opcode == CLR_OP) { /* Also for NOT, INC, DEC */
-			is_valid = validate_op_addr(line, first_addressing, NONE_ADDR, 2, 0, DIRECT_ADDR, REGISTER_ADDR);
+			return validate_op_addr(line, first_addressing, NONE_ADDR, 2, 0, DIRECT_ADDR, REGISTER_ADDR);
 		} else if (curr_opcode == JMP_OP) {/* Also for BNE,JSR */
-			is_valid = validate_op_addr(line, first_addressing, NONE_ADDR, 2, 0, DIRECT_ADDR, RELATIVE_ADDR);
+			return validate_op_addr(line, first_addressing, NONE_ADDR, 2, 0, DIRECT_ADDR, RELATIVE_ADDR);
 		} else { /* Then it's PRN */
-			is_valid = validate_op_addr(line, first_addressing, NONE_ADDR, 3, 0, IMMEDIATE_ADDR, DIRECT_ADDR, REGISTER_ADDR);
+			return validate_op_addr(line, first_addressing, NONE_ADDR, 3, 0, IMMEDIATE_ADDR, DIRECT_ADDR, REGISTER_ADDR);
 		}
 	} else if (curr_opcode <= STOP_OP && curr_opcode >= RTS_OP) {
 		/* 0 operands exactly */
 		if (op_count > 0) {
 			print_error(line, "Operation requires no operands (got %d)", op_count);
-			return NULL;
+			return FALSE;
 		}
 	}
-	if (!is_valid) return NULL; /* Return null if invalid */
+	return TRUE;
+}
 
+
+code_word *get_code_word(line_info line, opcode curr_opcode, funct curr_funct, int op_count, char *operands[2]) {
+	code_word *codeword;
+	addressing_type first_addressing = get_addressing_type(operands[0]);
+	addressing_type second_addressing = get_addressing_type(operands[1]);
+	/* validate operands by opcode - on failure exit */
+	if (!validate_operand_by_opcode(line, first_addressing, second_addressing, curr_opcode, op_count)) {
+		return NULL;
+	}
 	/* Create the code word by the data: */
 	codeword = (code_word *) malloc_with_check(sizeof(code_word));
-	if (codeword == NULL) return NULL; /* stop if allocation failed */
 
 	codeword->opcode = curr_opcode;
 	codeword->funct = curr_funct; /* if no funct, curr_funct = NONE_FUNCT = 0, and it should be the default. */
 	codeword->ARE = ((1 << 2) &
-	                 0xFF); /* A is the only one who is 1 when it's n operation. we treat ARE as a single unit so j */
+	                 0xFF); /* A is the only one which is 1 when it's an operation. we treat ARE as a single unit so j */
 	/* Default values of register bits are 0 */
 	codeword->dest_addressing = codeword->dest_register = codeword->src_addressing = codeword->src_register = 0;
 	/* Check if need to set the registers bits */
@@ -217,7 +228,7 @@ code_word *get_code_word(line_info line, opcode curr_opcode, funct curr_funct, i
 	return codeword;
 }
 
-/* TODO(?): Refactor to using an array instead of many many single vars */
+
 static bool validate_op_addr(line_info line, addressing_type op1_addressing, addressing_type op2_addressing, int op1_valid_addr_count,
                       int op2_valid_addr_count, ...) {
 	int i;

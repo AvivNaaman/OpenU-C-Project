@@ -10,7 +10,13 @@
         for (;string[(index)] && (string[(index)] == '\t' || string[(index)] == ' '); (++(index)))\
         ;
 
-#define STATIC_ARR_LEN(arr) ((sizeof(arr)) / (sizeof(arr[0])))
+/**
+ * Concatenates both string to a new allocated memory
+ * @param s0
+ * @param s1
+ * @return
+ */
+char *strallocat(char *s0, char* s1);
 
 /* TODO: Refactor */
 bool parse_symbol(line_info line, char *symbol_dest);

@@ -4,7 +4,8 @@
 #include "utils.h"
 #include "string.h"
 
-int process_spass_operand(line_info line,long *curr_ic, long *ic, char *operand, machine_word **code_img, table *symbol_table);
+int process_spass_operand(line_info line, long *curr_ic, long *ic, char *operand, machine_word **code_img,
+                          table *symbol_table);
 
 /**
  * Processes a single line in the second pass
@@ -18,9 +19,9 @@ bool process_line_spass(line_info line, long *ic, machine_word **code_img, table
 	char *indexOfColon;
 	char *token;
 	long i = 0;
-	MOVE_TO_NOT_WHITE(line.content,i)
-	/* TODO: @AvivNaaman: This code is nice for the first pass. use it! */
-	if(line.content[i]==';'||strcmp("\n",line.content)==0) return TRUE;
+	MOVE_TO_NOT_WHITE(line.content, i)
+	/* Empty/Comment line - no processing needed! */
+	if (line.content[i] == ';' || line.content[i] == '\n') return TRUE;
 	indexOfColon = strchr(line.content, ':');
 	/*check for label */
 	if (indexOfColon != NULL) {
@@ -28,13 +29,14 @@ bool process_line_spass(line_info line, long *ic, machine_word **code_img, table
 		i++;
 	}
 	MOVE_TO_NOT_WHITE(line.content, i)
+
 	/* .instruction */
 	if (line.content[i] == '.') {
 		/*if it's entry we add it to the symbol table*/
 		if (strncmp(".entry", line.content, 6) == 0) {
 			i += 6;
 			MOVE_TO_NOT_WHITE(line.content, i)
-			token = strtok(line.content+i, " \n\t");
+			token = strtok(line.content + i, " \n\t");
 			/* if label is already marked as entry, ignore. */
 			if (token == NULL) {
 				print_error(line, "You have to specify label name for .entry instruction.");
@@ -42,17 +44,17 @@ bool process_line_spass(line_info line, long *ic, machine_word **code_img, table
 			}
 			if (find_by_types(*symbol_table, token, 1, ENTRY_SYMBOL) == NULL) {
 				table_entry *entry;
-				token = strtok(line.content+i, "\n"); /*get name of label*/
-				if(token[0] == '&') token++;
+				token = strtok(line.content + i, "\n"); /*get name of label*/
+				if (token[0] == '&') token++;
 				/* if symbol is not defined as data/code */
-				if ((entry = find_by_types(*symbol_table, token, 2, DATA_SYMBOL,CODE_SYMBOL)) == NULL) {
+				if ((entry = find_by_types(*symbol_table, token, 2, DATA_SYMBOL, CODE_SYMBOL)) == NULL) {
 					/* if defined as external print error */
 					if ((entry = find_by_types(*symbol_table, token, 1, EXTERNAL_SYMBOL)) != NULL) {
 						print_error(line, "External symbol cannot be defined as an entry symbol as well.");
 						return FALSE;
 					}
 					/* otherwise print more general error */
-					print_error(line, "Symbol %s for .entry instruction not found.",token);
+					print_error(line, "Symbol %s for .entry instruction not found.", token);
 					return FALSE;
 				}
 				add_table_item(symbol_table, token, entry->value, ENTRY_SYMBOL);
@@ -88,20 +90,27 @@ bool add_symbols_to_code(line_info line, long *ic, machine_word **code_img, tabl
 		parse_symbol(line, temp);
 		if (temp[0] != '\0') { /* if symbol is defined */
 			/* move i right after it's end */
-			for (; line.content[i] && line.content[i] != '\n' && line.content[i] != EOF && line.content[i] != ' ' && line.content[i] != '\t'; i++);
+			for (; line.content[i] && line.content[i] != '\n' && line.content[i] != EOF && line.content[i] != ' ' &&
+			       line.content[i] != '\t'; i++);
 			i++;
 		}
 		MOVE_TO_NOT_WHITE(line.content, i)
 		/* now skip command */
-		for (; line.content[i] && line.content[i] != ' ' && line.content[i] != '\t' && line.content[i] != '\n' && line.content[i] != EOF; i++);
+		for (; line.content[i] && line.content[i] != ' ' && line.content[i] != '\t' && line.content[i] != '\n' &&
+		       line.content[i] != EOF; i++);
+		MOVE_TO_NOT_WHITE(line.content, i)
 		/* now analyze operands We send NULL as string of command because no error will be printed, and that's the only usage for it there. */
 		analyze_operands(line, i, operands, &operand_count, NULL);
-		/* Process both operands, if failed return failure. otherwise continue */
-		if (!process_spass_operand(line, &curr_ic, ic, operands[0], code_img, symbol_table)) return FALSE;
-		if (!process_spass_operand(line, &curr_ic, ic, operands[1], code_img, symbol_table)) return FALSE;
+		/* Process operands, if needed. if failed return failure. otherwise continue */
+		if (operand_count) {
+			if (!process_spass_operand(line, &curr_ic, ic, operands[0], code_img, symbol_table)) return FALSE;
+			if (operand_count >= 2) {
+				if (!process_spass_operand(line, &curr_ic, ic, operands[1], code_img, symbol_table)) return FALSE;
+			}
+		}
 	}
 	/* Make the current pass IC as the next line ic */
-	(*ic) = (*ic)+length;
+	(*ic) = (*ic) + length;
 	return TRUE;
 }
 
@@ -114,7 +123,8 @@ bool add_symbols_to_code(line_info line, long *ic, machine_word **code_img, tabl
  * @param symbol_table The symbol table
  * @return Whether succeeded
  */
-int process_spass_operand(line_info line, long *curr_ic, long *ic, char *operand, machine_word **code_img, table *symbol_table) {
+int process_spass_operand(line_info line, long *curr_ic, long *ic, char *operand, machine_word **code_img,
+                          table *symbol_table) {
 	bool is_extern_symbol;
 	addressing_type addr = get_addressing_type(operand);
 	machine_word *word_to_write;
@@ -123,9 +133,9 @@ int process_spass_operand(line_info line, long *curr_ic, long *ic, char *operand
 	if (addr == RELATIVE_ADDR) operand++;
 	if (DIRECT_ADDR == addr || RELATIVE_ADDR == addr) {
 		long data_to_add;
-		table_entry *entry = find_by_types(*symbol_table, operand,3,DATA_SYMBOL,CODE_SYMBOL,EXTERNAL_SYMBOL);
+		table_entry *entry = find_by_types(*symbol_table, operand, 3, DATA_SYMBOL, CODE_SYMBOL, EXTERNAL_SYMBOL);
 		if (entry == NULL) {
-			print_error(line, "Symbol %s not found",operand);
+			print_error(line, "Symbol %s not found", operand);
 			return FALSE;
 		}
 		is_extern_symbol = entry->type == EXTERNAL_SYMBOL;
@@ -133,12 +143,12 @@ int process_spass_operand(line_info line, long *curr_ic, long *ic, char *operand
 		data_to_add = entry->value;
 		/* Calculate the distance to the label from ic if needed */
 		if (addr == RELATIVE_ADDR) {
-			/* if not code symbol it's impossible! */
+			/* if not code symbol it's impossible to calculate distance! */
 			if (entry->type != CODE_SYMBOL) {
 				print_error(line, "Symbol %s cannot be addressed relatively because it's not a code symbol.", operand);
 				return FALSE;
 			}
-			data_to_add =  data_to_add - *ic;
+			data_to_add = data_to_add - *ic;
 		}
 		/* Add to externals reference table if it's an external. increase ic because it's the next data word */
 		if (is_extern_symbol) {

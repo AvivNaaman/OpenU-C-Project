@@ -6,7 +6,7 @@
 #include "utils.h"
 #include "code.h" /* for checking reserved words */
 
-
+#define ERR_OUTPUT_FILE stderr
 
 char *strallocat(char *s0, char* s1) {
 	char *str = (char *)malloc_with_check(strlen(s0) + strlen(s1));
@@ -97,49 +97,52 @@ bool is_alphanumeric_str(char *string) {
 
 bool is_reserved_word(char *name) {
 	int fun, opc;
-	/* check if not a command (jmp,cmp,etc.) using the method from code.h. we need only opc, which has to be NONE_OP if name isn't a command. */
+	/* check if register or command */
 	get_opcode_func(name, &opc, (funct *) &fun);
-	if (opc != NONE_OP) return FALSE;
-		/* check if not a register */
-	else if (get_register_by_name(name) != NONE_REG) return FALSE;
+	if (opc != NONE_OP || get_register_by_name(name) != NONE_REG) return FALSE;
 
 /* TODO: See definition of reserved word again! */
 	else if (strcmp(name, "entry") == 0) {
 		return TRUE;
 	} else if (strcmp(name, "extern") == 0) {
 		return TRUE;
-	} else if (strcmp(name, ".data") == 0) {
+	} else if (strcmp(name, "data") == 0) {
 		return TRUE;
-	} else if (strcmp(name, ".name") == 0) {
+	} else if (strcmp(name, "name") == 0) {
 		return TRUE;
 	}
 	return FALSE;
 }
 
-/* Prints a detailed error message to the user, including file, line, and message. */
-int print_error(line_info line, char *message, ...) {
+
+int print_error(line_info line, char *message, ...) { /* Prints the errors into a file, defined above as macro */
 	int result;
-	va_list arglist; /* for formatting */
+	va_list args; /* for formatting */
 	/* Print file+line */
-	printf("Error: In file %s:%ld: ", line.file_name, line.line_number);
+	fprintf(ERR_OUTPUT_FILE,"Error In %s:%ld: ", line.file_name, line.line_number);
+
 	/* use vprintf to call printf from variable argument function (from stdio.h) with message + format */
-	va_start(arglist, message);
-	result = vprintf(message, arglist);
-	puts(""); /* Line break */
+	va_start(args, message);
+	result = vfprintf(ERR_OUTPUT_FILE, message, args);
+	va_end(args);
+
+	fputs("", ERR_OUTPUT_FILE); /* Line break */
 	return result;
 }
 
 void free_code_image(machine_word **code_image, long fic) {
 	long i;
-	/* foreach non-null cell */
+	/* for each not-null cell (we might have some "holes", so we won't stop on first null) */
 	for (i = 0; i < fic; i++) {
 		machine_word *curr_word = code_image[i];
 		if (curr_word != NULL) {
+			/* free code/data word */
 			if (curr_word->length > 0) {
 				free(curr_word->word.code);
 			} else {
 				free(curr_word->word.data);
 			}
+			/* free the pointer to the union */
 			free(curr_word);
 			code_image[i] = NULL;
 		}

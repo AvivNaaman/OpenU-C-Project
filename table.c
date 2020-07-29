@@ -1,10 +1,10 @@
 /* Implements a basic table ("dictionary") data structure. sorted by value, ascending. */
 #include <stdlib.h>
 #include <stdio.h>
-#include "utils.h"
 #include <string.h>
-#include "table.h"
 #include <stdarg.h>
+#include "table.h"
+#include "utils.h"
 
 void add_table_item(table *tab, char *key, long value, symbol_type type) {
 	char *temp;

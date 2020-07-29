@@ -3,58 +3,81 @@
 #include <stdlib.h>
 #include "utils.h"
 
+struct instruction_lookup_item {
+	char *name;
+	instruction value;
+};
+
+static struct instruction_lookup_item
+		instructions_lookup_table[] = {
+		{".string", STRING_INST},
+		{".data",   DATA_INST},
+		{".entry",  ENTRY_INST},
+		{".extern", EXTERN_INST},
+		{NULL, NONE_INST}
+};
+
+instruction find_instruction_by_name(char *name) {
+	struct instruction_lookup_item *curr_item;
+	for (curr_item = instructions_lookup_table; curr_item->name != NULL; curr_item++) {
+		if (strcmp(curr_item->name, name) == 0) {
+			return curr_item->value;
+		}
+	}
+	return NONE_INST;
+}
+
 /* Returns the first instruction from the specified index. if no such one, returns NONE */
-instruction find_instruction_from_index(char *string, int *index) {
+instruction find_instruction_from_index(line_info line, int *index) {
 	char temp[MAX_LINE_LENGTH];
 	int j;
-	MOVE_TO_NOT_WHITE(string, *index) /* get index to first not white place */
-	if (string[*index] != '.') return NONE_INST;
+	instruction result;
 
-	for (j = 0; string[*index] && string[*index] != '\t' && string[*index] != ' '; (*index)++, j++) {
-		temp[j] = string[*index];
+	MOVE_TO_NOT_WHITE(line.content, *index) /* get index to first not white place */
+	if (line.content[*index] != '.') return NONE_INST;
+
+	for (j = 0; line.content[*index] && line.content[*index] != '\t' && line.content[*index] != ' '; (*index)++, j++) {
+		temp[j] = line.content[*index];
 	}
 	temp[j] = '\0'; /* End of string */
-
-	if (strcmp(temp, ".extern") == 0) {
-		return EXTERN_INST;
-	} else if (strcmp(temp, ".data") == 0) {
-		return DATA_INST;
-	} else if (strcmp(temp, ".entry") == 0) {
-		return ENTRY_INST;
-	} else if (strcmp(temp, ".string") == 0) {
-		return STRING_INST;
-	}
+	/* if invalid instruction but starts with ., return error */
+	if ((result = find_instruction_by_name(temp)) != NONE_INST) return result;
+	print_error(line, "Invalid instruction name: %s", temp);
 	return ERROR_INST; /* starts with '.' but not a valid instruction! */
 }
 
 /* Instruction line processing helper functions */
-/*
- * Processes a string instruction from index. encode into data image and change dc.
- * Returns whether encountered an error.
- */
+
 bool process_string_instruction(line_info line, int index, long *data_img, long *dc) {
 	long data;
 	MOVE_TO_NOT_WHITE(line.content, index)
+	char temp_str[MAX_LINE_LENGTH];
+	char *last_quote_location = strrchr(line.content, '"');
 	if (line.content[index] != '"') {
 		/* something like: LABEL: .string  hello, world\n - the string isn't surrounded with "" */
-		print_error(line, "String must be defined between quotation marks");
+		print_error(line, "Missing opening quote of string");
+		return FALSE;
+	} else if (&line.content[index] == last_quote_location) { /* last quote is same as first quote */
+		print_error(line, "Missing closing quote of string");
 		return FALSE;
 	} else {
-		index++;
-		/* Foreach char between the two " */
-		for (; line.content[index] != '"' && line.content[index] && line.content[index] != '\n' && line.content[index] != EOF; index++) {
-			/* Save the char into the data image */
-			data = line.content[index];
-			data_img[*dc] = data;
+		int i;
+		/* Copy the string including quotes & everything until end of line */
+		for (i = 0;line.content[index] && line.content[index] != '\n' &&
+		       line.content[index] != EOF; index++,i++) {
+				temp_str[i] = line.content[index];
+		}
+		/* TODO: Aviv: Run over it again! */
+		/* Put string terminator instead of last quote: */
+		temp_str[last_quote_location - line.content] = '\0';
+		for(i = 1;temp_str[i] && temp_str[i] != '"'; i++) {
+			/* sort of strcpy but with dc increment */
+			data_img[*dc] = temp_str[i];
 			(*dc)++;
 		}
-		/* Add end of string ('\0') */
-		data_img[*dc] = 0;
+		/* Put string terminator */
+		data_img[*dc] = '\0';
 		(*dc)++;
-	}
-	if (line.content[index] != '"') {
-		print_error(line, "String must be defined between quotation marks");
-		return FALSE;
 	}
 	/* Return processed chars count */
 	return TRUE;
@@ -73,7 +96,8 @@ bool process_data_instruction(line_info line, int index, long *data_img, long *d
 	}
 	do {
 		for (i = 0;
-		     line.content[index] && line.content[index] != EOF && line.content[index] != '\t' && line.content[index] != ' ' && line.content[index] != ',' &&
+		     line.content[index] && line.content[index] != EOF && line.content[index] != '\t' &&
+		     line.content[index] != ' ' && line.content[index] != ',' &&
 		     line.content[index] != '\n'; index++, i++) {
 			temp[i] = line.content[index];
 		}

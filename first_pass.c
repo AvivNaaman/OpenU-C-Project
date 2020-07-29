@@ -1,11 +1,11 @@
 /* Contains major function that are related to the first pass */
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "globals.h"
 #include "code.h"
 #include "utils.h"
 #include "instructions.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include "first_pass.h"
 
 
@@ -62,8 +62,10 @@ bool process_line_fpass(line_info line, long *IC, long *DC, machine_word **code_
 		for (; line.content[i] != ':'; i++); /* if symbol detected, start analyzing from it's deceleration end */
 		i++;
 	}
+
 	MOVE_TO_NOT_WHITE(line.content, i) /* Move to next not-white char */
-	if (line.content[i] == '\n') return TRUE;
+
+	if (line.content[i] == '\n') return TRUE; /* Label-only line - skip */
 
 	/* if already defined as data/external/code and not empty line */
 	if (find_by_types(*symbol_table, symbol, 3, EXTERNAL_SYMBOL, DATA_SYMBOL, CODE_SYMBOL)) {
@@ -72,10 +74,9 @@ bool process_line_fpass(line_info line, long *IC, long *DC, machine_word **code_
 	}
 
 	/* Check if it's an instruction (starting with '.') */
-	instruction = find_instruction_from_index(line.content, &i);
+	instruction = find_instruction_from_index(line, &i);
 
-	if (instruction == ERROR_INST) { /* is syntax error found (usually . with unrecognized instruction) */
-		print_error(line, "Invalid instruction name");
+	if (instruction == ERROR_INST) { /* Syntax error found */
 		return FALSE;
 	}
 

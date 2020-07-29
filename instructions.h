@@ -4,11 +4,11 @@
 
 /**
  * Returns the first instruction detected from the index in the string.
- * @param string The source string.
+ * @param line The source string.
  * @param index The index to start looking from.
  * @return instruction_type indicates the detected instruction.
  */
-instruction find_instruction_from_index(char *string, int *index);
+instruction find_instruction_from_index(line_info line, int *index);
 
 /**
  * Processes a .string instruction from index of source line.

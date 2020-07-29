@@ -278,7 +278,7 @@ static bool validate_op_addr(line_info line, addressing_type op1_addressing, add
 
 reg get_register_by_name(char *name) {
 	if (name[0] == 'r' && isdigit(name[1]) && name[2] == '\0') {
-		int digit = name[1] - '0';
+		int digit = name[1] - '0'; /* convert digit ascii char to actual single digit */
 		if (digit >= 0 && digit <= 7) return digit;
 	}
 	return NONE_REG; /* No match */

@@ -59,6 +59,30 @@ bool parse_symbol(line_info line, char *symbol_dest) {
 }
 
 
+struct instruction_lookup_item {
+	char *name;
+	instruction value;
+};
+
+static struct instruction_lookup_item
+		instructions_lookup_table[] = {
+		{".string", STRING_INST},
+		{".data",   DATA_INST},
+		{".entry",  ENTRY_INST},
+		{".extern", EXTERN_INST},
+		{NULL, NONE_INST}
+};
+
+instruction find_instruction_by_name(char *name) {
+	struct instruction_lookup_item *curr_item;
+	for (curr_item = instructions_lookup_table; curr_item->name != NULL; curr_item++) {
+		if (strcmp(curr_item->name, name) == 0) {
+			return curr_item->value;
+		}
+	}
+	return NONE_INST;
+}
+
 bool is_int(char *string) {
 	int i = 0;
 	if (string[0] == '-' || string[0] == '+') string++; /* if string starts with +/-, it's OK */
@@ -99,18 +123,8 @@ bool is_reserved_word(char *name) {
 	int fun, opc;
 	/* check if register or command */
 	get_opcode_func(name, &opc, (funct *) &fun);
-	if (opc != NONE_OP || get_register_by_name(name) != NONE_REG) return FALSE;
+	if (opc != NONE_OP || get_register_by_name(name) != NONE_REG || find_instruction_by_name(name)) return FALSE;
 
-/* TODO: See definition of reserved word again! */
-	else if (strcmp(name, "entry") == 0) {
-		return TRUE;
-	} else if (strcmp(name, "extern") == 0) {
-		return TRUE;
-	} else if (strcmp(name, "data") == 0) {
-		return TRUE;
-	} else if (strcmp(name, "name") == 0) {
-		return TRUE;
-	}
 	return FALSE;
 }
 

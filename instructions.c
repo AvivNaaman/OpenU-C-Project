@@ -3,29 +3,6 @@
 #include <stdlib.h>
 #include "utils.h"
 
-struct instruction_lookup_item {
-	char *name;
-	instruction value;
-};
-
-static struct instruction_lookup_item
-		instructions_lookup_table[] = {
-		{".string", STRING_INST},
-		{".data",   DATA_INST},
-		{".entry",  ENTRY_INST},
-		{".extern", EXTERN_INST},
-		{NULL, NONE_INST}
-};
-
-instruction find_instruction_by_name(char *name) {
-	struct instruction_lookup_item *curr_item;
-	for (curr_item = instructions_lookup_table; curr_item->name != NULL; curr_item++) {
-		if (strcmp(curr_item->name, name) == 0) {
-			return curr_item->value;
-		}
-	}
-	return NONE_INST;
-}
 
 /* Returns the first instruction from the specified index. if no such one, returns NONE */
 instruction find_instruction_from_index(line_info line, int *index) {

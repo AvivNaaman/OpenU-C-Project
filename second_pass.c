@@ -125,7 +125,6 @@ bool add_symbols_to_code(line_info line, long *ic, machine_word **code_img, tabl
  */
 int process_spass_operand(line_info line, long *curr_ic, long *ic, char *operand, machine_word **code_img,
                           table *symbol_table) {
-	bool is_extern_symbol;
 	addressing_type addr = get_addressing_type(operand);
 	machine_word *word_to_write;
 	/* if the word on *IC has the immediately addressed value (done in first pass), go to next cell (increase ic) */
@@ -138,7 +137,6 @@ int process_spass_operand(line_info line, long *curr_ic, long *ic, char *operand
 			print_error(line, "Symbol %s not found", operand);
 			return FALSE;
 		}
-		is_extern_symbol = entry->type == EXTERNAL_SYMBOL;
 		/*found symbol*/
 		data_to_add = entry->value;
 		/* Calculate the distance to the label from ic if needed */
@@ -151,14 +149,14 @@ int process_spass_operand(line_info line, long *curr_ic, long *ic, char *operand
 			data_to_add = data_to_add - *ic;
 		}
 		/* Add to externals reference table if it's an external. increase ic because it's the next data word */
-		if (is_extern_symbol) {
+		if (entry->type == EXTERNAL_SYMBOL) {
 			add_table_item(symbol_table, operand, (*curr_ic) + 1, EXTERNAL_REFERENCE);
 		}
 
 		/*found symbol*/
 		word_to_write = (machine_word *) malloc_with_check(sizeof(machine_word));
 		word_to_write->length = 0;
-		word_to_write->word.data = build_data_word(addr, data_to_add, is_extern_symbol);
+		word_to_write->word.data = build_data_word(addr, data_to_add, entry->type == EXTERNAL_SYMBOL);
 		code_img[(++(*curr_ic)) - IC_INIT_VALUE] = word_to_write;
 
 	}

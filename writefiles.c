@@ -4,6 +4,13 @@
 #include "utils.h"
 #include "table.h"
 
+#define KEEP_ONLY_24_LSB(value) ((value) & 0xFFFFFF)
+/**
+ * "Cuts" the msb of the value, keeping only it's lowest 21 bits
+ * 0b00000000000111111111111111111111 = 0x1FFFFF
+ */
+#define KEEP_ONLY_21_LSB(value) ((value) & 0x1FFFFF)
+
 /**
  * Writes the code and data image into an .ob file, with lengths on top
  * @param code_img The code image
@@ -52,15 +59,14 @@ static int write_ob(machine_word **code_img, long *data_img, long icf, long dcf,
 
 	/* starting from index 0, not IC_INIT_VALUE as icf, so we have to subtract it. */
 	for (i = 0; i < icf - IC_INIT_VALUE; i++) {
-		if (code_img[i]->length != 0) {
+		if (code_img[i]->length > 0) {
 			val = (code_img[i]->word.code->opcode << 18) | (code_img[i]->word.code->src_addressing << 16) |
 			      (code_img[i]->word.code->src_register << 13) | (code_img[i]->word.code->dest_addressing << 11) |
 			      (code_img[i]->word.code->dest_register << 8) | (code_img[i]->word.code->funct) << 3 |
 			      (code_img[i]->word.code->ARE);
-		}
-			/* if it's a data word, build the binary data:  */
-		else {
-			val = (code_img[i]->word.data->data << 3) | (code_img[i]->word.data->ARE);
+		} else {
+			/* We need to cut the value, keeping only it's 21 lsb, and include the ARE in the whole party as well: */
+			val = (KEEP_ONLY_21_LSB(code_img[i]->word.data->data) << 3) | (code_img[i]->word.data->ARE);
 		}
 		/* Write the value to the file - first */
 		fprintf(file_desc, "\n%.7d %.6lx", i + 100, val);
@@ -69,7 +75,7 @@ static int write_ob(machine_word **code_img, long *data_img, long icf, long dcf,
 	/* Write data image. dcf starts at 0 so it's fine */
 	for (i = 0; i < dcf; i++) {
 		/* print only lower 24 bytes */
-		val = data_img[i] & 0xFFFFFF;
+		val = KEEP_ONLY_24_LSB(data_img[i]);
 		/* print at least 6 digits of hex, and 7 digits of dc */
 		fprintf(file_desc, "\n%.7ld %.6lx", icf + i, val);
 	}

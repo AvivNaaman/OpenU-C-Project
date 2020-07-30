@@ -9,7 +9,7 @@
 #define ERR_OUTPUT_FILE stderr
 
 char *strallocat(char *s0, char* s1) {
-	char *str = (char *)malloc_with_check(strlen(s0) + strlen(s1));
+	char *str = (char *)malloc_with_check(strlen(s0) + strlen(s1) + 1);
 	strcpy(str, s0);
 	strcat(str, s1);
 	return str;

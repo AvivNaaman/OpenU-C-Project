@@ -23,7 +23,7 @@ bool parse_symbol(line_info line, char *symbol_dest) {
 	i = j = 0;
 
 	isvalid = TRUE;
-	/* Skip white chars at the beginning TODO: Check if necessary */
+	/* Skip white chars at the beginning anyway */
 	MOVE_TO_NOT_WHITE(line.content, i)
 
 	/* Label should start with alpha char */
@@ -91,7 +91,6 @@ bool is_int(char *string) {
 			return FALSE;
 		}
 	}
-	/* TODO: Check if it's a 21-bit signed integer */
 	return i > 0; /* if i==0 then it was an empty string! */
 }
 

@@ -117,7 +117,6 @@ typedef struct code_word {
 } code_word;
 
 /** Represents a single data word. */
-/* TODO: Migrate to 3-byte because we don't know for sure that int is 32+ bits! */
 typedef struct data_word {
 	unsigned int ARE: 3;
 	/* The data content itself (a method for putting data into these field is defined) */

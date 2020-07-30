@@ -44,7 +44,6 @@ bool process_string_instruction(line_info line, int index, long *data_img, long 
 		       line.content[index] != EOF; index++,i++) {
 				temp_str[i] = line.content[index];
 		}
-		/* TODO: Aviv: Run over it again! */
 		/* Put string terminator instead of last quote: */
 		temp_str[last_quote_location - line.content] = '\0';
 		for(i = 1;temp_str[i] && temp_str[i] != '"'; i++) {
@@ -90,7 +89,6 @@ bool process_data_instruction(line_info line, int index, long *data_img, long *d
 
 		(*dc)++; /* a word was written right now */
 		MOVE_TO_NOT_WHITE(line.content, index)
-		/* TODO: Some error if something (Think!) */
 		if (line.content[index] == ',') index++;
 		else if (!line.content[index] || line.content[index] == '\n' || line.content[index] == EOF)
 			break; /* End of line/file/string => nothing to process anymore */

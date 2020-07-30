@@ -18,7 +18,6 @@
  */
 char *strallocat(char *s0, char* s1);
 
-/* TODO: Refactor */
 bool parse_symbol(line_info line, char *symbol_dest);
 
 /**

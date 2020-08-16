@@ -33,10 +33,11 @@ int main(int argc, char *argv[]) {
 
 static bool process_file(char *filename) {
 	/* Memory address counters */
+	int temp_c;
 	long ic = IC_INIT_VALUE, dc = 0, icf, dcf;
 	bool is_success = TRUE; /* is succeeded so far */
 	char *input_filename;
-	char temp_line[MAX_LINE_LENGTH + 1]; /* temporary string for storing line, read from file */
+	char temp_line[MAX_LINE_LENGTH + 2]; /* temporary string for storing line, read from file */
 	FILE *file_des; /* Current assembly file descriptor to process */
 	long data_img[CODE_ARR_IMG_LENGTH]; /* Contains an image of the machine code */
 	machine_word *code_img[CODE_ARR_IMG_LENGTH];
@@ -60,8 +61,21 @@ static bool process_file(char *filename) {
 	curr_line_info.file_name = input_filename;
 	curr_line_info.content = temp_line; /* We use temp_line to read from the file, but it stays at same location. */
 	/* Read line - stop if read failed (when NULL returned) - usually when EOF. increase line counter for error printing. */
-	for (curr_line_info.line_number = 1; fgets(temp_line, MAX_LINE_LENGTH, file_des) != NULL; curr_line_info.line_number++) {
-		is_success &= process_line_fpass(curr_line_info, &ic, &dc, code_img, data_img, &symbol_table);
+	for (curr_line_info.line_number = 1; fgets(temp_line, MAX_LINE_LENGTH+2, file_des) != NULL; curr_line_info.line_number++) {
+		/* if line too long, the buffer doesn't include the '\n' char OR the file isn't on end. */
+		if (strchr(temp_line,'\n') == NULL && !feof(file_des))
+		{
+			/* Print message and prevent further line processing, as well as second pass.  */
+			printf_line_error(curr_line_info, "Line too long to process.");
+			is_success = FALSE;
+			/* skip leftovers */
+			do {
+				temp_c = fgetc(file_des);
+			} while (temp_c != '\n' && temp_c != EOF);
+		}
+		else {
+			is_success &= process_line_fpass(curr_line_info, &ic, &dc, code_img, data_img, &symbol_table);
+		}
 	}
 
 	/* if first pass didn't fail, start the second pass */

@@ -26,7 +26,7 @@ bool analyze_operands(line_info line, int i, char **destination, int *operand_co
 	*operand_count = 0;
 	MOVE_TO_NOT_WHITE(line.content, i)
 	if (line.content[i] == ',') {
-		print_error(line, "Unexpected comma after command.");
+		printf_line_error(line, "Unexpected comma after command.");
 		return FALSE; /* an error occurred */
 	}
 	/* allocate space to save the processes operands */
@@ -36,7 +36,7 @@ bool analyze_operands(line_info line, int i, char **destination, int *operand_co
 	/* Until noy too many operands (max of 2) and it's not the end of the line */
 	for (*operand_count = 0; line.content[i] != EOF && line.content[i] != '\n' && line.content[i];) {
 		if (*operand_count == 2) /* =We already got 2 operands in, We're going ot get the third! */ {
-			print_error(line, "Too many operands for operation (got >%d)", *operand_count);
+			printf_line_error(line, "Too many operands for operation (got >%d)", *operand_count);
 			free(destination[0]);
 			free(destination[1]);
 			return FALSE; /* an error occurred */
@@ -55,7 +55,7 @@ bool analyze_operands(line_info line, int i, char **destination, int *operand_co
 		if (line.content[i] == '\n' || line.content[i] == EOF || !line.content[i]) break;
 		else if (line.content[i] != ',') {
 			/* After operand & after white chars there's something that isn't ',' or end of line.. */
-			print_error(line, "Expecting ',' between operands");
+			printf_line_error(line, "Expecting ',' between operands");
 			/* Release operands dynamically allocated memory */
 			free(destination[0]);
 			free(destination[1]);
@@ -64,8 +64,9 @@ bool analyze_operands(line_info line, int i, char **destination, int *operand_co
 		i++;
 		MOVE_TO_NOT_WHITE(line.content, i)
 		/* if there was just a comma, then (optionally) white char(s) and then end of line */
-		if (line.content[i] == '\n' || line.content[i] == EOF || !line.content[i]) print_error(line, "Missing operand after comma.");
-		else if (line.content[i] == ',') print_error(line, "Multiple consecutive commas.");
+		if (line.content[i] == '\n' || line.content[i] == EOF || !line.content[i])
+			printf_line_error(line, "Missing operand after comma.");
+		else if (line.content[i] == ',') printf_line_error(line, "Multiple consecutive commas.");
 		else continue; /* No errors, continue */
 		{ /* Error found! (didn't continue) */
 			/* No one forgot you two! */
@@ -149,7 +150,7 @@ bool validate_operand_by_opcode(line_info line, addressing_type first_addressing
 	if (curr_opcode >= MOV_OP && curr_opcode <= LEA_OP) {
 		/* 2 operands required */
 		if (op_count != 2) {
-			print_error(line, "Operation requires 2 operands (got %d)", op_count);
+			printf_line_error(line, "Operation requires 2 operands (got %d)", op_count);
 			return FALSE;
 		}
 		/* validate operand addressing */
@@ -169,7 +170,7 @@ bool validate_operand_by_opcode(line_info line, addressing_type first_addressing
 	} else if (curr_opcode >= CLR_OP && curr_opcode <= PRN_OP) {
 		/* 1 operand required */
 		if (op_count != 1) {
-			if (op_count < 1) print_error(line, "Operation requires 1 operand (got %d)", op_count);
+			if (op_count < 1) printf_line_error(line, "Operation requires 1 operand (got %d)", op_count);
 			return FALSE;
 		}
 		/* validate operand addressing */
@@ -183,7 +184,7 @@ bool validate_operand_by_opcode(line_info line, addressing_type first_addressing
 	} else if (curr_opcode <= STOP_OP && curr_opcode >= RTS_OP) {
 		/* 0 operands exactly */
 		if (op_count > 0) {
-			print_error(line, "Operation requires no operands (got %d)", op_count);
+			printf_line_error(line, "Operation requires no operands (got %d)", op_count);
 			return FALSE;
 		}
 	}
@@ -259,7 +260,7 @@ static bool validate_op_addr(line_info line, addressing_type op1_addressing, add
 		}
 	}
 	if (!is_valid) {
-		print_error(line, "Invalid addressing mode for first operand.");
+		printf_line_error(line, "Invalid addressing mode for first operand.");
 		return FALSE;
 	}
 	/* Same */
@@ -270,7 +271,7 @@ static bool validate_op_addr(line_info line, addressing_type op1_addressing, add
 		}
 	}
 	if (!is_valid) {
-		print_error(line, "Invalid addressing mode for second operand.");
+		printf_line_error(line, "Invalid addressing mode for second operand.");
 		return FALSE;
 	}
 	return TRUE;

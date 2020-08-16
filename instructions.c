@@ -18,24 +18,23 @@ instruction find_instruction_from_index(line_info line, int *index) {
 	}
 	temp[j] = '\0'; /* End of string */
 	/* if invalid instruction but starts with ., return error */
-	if ((result = find_instruction_by_name(temp)) != NONE_INST) return result;
-	print_error(line, "Invalid instruction name: %s", temp);
+	if ((result = find_instruction_by_name(temp+1)) != NONE_INST) return result;
+	printf_line_error(line, "Invalid instruction name: %s", temp);
 	return ERROR_INST; /* starts with '.' but not a valid instruction! */
 }
 
 /* Instruction line processing helper functions */
 
 bool process_string_instruction(line_info line, int index, long *data_img, long *dc) {
-	long data;
-	MOVE_TO_NOT_WHITE(line.content, index)
 	char temp_str[MAX_LINE_LENGTH];
 	char *last_quote_location = strrchr(line.content, '"');
+	MOVE_TO_NOT_WHITE(line.content, index)
 	if (line.content[index] != '"') {
 		/* something like: LABEL: .string  hello, world\n - the string isn't surrounded with "" */
-		print_error(line, "Missing opening quote of string");
+		printf_line_error(line, "Missing opening quote of string");
 		return FALSE;
 	} else if (&line.content[index] == last_quote_location) { /* last quote is same as first quote */
-		print_error(line, "Missing closing quote of string");
+		printf_line_error(line, "Missing closing quote of string");
 		return FALSE;
 	} else {
 		int i;
@@ -68,7 +67,7 @@ bool process_data_instruction(line_info line, int index, long *data_img, long *d
 	int i;
 	MOVE_TO_NOT_WHITE(line.content, index)
 	if (line.content[index] == ',') {
-		print_error(line, "Unexpected comma after .data instruction");
+		printf_line_error(line, "Unexpected comma after .data instruction");
 	}
 	do {
 		for (i = 0;
@@ -79,7 +78,7 @@ bool process_data_instruction(line_info line, int index, long *data_img, long *d
 		}
 		temp[i] = '\0'; /* End of string */
 		if (!is_int(temp)) {
-			print_error(line, "Expected integer for .data instruction (got '%s')", temp);
+			printf_line_error(line, "Expected integer for .data instruction (got '%s')", temp);
 			return FALSE;
 		}
 		/* Now let's write to data buffer */
@@ -95,10 +94,10 @@ bool process_data_instruction(line_info line, int index, long *data_img, long *d
 		/* Got comma. Skip white chars and check if end of line (if so, there's extraneous comma!) */
 		MOVE_TO_NOT_WHITE(line.content, index)
 		if (line.content[index] == ',') {
-			print_error(line, "Multiple consecutive commas.");
+			printf_line_error(line, "Multiple consecutive commas.");
 			return FALSE;
 		} else if (line.content[index] == EOF || line.content[index] == '\n' || !line.content[index]) {
-			print_error(line, "Missing data after comma");
+			printf_line_error(line, "Missing data after comma");
 			return FALSE;
 		}
 	} while (line.content[index] != '\n' && line.content[index] != EOF);

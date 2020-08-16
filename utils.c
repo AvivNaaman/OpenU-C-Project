@@ -47,8 +47,8 @@ bool parse_symbol(line_info line, char *symbol_dest) {
 	/* if it was a try to define label, print errors if needed. */
 	if (line.content[i] == ':') {
 		if (!isvalid) {
-			print_error(line,
-					"Label must start with a letter, contain letters and digits only, do not exceed thirty-two characters long and end with ':'.");
+			printf_line_error(line,
+			                  "Label must start with a letter, contain letters and digits only, do not exceed thirty-two characters long and end with ':'.");
 			symbol_dest[0] = '\0';
 			return TRUE; /* No valid symbol, and no try to define one */
 		}
@@ -66,10 +66,10 @@ struct instruction_lookup_item {
 
 static struct instruction_lookup_item
 		instructions_lookup_table[] = {
-		{".string", STRING_INST},
-		{".data",   DATA_INST},
-		{".entry",  ENTRY_INST},
-		{".extern", EXTERN_INST},
+		{"string", STRING_INST},
+		{"data",   DATA_INST},
+		{"entry",  ENTRY_INST},
+		{"extern", EXTERN_INST},
 		{NULL, NONE_INST}
 };
 
@@ -122,13 +122,12 @@ bool is_reserved_word(char *name) {
 	int fun, opc;
 	/* check if register or command */
 	get_opcode_func(name, &opc, (funct *) &fun);
-	if (opc != NONE_OP || get_register_by_name(name) != NONE_REG || find_instruction_by_name(name)) return FALSE;
+	if (opc != NONE_OP || get_register_by_name(name) != NONE_REG || find_instruction_by_name(name) != NONE_INST) return TRUE;
 
 	return FALSE;
 }
 
-
-int print_error(line_info line, char *message, ...) { /* Prints the errors into a file, defined above as macro */
+int printf_line_error(line_info line, char *message, ...) { /* Prints the errors into a file, defined above as macro */
 	int result;
 	va_list args; /* for formatting */
 	/* Print file+line */
@@ -139,7 +138,7 @@ int print_error(line_info line, char *message, ...) { /* Prints the errors into 
 	result = vfprintf(ERR_OUTPUT_FILE, message, args);
 	va_end(args);
 
-	fputs("", ERR_OUTPUT_FILE); /* Line break */
+	fprintf(ERR_OUTPUT_FILE, "\n");
 	return result;
 }
 

@@ -185,3 +185,10 @@ lable!:illegal
 label: mov .string "Hello World!"
 labell: mov .data "Hello World!"
 label .data "Hello World!" mov r0,#5
+
+string: .string "mystr"
+entry: .data 12
+extern: .data +5
+
+TOOOOOOOOOOOOOOOOOOOOOOLOOOOOOOOOOOOOOOOOOONGGGGGGGGGGGGGGGGGGTOOOOOOPROCESSSSSSS
+.extern HELLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLOO

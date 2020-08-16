@@ -42,19 +42,18 @@ bool process_line_fpass(line_info line, long *IC, long *DC, machine_word **code_
 	i = 0;
 
 	MOVE_TO_NOT_WHITE(line.content, i) /* Move to next non-white char */
-	if (line.content[i] == '\n' || line.content[i] == EOF || line.content[i] == ';')
+	if (!line.content[i] || line.content[i] == '\n' || line.content[i] == EOF || line.content[i] == ';')
 		return TRUE; /* Empty/Comment line - no errors found (of course) */
 
 	/* Check if symbol (*:), stages 1.3-1.5 */
 	/* if tried to define label, but it's invalid, return that an error occurred. */
-	/* TODO: Remove double validation here \/ */
 	if (parse_symbol(line, symbol)) {
 		return FALSE;
 	}
 
 	/* if illegal name */
-	if (!is_valid_label_name(symbol) && symbol[0]) {
-		print_error(line, "Illegal label name %s", symbol);
+	if (symbol[0] && !is_valid_label_name(symbol)) {
+		printf_line_error(line, "Illegal label name: %s", symbol);
 		return FALSE;
 	}
 	/* try using strtok instead... */
@@ -69,7 +68,7 @@ bool process_line_fpass(line_info line, long *IC, long *DC, machine_word **code_
 
 	/* if already defined as data/external/code and not empty line */
 	if (find_by_types(*symbol_table, symbol, 3, EXTERNAL_SYMBOL, DATA_SYMBOL, CODE_SYMBOL)) {
-		print_error(line, "Symbol %s is already defined.", symbol);
+		printf_line_error(line, "Symbol %s is already defined.", symbol);
 		return FALSE;
 	}
 
@@ -97,26 +96,22 @@ bool process_line_fpass(line_info line, long *IC, long *DC, machine_word **code_
 			return process_data_instruction(line, i, data_img, DC);
 			/* if .extern, add to externals symbol table */
 		else if (instruction == EXTERN_INST) {
-			/* if label is defined before (e.g. LABEL: .extern something) */
-			if (symbol[0] != '\0') {
-				print_error(line, "Can't define a label to an extern instruction.");
-			}
 			MOVE_TO_NOT_WHITE(line.content, i)
 			/* if external symbol detected, start analyzing from it's deceleration end */
 			for (j = 0; line.content[i] && line.content[i] != '\n' && line.content[i] != '\t' && line.content[i] != ' ' && line.content[i] != EOF; i++, j++) {
 				symbol[j] = line.content[i];
 			}
 			symbol[j] = 0;
-			/* If invalid label name, linkage will */
+			/* If invalid external label name, it's an error */
 			if (!is_valid_label_name(symbol)) {
-				print_error(line, "Invalid label name %s", symbol);
+				printf_line_error(line, "Invalid external label name: %s", symbol);
 				return TRUE;
 			}
 			add_table_item(symbol_table, symbol, 0, EXTERNAL_SYMBOL); /* Extern value is defaulted to 0 */
 		}
 			/* if entry and symbol defined, print error */
 		else if (instruction == ENTRY_INST && symbol[0] != '\0') {
-			print_error(line, "Can't define a label to an entry instruction.");
+			printf_line_error(line, "Can't define a label to an entry instruction.");
 			return FALSE;
 		}
 		/* .entry is handled in second pass! */
@@ -172,7 +167,7 @@ static bool process_code(line_info line, int i, long *ic, machine_word **code_im
 	get_opcode_func(operation, &curr_opcode, &curr_funct);
 	/* If invalid operation (opcode is NONE_OP=-1), print and skip processing the line. */
 	if (curr_opcode == NONE_OP) {
-		print_error(line, "Unrecognized instruction: %s.", operation);
+		printf_line_error(line, "Unrecognized instruction: %s.", operation);
 		return FALSE; /* an error occurred */
 	}
 

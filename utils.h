@@ -12,13 +12,20 @@
 
 /**
  * Concatenates both string to a new allocated memory
- * @param s0
- * @param s1
- * @return
+ * @param s0 The first string
+ * @param s1 The second string
+ * @return A pointer to the new, allocated string
  */
 char *strallocat(char *s0, char* s1);
 
 bool parse_symbol(line_info line, char *symbol_dest);
+
+/**
+ * Returns the instruction enum by the instruction's name, without the opening '.'
+ * @param name The instruction name, without the '.'
+ * @return The instruction enum if found, NONE_INST if not found.
+ */
+instruction find_instruction_by_name(char *name);
 
 /**
  * Returns whether the string is a valid 21-bit integer
@@ -58,7 +65,7 @@ bool is_reserved_word(char *name);
  * @param ... The arguments to format into the message
  * @return printf result of the message
  */
-int print_error(line_info line, char *message, ...);
+int printf_line_error(line_info line, char *message, ...);
 
 /* Frees all the allocated memory inside the code image */
 void free_code_image(machine_word **code_image, long fic);

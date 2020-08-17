@@ -4,7 +4,7 @@
 declare -a file_extensions=("ob" "ext" "ent")
 prefix_of_extension="expected"
 
-read -p "Enter file name, extensionless: " file_prefix
+file_prefix=$1
 
 for i in "${file_extensions[@]}"
 do

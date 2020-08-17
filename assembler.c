@@ -66,7 +66,7 @@ static bool process_file(char *filename) {
 		if (strchr(temp_line,'\n') == NULL && !feof(file_des))
 		{
 			/* Print message and prevent further line processing, as well as second pass.  */
-			printf_line_error(curr_line_info, "Line too long to process.");
+			printf_line_error(curr_line_info, "Line too long to process. Maximum line length should be %d.", MAX_LINE_LENGTH);
 			is_success = FALSE;
 			/* skip leftovers */
 			do {

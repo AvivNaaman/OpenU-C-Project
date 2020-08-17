@@ -39,7 +39,7 @@ bool process_line_spass(line_info line, long *ic, machine_word **code_img, table
 			token = strtok(line.content + i, " \n\t");
 			/* if label is already marked as entry, ignore. */
 			if (token == NULL) {
-				printf_line_error(line, "You have to specify label name for .entry instruction.");
+				printf_line_error(line, "You have to specify a label name for .entry instruction.");
 				return FALSE;
 			}
 			if (find_by_types(*symbol_table, token, 1, ENTRY_SYMBOL) == NULL) {
@@ -50,11 +50,11 @@ bool process_line_spass(line_info line, long *ic, machine_word **code_img, table
 				if ((entry = find_by_types(*symbol_table, token, 2, DATA_SYMBOL, CODE_SYMBOL)) == NULL) {
 					/* if defined as external print error */
 					if ((entry = find_by_types(*symbol_table, token, 1, EXTERNAL_SYMBOL)) != NULL) {
-						printf_line_error(line, "External symbol cannot be defined as an entry symbol as well.");
+						printf_line_error(line, "The symbol %s can be either external or entry, but not both.", entry->key);
 						return FALSE;
 					}
 					/* otherwise print more general error */
-					printf_line_error(line, "Symbol %s for .entry instruction not found.", token);
+					printf_line_error(line, "The symbol %s for .entry is undefined.", token);
 					return FALSE;
 				}
 				add_table_item(symbol_table, token, entry->value, ENTRY_SYMBOL);
@@ -134,7 +134,7 @@ int process_spass_operand(line_info line, long *curr_ic, long *ic, char *operand
 		long data_to_add;
 		table_entry *entry = find_by_types(*symbol_table, operand, 3, DATA_SYMBOL, CODE_SYMBOL, EXTERNAL_SYMBOL);
 		if (entry == NULL) {
-			printf_line_error(line, "Symbol %s not found", operand);
+			printf_line_error(line, "The symbol %s not found", operand);
 			return FALSE;
 		}
 		/*found symbol*/
@@ -143,7 +143,7 @@ int process_spass_operand(line_info line, long *curr_ic, long *ic, char *operand
 		if (addr == RELATIVE_ADDR) {
 			/* if not code symbol it's impossible to calculate distance! */
 			if (entry->type != CODE_SYMBOL) {
-				printf_line_error(line, "Symbol %s cannot be addressed relatively because it's not a code symbol.",
+				printf_line_error(line, "The symbol %s cannot be addressed relatively because it's not a code symbol.",
 				                  operand);
 				return FALSE;
 			}

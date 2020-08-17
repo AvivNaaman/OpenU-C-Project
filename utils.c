@@ -48,7 +48,7 @@ bool parse_symbol(line_info line, char *symbol_dest) {
 	if (line.content[i] == ':') {
 		if (!isvalid) {
 			printf_line_error(line,
-			                  "Label must start with a letter, contain letters and digits only, do not exceed thirty-two characters long and end with ':'.");
+			                  "Invalid label name - cannot be longer than 32 chars, may only start with letter be alphanumeric.");
 			symbol_dest[0] = '\0';
 			return TRUE; /* No valid symbol, and no try to define one */
 		}

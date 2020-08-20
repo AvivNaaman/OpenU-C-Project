@@ -9,6 +9,16 @@
           </mappings>
         </serverdata>
       </paths>
+      <paths name="Remote Host (bafec401-39bd-42ba-b766-39f85439599a)">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/tmp/tmp.HWx6FMJtlg" local="$PROJECT_DIR$" />
+          </mappings>
+          <excludedPaths>
+            <excludedPath local="true" path="$PROJECT_DIR$/cmake-build-debug" />
+          </excludedPaths>
+        </serverdata>
+      </paths>
       <paths name="WSL (efecc2ab-c82f-45c6-b369-c9a89166966e)">
         <serverdata>
           <mappings>

@@ -172,10 +172,20 @@ static bool process_code(line_info line, int i, long *ic, machine_word **code_im
 	}
 
 	/* Separate operands and get their count */
-	if (!analyze_operands(line, i, operands, &operand_count, operation)) return FALSE; /* if error, return error */
+	if (!analyze_operands(line, i, operands, &operand_count, operation))  {
+		/* Release allocated memory for operands */
+		free(operands[0]);
+		free(operands[1]);
+		return FALSE;
+	}
 
 	/* Build code word struct to store in code image array */
-	if ((codeword = get_code_word(line, curr_opcode, curr_funct, operand_count, operands)) == NULL) return FALSE;
+	if ((codeword = get_code_word(line, curr_opcode, curr_funct, operand_count, operands)) == NULL) {
+		/* Release allocated memory for operands */
+		free(operands[0]);
+		free(operands[1]);
+		return FALSE;
+	}
 
 	/* ic in position of new code word */
 	ic_before = *ic;
@@ -187,17 +197,19 @@ static bool process_code(line_info line, int i, long *ic, machine_word **code_im
 	         IC_INIT_VALUE] = word_to_write; /* Avoid "spending" cells of the array, by starting from initial value of ic */
 
 	/* Build extra information code word if possible */
-	build_extra_codeword_fpass(code_img, ic, operands[0]);
-	build_extra_codeword_fpass(code_img, ic, operands[1]);
+	if (operand_count--) { /* If there's 1 operand at least */
+		build_extra_codeword_fpass(code_img, ic, operands[0]);
+		free(operands[0]);
+		if (operand_count) { /* If there are 2 operands */
+			build_extra_codeword_fpass(code_img, ic, operands[1]);
+			free(operands[1]);
+		}
+	}
 
-	(*ic)++; /* increase ci to point the next cell */
+	(*ic)++; /* increase ic to point the next cell */
 
 	/* Add the final length (of code word + data words) to the code word struct: */
 	code_img[ic_before - IC_INIT_VALUE]->length = (*ic) - ic_before;
-
-	/* Release allocated memory for operands */
-	free(operands[0]);
-	free(operands[1]);
 
 	return TRUE; /* No errors */
 }

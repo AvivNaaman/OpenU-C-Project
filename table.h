@@ -56,7 +56,7 @@ void add_value_to_type(table tab, long to_add, symbol_type type);
  * @param type The type to look for
  * @return A new table, which contains the entries
  */
-table get_entries_by_type(table tab, symbol_type type);
+table filter_table_by_type(table tab, symbol_type type);
 
 /**
  * Find entry from the only specified types

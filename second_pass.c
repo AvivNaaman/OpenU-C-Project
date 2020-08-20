@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "second_pass.h"
 #include "code.h"
 #include "utils.h"
@@ -50,7 +51,8 @@ bool process_line_spass(line_info line, long *ic, machine_word **code_img, table
 				if ((entry = find_by_types(*symbol_table, token, 2, DATA_SYMBOL, CODE_SYMBOL)) == NULL) {
 					/* if defined as external print error */
 					if ((entry = find_by_types(*symbol_table, token, 1, EXTERNAL_SYMBOL)) != NULL) {
-						printf_line_error(line, "The symbol %s can be either external or entry, but not both.", entry->key);
+						printf_line_error(line, "The symbol %s can be either external or entry, but not both.",
+						                  entry->key);
 						return FALSE;
 					}
 					/* otherwise print more general error */
@@ -80,6 +82,7 @@ bool add_symbols_to_code(line_info line, long *ic, machine_word **code_img, tabl
 	char temp[80];
 	char *operands[2];
 	int i = 0, operand_count;
+	bool isvalid = TRUE;
 	long curr_ic = *ic; /* using curr_ic as temp index inside the code image, in the current line code+data words */
 	/* Get the total word length of current code text line in code binary image */
 	int length = code_img[(*ic) - IC_INIT_VALUE]->length;
@@ -102,10 +105,14 @@ bool add_symbols_to_code(line_info line, long *ic, machine_word **code_img, tabl
 		/* now analyze operands We send NULL as string of command because no error will be printed, and that's the only usage for it there. */
 		analyze_operands(line, i, operands, &operand_count, NULL);
 		/* Process operands, if needed. if failed return failure. otherwise continue */
-		if (operand_count) {
-			if (!process_spass_operand(line, &curr_ic, ic, operands[0], code_img, symbol_table)) return FALSE;
-			if (operand_count >= 2) {
-				if (!process_spass_operand(line, &curr_ic, ic, operands[1], code_img, symbol_table)) return FALSE;
+		if (operand_count--) {
+			isvalid = process_spass_operand(line, &curr_ic, ic, operands[0], code_img, symbol_table);
+			free(operands[0]);
+			if (!isvalid) return FALSE;
+			if (operand_count) {
+				isvalid = process_spass_operand(line, &curr_ic, ic, operands[1], code_img, symbol_table);
+				free(operands[1]);
+				if (!isvalid) return FALSE;
 			}
 		}
 	}

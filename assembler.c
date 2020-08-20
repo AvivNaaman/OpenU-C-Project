@@ -7,7 +7,7 @@
 #include "second_pass.h"
 
 /**
- * Processes a single assembly source file
+ * Processes a single assembly source file, and returns the result status.
  * @param filename The filename, without it's extension
  * @return Whether succeeded
  */

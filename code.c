@@ -24,14 +24,12 @@ static bool validate_op_addr(line_info line, addressing_type op1_addressing, add
 bool analyze_operands(line_info line, int i, char **destination, int *operand_count, char *c) {
 	int j;
 	*operand_count = 0;
+	destination[0] = destination[1] = NULL;
 	MOVE_TO_NOT_WHITE(line.content, i)
 	if (line.content[i] == ',') {
 		printf_line_error(line, "Unexpected comma after command.");
 		return FALSE; /* an error occurred */
 	}
-	/* allocate space to save the processes operands */
-	destination[0] = malloc_with_check(MAX_LINE_LENGTH);
-	destination[1] = malloc_with_check(MAX_LINE_LENGTH);
 
 	/* Until noy too many operands (max of 2) and it's not the end of the line */
 	for (*operand_count = 0; line.content[i] != EOF && line.content[i] != '\n' && line.content[i];) {
@@ -42,12 +40,13 @@ bool analyze_operands(line_info line, int i, char **destination, int *operand_co
 			return FALSE; /* an error occurred */
 		}
 
+		/* Allocate memory to save the operand */
+		destination[*operand_count] = malloc_with_check(MAX_LINE_LENGTH);
 		/* as long we're still on same operand */
 		for (j = 0; line.content[i] && line.content[i] != '\t' && line.content[i] != ' ' && line.content[i] != '\n' && line.content[i] != EOF &&
 		            line.content[i] != ','; i++, j++) {
 			destination[*operand_count][j] = line.content[i];
 		}
-
 		destination[*operand_count][j] = '\0';
 		(*operand_count)++; /* We've just saved another operand! */
 		MOVE_TO_NOT_WHITE(line.content, i)
@@ -194,8 +193,9 @@ bool validate_operand_by_opcode(line_info line, addressing_type first_addressing
 
 code_word *get_code_word(line_info line, opcode curr_opcode, funct curr_funct, int op_count, char *operands[2]) {
 	code_word *codeword;
-	addressing_type first_addressing = get_addressing_type(operands[0]);
-	addressing_type second_addressing = get_addressing_type(operands[1]);
+	/* Get addressing types and validate them: */
+	addressing_type first_addressing = op_count >= 1 ? get_addressing_type(operands[0]) : NONE_ADDR;
+	addressing_type second_addressing = op_count == 2 ? get_addressing_type(operands[1]) : NONE_ADDR;
 	/* validate operands by opcode - on failure exit */
 	if (!validate_operand_by_opcode(line, first_addressing, second_addressing, curr_opcode, op_count)) {
 		return NULL;

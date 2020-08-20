@@ -20,7 +20,7 @@
  * @param filename The filename, without the extension
  * @return Whether succeeded
  */
-static int write_ob(machine_word **code_img, long *data_img, long icf, long dcf, char *filename);
+static bool write_ob(machine_word **code_img, long *data_img, long icf, long dcf, char *filename);
 
 /**
  * Writes a symbol table to a file. Each symbol and it's address in line, separated by a single space.
@@ -29,18 +29,25 @@ static int write_ob(machine_word **code_img, long *data_img, long icf, long dcf,
  * @param file_extension The extension of the file, including dot before
  * @return Whether succeeded
  */
-static int write_table_to_file(table tab, char *filename, char *file_extension);
+static bool write_table_to_file(table tab, char *filename, char *file_extension);
 
 int write_output_files(machine_word **code_img, long *data_img, long icf, long dcf, char *filename,
                        table symbol_table) {
+	bool result;
+	table externals = filter_table_by_type(symbol_table, EXTERNAL_REFERENCE);
+	table entries = filter_table_by_type(symbol_table, ENTRY_SYMBOL);
 	/* Write .ob file */
-	return write_ob(code_img, data_img, icf, dcf, filename) &&
-	       /* Write *.ent and *.ext files: call with symbols from external references type or entry type only */
-	       write_table_to_file(get_entries_by_type(symbol_table, EXTERNAL_REFERENCE), filename, ".ext") &&
-	       write_table_to_file(get_entries_by_type(symbol_table, ENTRY_SYMBOL), filename, ".ent");
+	result = write_ob(code_img, data_img, icf, dcf, filename) &&
+	         /* Write *.ent and *.ext files: call with symbols from external references type or entry type only */
+	         write_table_to_file(externals, filename, ".ext") &&
+	         write_table_to_file(entries, filename, ".ent");
+	/* Release filtered tables */
+	free_table(externals);
+	free_table(entries);
+	return result;
 }
 
-static int write_ob(machine_word **code_img, long *data_img, long icf, long dcf, char *filename) {
+static bool write_ob(machine_word **code_img, long *data_img, long icf, long dcf, char *filename) {
 	int i;
 	long val;
 	FILE *file_desc;
@@ -85,7 +92,7 @@ static int write_ob(machine_word **code_img, long *data_img, long icf, long dcf,
 	return TRUE;
 }
 
-static int write_table_to_file(table tab, char *filename, char *file_extension) {
+static bool write_table_to_file(table tab, char *filename, char *file_extension) {
 	FILE *file_desc;
 	/* concatenate filename & extension, and open the file for writing: */
 	char *full_filename = strallocat(filename, file_extension);

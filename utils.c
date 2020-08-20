@@ -31,22 +31,14 @@ bool parse_symbol(line_info line, char *symbol_dest) {
 		isvalid = FALSE;
 	}
 	/* Let's allocate some memory to the string needed to be returned */
-	for (; line.content[i] && line.content[i] != ':' && i <= 100; i++, j++) {
-		symbol_dest[j] = line.content[i]; /* Go on until empty char OR symbol */
-		/*max length of label is 32 characters*/
-		if (j == 31) {
-			isvalid = FALSE;
-		}
-		/* Label must be alphanumeric! */
-		if (!isalnum(line.content[i])) {
-			isvalid = FALSE;
-		}
+	for (; line.content[i] && line.content[i] != ':' && line.content[i] != EOF && i <= MAX_LINE_LENGTH; i++, j++) {
+		symbol_dest[j] = line.content[i];
 	}
 	symbol_dest[j] = '\0'; /* End of string */
 
 	/* if it was a try to define label, print errors if needed. */
 	if (line.content[i] == ':') {
-		if (!isvalid) {
+		if (!is_valid_label_name(symbol_dest)) {
 			printf_line_error(line,
 			                  "Invalid label name - cannot be longer than 32 chars, may only start with letter be alphanumeric.");
 			symbol_dest[0] = '\0';

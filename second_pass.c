@@ -90,7 +90,7 @@ bool add_symbols_to_code(line_info line, long *ic, machine_word **code_img, tabl
 	if (length > 1) {
 		/* Now, we need to skip command, and get the operands themselves: */
 		MOVE_TO_NOT_WHITE(line.content, i)
-		parse_symbol(line, temp);
+		find_label(line, temp);
 		if (temp[0] != '\0') { /* if symbol is defined */
 			/* move i right after it's end */
 			for (; line.content[i] && line.content[i] != '\n' && line.content[i] != EOF && line.content[i] != ' ' &&

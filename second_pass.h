@@ -1,4 +1,4 @@
-
+/* Second pass line processing related functions */
 #ifndef _SECOND_PASS_H
 #define _SECOND_PASS_H
 #include "globals.h"

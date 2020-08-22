@@ -1,3 +1,4 @@
+/* Helper functions for instruction analyzing */
 #ifndef _INSTRUCTIONS_H
 #define _INSTRUCTIONS_H
 #include "globals.h"

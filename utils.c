@@ -15,21 +15,15 @@ char *strallocat(char *s0, char* s1) {
 	return str;
 }
 
-/* TODO: Refactor! */
+
 /* Returns whether an error occurred during the try of parsing the symbol. puts the symbol into the second buffer. */
-bool parse_symbol(line_info line, char *symbol_dest) {
+bool find_label(line_info line, char *symbol_dest) {
 	int j, i;
-	bool isvalid; /* Indexes + can it be a valid label */
 	i = j = 0;
 
-	isvalid = TRUE;
 	/* Skip white chars at the beginning anyway */
 	MOVE_TO_NOT_WHITE(line.content, i)
 
-	/* Label should start with alpha char */
-	if (!isalpha(line.content[i])) {
-		isvalid = FALSE;
-	}
 	/* Let's allocate some memory to the string needed to be returned */
 	for (; line.content[i] && line.content[i] != ':' && line.content[i] != EOF && i <= MAX_LINE_LENGTH; i++, j++) {
 		symbol_dest[j] = line.content[i];

@@ -47,7 +47,7 @@ bool process_line_fpass(line_info line, long *IC, long *DC, machine_word **code_
 
 	/* Check if symbol (*:), stages 1.3-1.5 */
 	/* if tried to define label, but it's invalid, return that an error occurred. */
-	if (parse_symbol(line, symbol)) {
+	if (find_label(line, symbol)) {
 		return FALSE;
 	}
 
@@ -173,17 +173,18 @@ static bool process_code(line_info line, int i, long *ic, machine_word **code_im
 
 	/* Separate operands and get their count */
 	if (!analyze_operands(line, i, operands, &operand_count, operation))  {
-		/* Release allocated memory for operands */
-		free(operands[0]);
-		free(operands[1]);
 		return FALSE;
 	}
 
 	/* Build code word struct to store in code image array */
 	if ((codeword = get_code_word(line, curr_opcode, curr_funct, operand_count, operands)) == NULL) {
 		/* Release allocated memory for operands */
-		free(operands[0]);
-		free(operands[1]);
+		if (operands[0]) {
+			free(operands[0]);
+			if (operands[1]) {
+				free(operands[1]);
+			}
+		}
 		return FALSE;
 	}
 
@@ -196,7 +197,7 @@ static bool process_code(line_info line, int i, long *ic, machine_word **code_im
 	code_img[(*ic) -
 	         IC_INIT_VALUE] = word_to_write; /* Avoid "spending" cells of the array, by starting from initial value of ic */
 
-	/* Build extra information code word if possible */
+	/* Build extra information code word if possible, free pointers with no need */
 	if (operand_count--) { /* If there's 1 operand at least */
 		build_extra_codeword_fpass(code_img, ic, operands[0]);
 		free(operands[0]);

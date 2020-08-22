@@ -1,4 +1,4 @@
-/* Contains function prototypes for code.c, which are used to parse and analyze code and build it to a word */
+/* Helper functions to process and analyze code */
 #ifndef _CODE_H
 #define _CODE_H
 #include "table.h"

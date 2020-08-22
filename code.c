@@ -57,7 +57,9 @@ bool analyze_operands(line_info line, int i, char **destination, int *operand_co
 			printf_line_error(line, "Expecting ',' between operands");
 			/* Release operands dynamically allocated memory */
 			free(destination[0]);
-			free(destination[1]);
+			if (*operand_count > 1) {
+				free(destination[1]);
+			}
 			return FALSE;
 		}
 		i++;
@@ -70,7 +72,9 @@ bool analyze_operands(line_info line, int i, char **destination, int *operand_co
 		{ /* Error found! (didn't continue) */
 			/* No one forgot you two! */
 			free(destination[0]);
-			free(destination[1]);
+			if (*operand_count > 1) {
+				free(destination[1]);
+			}
 			return FALSE;
 		}
 	}

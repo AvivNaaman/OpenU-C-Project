@@ -1,3 +1,4 @@
+/* Output files related functions */
 #ifndef _WRITEFILES_H
 #define _WRITEFILES_H
 #include "globals.h"

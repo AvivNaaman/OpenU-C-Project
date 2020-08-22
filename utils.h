@@ -18,7 +18,14 @@
  */
 char *strallocat(char *s0, char* s1);
 
-bool parse_symbol(line_info line, char *symbol_dest);
+/**
+ * Finds the defined label in the code if exists, and saves it into the buffer.
+ * Returns whether syntax error found.
+ * @param line The source line to find in
+ * @param symbol_dest The buffer for copying the found label in
+ * @return Whether syntax error found
+ */
+bool find_label(line_info line, char *symbol_dest);
 
 /**
  * Returns the instruction enum by the instruction's name, without the opening '.'
@@ -67,7 +74,11 @@ bool is_reserved_word(char *name);
  */
 int printf_line_error(line_info line, char *message, ...);
 
-/* Frees all the allocated memory inside the code image */
+/**
+ * Frees all the dynamically-allocated memory for the code image.
+ * @param code_image A pointer to the code images buffer
+ * @param fic The final instruction counter value
+ */
 void free_code_image(machine_word **code_image, long fic);
 
 #endif

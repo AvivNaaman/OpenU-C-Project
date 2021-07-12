@@ -2,7 +2,7 @@
 ![Build](https://github.com/avivnaaman/20465-project/workflows/Build/badge.svg?branch=master)
 ## About
 This project is an assignment in a C programming course at the open unvieristy (20465). The purpose of this project is to build an assembler for 15-instruction asssembly language, for an imaginary 24-bit CPU and 21 bits of memory size.
-This project was done by [@AvivNaaman](//github.com/avivnaaman) and [@YotamGranot](//github.com/yotamgranot).
+This project was done by [@LetEpsilonInR](//github.com/avivnaaman) and [@YotamGranot](//github.com/yotamgranot).
 For any issues, questions and ideas turn to the Issues tab.
 
 License: MIT License, Affect from September 1st, 2020
